@@ -3,3 +3,100 @@
 @import 'tailwindcss/utilities.css';
 
 @import 'nativewind/theme';
+
+/* ==============================================
+   DRIFTLOG DESIGN SYSTEM - THEME TOKENS
+   ============================================== */
+
+@theme {
+  /* === PRIMARY COLORS === */
+  --color-primary-50: #fff5f0;
+  --color-primary-100: #ffe8dc;
+  --color-primary-200: #ffd1b9;
+  --color-primary-300: #ffb996;
+  --color-primary-400: #f89e7b;
+  --color-primary-500: #f4a261;    /* Main brand color */
+  --color-primary-600: #e8894a;
+  --color-primary-700: #d17038;
+  --color-primary-800: #b05628;
+  --color-primary-900: #8f421a;
+  
+  /* === LIGHT MODE COLORS === */
+  --color-light-bg-primary: #faf4f0;
+  --color-light-bg-secondary: #ffffff;
+  --color-light-bg-cream: #f9f5f1;
+  --color-light-bg-light: #fff0e5;
+  --color-light-surface: #ffffff;
+  --color-light-surface-elevated: #ffffff;
+  
+  --color-light-text-primary: #2b2b2b;
+  --color-light-text-secondary: #6b6b6b;
+  --color-light-text-tertiary: #8e8e8e;
+  --color-light-text-light: #b5b5b5;
+  
+  --color-light-border-light: #e8e4df;
+  --color-light-border-medium: #d1cbc4;
+  --color-light-border-dark: #b5afa8;
+  
+  /* === DARK MODE COLORS === */
+  --color-dark-bg-primary: #0f0f0f;
+  --color-dark-bg-secondary: #1a1a1a;
+  --color-dark-bg-elevated: #212121;
+  --color-dark-bg-accent: #2a2a2a;
+  --color-dark-surface: #252525;
+  --color-dark-surface-elevated: #2f2f2f;
+  
+  --color-dark-primary: #ff9f6c;      /* Brighter for dark bg */
+  --color-dark-primary-light: #ffb18a;
+  --color-dark-primary-dark: #e8814a;
+  
+  --color-dark-text-primary: #f5f5f5;
+  --color-dark-text-secondary: #b5b5b5;
+  --color-dark-text-tertiary: #8e8e8e;
+  --color-dark-text-light: #6b6b6b;
+  
+  --color-dark-border-light: #2f2f2f;
+  --color-dark-border-medium: #3a3a3a;
+  --color-dark-border-dark: #454545;
+  
+  /* === SEMANTIC COLORS === */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+  
+  /* === TYPOGRAPHY === */
+  --font-sans: Inter, system-ui, -apple-system, sans-serif;
+  --font-display: 'DM Sans', system-ui, -apple-system, sans-serif;
+  
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.8125rem;    /* 13px */
+  --font-size-base: 0.875rem;   /* 14px */
+  --font-size-md: 0.9375rem;    /* 15px */
+  --font-size-lg: 1rem;         /* 16px */
+  --font-size-xl: 1.125rem;     /* 18px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.75rem;     /* 28px */
+  --font-size-4xl: 2rem;        /* 32px */
+  --font-size-5xl: 3rem;        /* 48px */
+  
+  /* === SPACING === */
+  --spacing-1: 0.25rem;   /* 4px */
+  --spacing-2: 0.5rem;    /* 8px */
+  --spacing-3: 0.75rem;   /* 12px */
+  --spacing-4: 1rem;      /* 16px */
+  --spacing-5: 1.25rem;   /* 20px */
+  --spacing-6: 1.5rem;    /* 24px */
+  --spacing-8: 2rem;      /* 32px */
+  --spacing-10: 2.5rem;   /* 40px */
+  --spacing-12: 3rem;     /* 48px */
+  --spacing-16: 4rem;     /* 64px */
+  
+  /* === BORDER RADIUS === */
+  --radius-sm: 0.5rem;    /* 8px */
+  --radius-md: 0.75rem;   /* 12px */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-xl: 1.25rem;   /* 20px */
+  --radius-2xl: 1.5rem;   /* 24px */
+  --radius-full: 9999px;
+}

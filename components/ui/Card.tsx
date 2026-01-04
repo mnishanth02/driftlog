@@ -1,0 +1,23 @@
+import { View, Text, type ViewProps } from "react-native";
+import type { PropsWithChildren } from "react";
+
+interface CardProps extends PropsWithChildren, ViewProps {
+	title?: string;
+	className?: string;
+}
+
+export function Card({ title, children, className = "", ...props }: CardProps) {
+	return (
+		<View
+			className={`bg-light-surface dark:bg-dark-surface rounded-2xl p-5 border border-light-border-light dark:border-dark-border-medium ${className}`}
+			{...props}
+		>
+			{title && (
+				<Text className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary mb-3">
+					{title}
+				</Text>
+			)}
+			{children}
+		</View>
+	);
+}

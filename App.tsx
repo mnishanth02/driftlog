@@ -1,13 +1,24 @@
-import { ScreenContent } from 'components/ScreenContent';
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar } from "expo-status-bar";
+import { ThemeProvider, useTheme } from "./lib/contexts/ThemeContext";
+import { ThemeDemo } from "./components/ThemeDemo";
 
-import './global.css';
+import "./global.css";
+
+function AppContent() {
+	const { colorScheme } = useTheme();
+
+	return (
+		<>
+			<ThemeDemo />
+			<StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+		</>
+	);
+}
 
 export default function App() {
-  return (
-    <>
-      <ScreenContent title="Home" path="App.tsx"></ScreenContent>
-      <StatusBar style="auto" />
-    </>
-  );
+	return (
+		<ThemeProvider>
+			<AppContent />
+		</ThemeProvider>
+	);
 }
