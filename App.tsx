@@ -5,20 +5,20 @@ import { ThemeDemo } from "./components/ThemeDemo";
 import "./global.css";
 
 function AppContent() {
-	const { colorScheme } = useTheme();
+  const { colorScheme } = useTheme();
 
-	return (
-		<>
-			<ThemeDemo />
-			<StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-		</>
-	);
+  return (
+    <>
+      <ThemeDemo />
+      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+    </>
+  );
 }
 
 export default function App() {
-	return (
-		<ThemeProvider>
-			<AppContent />
-		</ThemeProvider>
-	);
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
 }
