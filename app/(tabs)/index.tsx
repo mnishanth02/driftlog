@@ -1,9 +1,9 @@
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, Text, View } from "react-native";
-import { useTheme } from "@/core/contexts/ThemeContext";
-import { MetricCard } from "@/components/ui/MetricCard";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { MetricCard } from "@/components/ui/MetricCard";
+import { useTheme } from "@/core/contexts/ThemeContext";
 
 export default function TodayScreen() {
   const { colorScheme } = useTheme();

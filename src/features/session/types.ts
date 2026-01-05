@@ -2,6 +2,8 @@ export type SessionState = {
   activeSessionId: string | null;
   currentExercises: ExerciseLog[];
   isSessionActive: boolean;
+  lastActivityTimestamp: string | null;
+  autoEndTimerId: ReturnType<typeof setTimeout> | null;
 };
 
 export type ExerciseLog = {
@@ -27,6 +29,7 @@ export type SessionActions = {
   updateSet: (exerciseId: string, setId: string, reps: number, weight: number | null) => void;
   removeSet: (exerciseId: string, setId: string) => void;
   clearSession: () => void;
+  resetActivityTimer: () => void;
 };
 
 export type SessionStore = SessionState & SessionActions;

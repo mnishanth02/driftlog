@@ -56,12 +56,8 @@
           "name": "exercises_session_id_sessions_id_fk",
           "tableFrom": "exercises",
           "tableTo": "sessions",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -119,9 +115,7 @@
       "indexes": {
         "plans_date_unique": {
           "name": "plans_date_unique",
-          "columns": [
-            "date"
-          ],
+          "columns": ["date"],
           "isUnique": true
         }
       },
@@ -179,9 +173,7 @@
       "indexes": {
         "reflections_session_id_unique": {
           "name": "reflections_session_id_unique",
-          "columns": [
-            "session_id"
-          ],
+          "columns": ["session_id"],
           "isUnique": true
         }
       },
@@ -190,12 +182,8 @@
           "name": "reflections_session_id_sessions_id_fk",
           "tableFrom": "reflections",
           "tableTo": "sessions",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -271,12 +259,8 @@
           "name": "sessions_plan_id_plans_id_fk",
           "tableFrom": "sessions",
           "tableTo": "plans",
-          "columnsFrom": [
-            "plan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["plan_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -351,12 +335,8 @@
           "name": "sets_exercise_id_exercises_id_fk",
           "tableFrom": "sets",
           "tableTo": "exercises",
-          "columnsFrom": [
-            "exercise_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["exercise_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

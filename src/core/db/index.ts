@@ -13,19 +13,19 @@ export async function initDatabase() {
   try {
     // Check if tables exist
     const result = expoDb.getFirstSync<{ name: string }>(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='sessions'"
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='sessions'",
     );
 
     if (!result) {
       console.log("Running database migrations...");
-      
+
       // Run migration SQL
       const migrationSQL = `
         CREATE TABLE IF NOT EXISTS exercises (
           id text PRIMARY KEY NOT NULL,
           session_id text NOT NULL,
           name text NOT NULL,
-          \"order\" integer NOT NULL,
+          "order" integer NOT NULL,
           created_at text NOT NULL,
           updated_at text NOT NULL,
           FOREIGN KEY (session_id) REFERENCES sessions(id) ON UPDATE no action ON DELETE cascade
@@ -71,20 +71,20 @@ export async function initDatabase() {
           exercise_id text NOT NULL,
           reps integer NOT NULL,
           weight real,
-          \"order\" integer NOT NULL,
+          "order" integer NOT NULL,
           timestamp text NOT NULL,
           created_at text NOT NULL,
           updated_at text NOT NULL,
           FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON UPDATE no action ON DELETE cascade
         );
       `;
-      
+
       expoDb.execSync(migrationSQL);
       console.log("✓ Database migrations completed");
     } else {
       console.log("✓ Database already initialized");
     }
-    
+
     return true;
   } catch (error) {
     console.error("Database initialization failed:", error);

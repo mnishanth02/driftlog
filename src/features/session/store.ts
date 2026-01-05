@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { db } from "../../core/db";
 import { exercises, sessions, sets } from "../../core/db/schema";
 import { generateId, getNowString, getTodayString } from "../../core/utils/helpers";
+import { useSettingsStore } from "../settings";
 import type { ExerciseLog, SessionStore, SetLog } from "./types";
 
 export const useSessionStore = create<SessionStore>((set, get) => ({
@@ -10,6 +11,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   activeSessionId: null,
   currentExercises: [],
   isSessionActive: false,
+  lastActivityTimestamp: null,
+  autoEndTimerId: null,
 
   // Actions
   startSession: async () => {
@@ -34,7 +37,11 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         activeSessionId: sessionId,
         isSessionActive: true,
         currentExercises: [],
+        lastActivityTimestamp: now,
       });
+
+      // Start auto-end timer if enabled
+      get().resetActivityTimer();
 
       return sessionId;
     } catch (error) {
@@ -43,9 +50,39 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     }
   },
 
+  resetActivityTimer: () => {
+    const { autoEndTimerId, isSessionActive } = get();
+    const { autoEndSession, autoEndTimeout } = useSettingsStore.getState();
+
+    // Clear existing timer
+    if (autoEndTimerId) {
+      clearTimeout(autoEndTimerId);
+      set({ autoEndTimerId: null });
+    }
+
+    // Only set new timer if session is active and auto-end is enabled
+    if (isSessionActive && autoEndSession) {
+      const timeoutMs = autoEndTimeout * 60 * 1000; // Convert minutes to milliseconds
+      const timerId = setTimeout(() => {
+        console.log("Auto-ending session due to inactivity");
+        get().endSession();
+      }, timeoutMs);
+
+      set({
+        lastActivityTimestamp: getNowString(),
+        autoEndTimerId: timerId,
+      });
+    }
+  },
+
   endSession: async () => {
-    const { activeSessionId, currentExercises } = get();
+    const { activeSessionId, currentExercises, autoEndTimerId } = get();
     if (!activeSessionId) return;
+
+    // Clear auto-end timer
+    if (autoEndTimerId) {
+      clearTimeout(autoEndTimerId);
+    }
 
     const now = getNowString();
 
@@ -91,6 +128,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         activeSessionId: null,
         isSessionActive: false,
         currentExercises: [],
+        lastActivityTimestamp: null,
+        autoEndTimerId: null,
       });
     } catch (error) {
       console.error("Failed to end session:", error);
@@ -112,6 +151,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     set({
       currentExercises: [...currentExercises, newExercise],
     });
+
+    // Reset activity timer on user action
+    get().resetActivityTimer();
   },
 
   addSet: (exerciseId: string, reps: number, weight: number | null) => {
@@ -136,6 +178,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     });
 
     set({ currentExercises: updatedExercises });
+
+    // Reset activity timer on user action
+    get().resetActivityTimer();
   },
 
   updateSet: (exerciseId: string, setId: string, reps: number, weight: number | null) => {
@@ -152,6 +197,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     });
 
     set({ currentExercises: updatedExercises });
+
+    // Reset activity timer on user action
+    get().resetActivityTimer();
   },
 
   removeSet: (exerciseId: string, setId: string) => {
@@ -168,13 +216,25 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     });
 
     set({ currentExercises: updatedExercises });
+
+    // Reset activity timer on user action
+    get().resetActivityTimer();
   },
 
   clearSession: () => {
+    const { autoEndTimerId } = get();
+
+    // Clear timer when clearing session
+    if (autoEndTimerId) {
+      clearTimeout(autoEndTimerId);
+    }
+
     set({
       activeSessionId: null,
       isSessionActive: false,
       currentExercises: [],
+      lastActivityTimestamp: null,
+      autoEndTimerId: null,
     });
   },
 }));
