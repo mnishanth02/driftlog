@@ -1,8 +1,9 @@
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ThemeProvider } from "@/core/contexts/ThemeContext";
+import { initDatabase } from "@/core/db";
 
 import "../global.css";
 
@@ -10,6 +11,7 @@ import "../global.css";
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [dbInitialized, setDbInitialized] = useState(false);
   const [loaded, error] = useFonts({
     // Add custom fonts here if needed
   });
@@ -18,13 +20,23 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
+  // Initialize database
   useEffect(() => {
-    if (loaded) {
+    initDatabase()
+      .then(() => setDbInitialized(true))
+      .catch((err) => {
+        console.error("Failed to initialize database:", err);
+        throw err;
+      });
+  }, []);
+
+  useEffect(() => {
+    if (loaded && dbInitialized) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, dbInitialized]);
 
-  if (!loaded) {
+  if (!loaded || !dbInitialized) {
     return null;
   }
 
