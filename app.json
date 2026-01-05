@@ -3,16 +3,18 @@
     "name": "driftlog",
     "slug": "driftlog",
     "version": "1.0.0",
+    "scheme": "driftlog",
 
     "web": {
       "favicon": "./assets/favicon.png"
     },
 
     "experiments": {
-      "tsconfigPaths": true
+      "tsconfigPaths": true,
+      "typedRoutes": true
     },
 
-    "plugins": [],
+    "plugins": ["expo-router", "expo-font"],
 
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -26,13 +28,15 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.driftlog.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.driftlog.app"
     }
   }
 }

@@ -1,5 +1,5 @@
-import { View, Text, type ViewProps } from "react-native";
 import type { PropsWithChildren } from "react";
+import { Text, View, type ViewProps } from "react-native";
 
 interface CardProps extends PropsWithChildren, ViewProps {
   title?: string;

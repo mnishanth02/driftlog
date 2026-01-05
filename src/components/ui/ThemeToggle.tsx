@@ -1,5 +1,5 @@
-import { View, Pressable, Text } from "react-native";
-import { useTheme } from "../../lib/contexts/ThemeContext";
+import { Pressable, Text, View } from "react-native";
+import { useTheme } from "@/core/contexts/ThemeContext";
 
 export function ThemeToggle() {
   const { selectedScheme, setColorScheme } = useTheme();

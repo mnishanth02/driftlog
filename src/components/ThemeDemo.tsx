@@ -1,11 +1,11 @@
-import { View, Text, ScrollView, Pressable } from "react-native";
-import { Card } from "./ui/Card";
-import { Button } from "./ui/Button";
-import { TabBar } from "./ui/TabBar";
-import { MetricCard } from "./ui/MetricCard";
-import { ThemeToggle } from "./ui/ThemeToggle";
-import { useTheme } from "../lib/contexts/ThemeContext";
 import { useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { useTheme } from "@/core/contexts/ThemeContext";
+import { Button } from "./ui/Button";
+import { Card } from "./ui/Card";
+import { MetricCard } from "./ui/MetricCard";
+import { TabBar } from "./ui/TabBar";
+import { ThemeToggle } from "./ui/ThemeToggle";
 
 export function ThemeDemo() {
   const [activeTab, setActiveTab] = useState("Activity");
