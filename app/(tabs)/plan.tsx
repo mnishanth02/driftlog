@@ -1,70 +1,60 @@
 import { Ionicons } from "@expo/vector-icons";
-import { addWeeks, subWeeks } from "date-fns";
+import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, useColorScheme, View } from "react-native";
-import { DayCard, PlanEditor } from "@/components/planning";
+import { Pressable, ScrollView, Text, useColorScheme, View } from "react-native";
+import { WeekNavigationRail } from "@/components/planning";
+import { RoutineCard } from "@/components/routines";
 import { useTheme } from "@/core/contexts/ThemeContext";
-import { formatDate, getWeekOffset } from "@/core/utils/helpers";
+import { formatDate, getTodayString, getWeekDates } from "@/core/utils/helpers";
 import { usePlanningStore } from "@/features/planning";
+import { useRoutineStore } from "@/features/routines";
 
 export default function PlanScreen() {
+  const router = useRouter();
   const { colorScheme } = useTheme();
   const systemColorScheme = useColorScheme();
-  const { weekPlans, currentWeekDates, isLoading, loadWeek } = usePlanningStore();
 
-  const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
+  // State for selected date
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
+  const [currentWeekDates, setCurrentWeekDates] = useState<string[]>([]);
 
-  // Load week on mount and when week changes
+  // Routines store
+  const { routines, loadRoutines } = useRoutineStore();
+
+  // Planning store
+  const { weekPlans, loadWeek } = usePlanningStore();
+
+  // Load routines and plans on mount
   useEffect(() => {
-    loadWeek(currentWeekStart);
-  }, [currentWeekStart, loadWeek]);
+    loadRoutines();
+    loadWeek();
+    setCurrentWeekDates(getWeekDates(new Date()));
+  }, [loadRoutines, loadWeek]);
 
+  // Week navigation handlers
   const handlePreviousWeek = () => {
-    setCurrentWeekStart((prev) => subWeeks(prev, 1));
+    const firstDay = new Date(currentWeekDates[0]);
+    firstDay.setDate(firstDay.getDate() - 7);
+    const newWeekDates = getWeekDates(firstDay);
+    setCurrentWeekDates(newWeekDates);
+    setSelectedDate(newWeekDates[0]);
   };
 
   const handleNextWeek = () => {
-    setCurrentWeekStart((prev) => addWeeks(prev, 1));
+    const firstDay = new Date(currentWeekDates[0]);
+    firstDay.setDate(firstDay.getDate() + 7);
+    const newWeekDates = getWeekDates(firstDay);
+    setCurrentWeekDates(newWeekDates);
+    setSelectedDate(newWeekDates[0]);
   };
 
-  const handleDayPress = (date: string) => {
+  const handleDaySelect = (date: string) => {
     setSelectedDate(date);
-    setShowEditor(true);
   };
 
-  const handleCloseEditor = () => {
-    setShowEditor(false);
-    setSelectedDate(null);
-  };
-
-  const handleGoToToday = () => {
-    setCurrentWeekStart(new Date());
-  };
-
-  // Calculate week offset and determine display
-  const weekOffset = getWeekOffset(currentWeekStart);
-  const isCurrentWeek = weekOffset === 0;
-
-  // Determine week label
-  const getWeekLabel = () => {
-    if (weekOffset === 0) return "This Week";
-    if (weekOffset === -1) return "Previous Week";
-    if (weekOffset === 1) return "Next Week";
-    // For all other weeks, show dates
-    if (currentWeekDates.length > 0) {
-      return `${formatDate(currentWeekDates[0], "MMM d")} - ${formatDate(currentWeekDates[6], "d")}`;
-    }
-    return "";
-  };
-
-  const weekLabel = getWeekLabel();
-
-  // Show date range below label for current/previous/next week
-  const showDateRange = weekOffset >= -1 && weekOffset <= 1;
-  const dateRangeDisplay =
+  // Format week range for display
+  const weekRangeText =
     currentWeekDates.length > 0
       ? `${formatDate(currentWeekDates[0], "MMM d")} - ${formatDate(currentWeekDates[6], "d")}`
       : "";
@@ -72,115 +62,181 @@ export default function PlanScreen() {
   return (
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-      <ScrollView
-        className="flex-1 px-4 pt-12"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        {/* Header */}
-        <View className="mb-5">
-          <Text className="text-3xl font-bold text-light-text-primary dark:text-dark-text-primary mt-2">
-            Weekly Plan
-          </Text>
-        </View>
 
-        {/* Week Navigation - Fixed height to prevent layout shifts */}
-        <View className="mb-5">
-          {/* Navigation Row - Fixed height keeps arrows centered */}
-          <View
+      {/* Header */}
+      <View className="px-5 pt-12 pb-3">
+        <Text className="text-3xl font-bold text-light-text-primary dark:text-dark-text-primary mb-4">
+          Plan
+        </Text>
+
+        {/* Week Range & Navigation */}
+        <View className="flex-row items-center justify-between mb-4">
+          <Pressable
+            onPress={handlePreviousWeek}
+            className="w-10 h-10 rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated items-center justify-center active:opacity-70"
+            accessibilityRole="button"
+            accessibilityLabel="Previous week"
             style={{
-              height: 60,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 8,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
             }}
           >
-            {/* Previous Week Button */}
-            <Pressable
-              onPress={handlePreviousWeek}
-              className="w-11 h-11 items-center justify-center rounded-full bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium active:opacity-70"
-            >
-              <Ionicons
-                name="chevron-back"
-                size={20}
-                color={systemColorScheme === "dark" ? "#f5f5f5" : "#2b2b2b"}
-              />
-            </Pressable>
+            <Ionicons
+              name="chevron-back"
+              size={18}
+              color={systemColorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
+            />
+          </Pressable>
 
-            {/* Week Label Display - Min width prevents truncation */}
-            <View
-              style={{
-                flex: 1,
-                minWidth: 180,
-                alignItems: "center",
-              }}
-            >
-              <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary">
-                {weekLabel}
-              </Text>
-              {showDateRange && (
-                <Text className="text-xs text-light-text-tertiary dark:text-dark-text-tertiary mt-1">
-                  {dateRangeDisplay}
-                </Text>
-              )}
-            </View>
+          <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary">
+            {weekRangeText}
+          </Text>
 
-            {/* Next Week Button */}
-            <Pressable
-              onPress={handleNextWeek}
-              className="w-11 h-11 items-center justify-center rounded-full bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium active:opacity-70"
-            >
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={systemColorScheme === "dark" ? "#f5f5f5" : "#2b2b2b"}
-              />
-            </Pressable>
-          </View>
-
-          {/* Button Area - Fixed height prevents layout shift */}
-          <View className="items-center justify-center">
-            {!isCurrentWeek && (
-              <Pressable
-                onPress={handleGoToToday}
-                className="px-4 py-2 rounded-full bg-primary-500 dark:bg-dark-primary active:opacity-70"
-              >
-                <Text className="text-sm font-semibold text-white dark:text-dark-bg-primary">
-                  Back to This Week
-                </Text>
-              </Pressable>
-            )}
-          </View>
+          <Pressable
+            onPress={handleNextWeek}
+            className="w-10 h-10 rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated items-center justify-center active:opacity-70"
+            accessibilityRole="button"
+            accessibilityLabel="Next week"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 2,
+              elevation: 1,
+            }}
+          >
+            <Ionicons
+              name="chevron-forward"
+              size={18}
+              color={systemColorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
+            />
+          </Pressable>
         </View>
+      </View>
 
-        {/* Loading State */}
-        {isLoading ? (
-          <View className="items-center justify-center py-12">
-            <ActivityIndicator
-              size="large"
+      {/* Week Navigation Rail */}
+      <View className="mb-4">
+        <WeekNavigationRail
+          currentWeekDates={currentWeekDates}
+          selectedDate={selectedDate}
+          onDaySelect={handleDaySelect}
+          weekPlans={weekPlans}
+        />
+      </View>
+
+      {/* Selected Date Display & Action Row */}
+      <View className="px-5 pb-4">
+        <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-3">
+          {formatDate(selectedDate, "EEEE, MMMM d")}
+          {selectedDate === getTodayString() && " · Today"}
+        </Text>
+
+        <View className="flex-row gap-3">
+          <Pressable
+            onPress={() => router.push(`/routines/new?date=${selectedDate}` as never)}
+            className="flex-1 bg-primary-500 dark:bg-dark-primary rounded-xl py-3.5 px-4 active:opacity-70 flex-row items-center justify-center gap-2"
+            accessibilityRole="button"
+            accessibilityLabel="Create new routine"
+          >
+            <Ionicons name="add-circle-outline" size={18} color="#ffffff" />
+            <Text className="text-sm font-semibold text-white dark:text-dark-bg-primary">
+              Add Routine
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => {
+              // TODO: Navigate to explore routines screen
+              console.log("Explore routines");
+            }}
+            className="flex-1 bg-light-surface dark:bg-dark-surface border border-light-border-medium dark:border-dark-border-medium rounded-xl py-3.5 px-4 active:opacity-70 flex-row items-center justify-center gap-2"
+            accessibilityRole="button"
+            accessibilityLabel="Explore routines"
+          >
+            <Ionicons
+              name="compass-outline"
+              size={18}
               color={systemColorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
             />
-          </View>
-        ) : (
-          /* Weekly Calendar Grid */
-          <View className="gap-3">
-            {currentWeekDates.map((date: string) => (
-              <DayCard
-                key={date}
-                date={date}
-                plan={weekPlans.get(date)}
-                onPress={() => handleDayPress(date)}
-              />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+            <Text className="text-sm font-semibold text-light-text-primary dark:text-dark-text-primary">
+              Explore
+            </Text>
+          </Pressable>
+        </View>
+      </View>
 
-      {/* Plan Editor Modal */}
-      {selectedDate && (
-        <PlanEditor visible={showEditor} onClose={handleCloseEditor} date={selectedDate} />
-      )}
+      {/* Main Content - Routines */}
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
+      >
+        <View>
+          {/* Filter routines for selected date */}
+          {(() => {
+            const filteredRoutines = routines.filter((r) => r.plannedDate === selectedDate);
+
+            return (
+              <>
+                <View className="flex-row items-center justify-between mb-4">
+                  <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary">
+                    Planned for this day
+                  </Text>
+                  <Text className="text-sm text-light-text-tertiary dark:text-dark-text-tertiary">
+                    {filteredRoutines.length}{" "}
+                    {filteredRoutines.length === 1 ? "routine" : "routines"}
+                  </Text>
+                </View>
+
+                {filteredRoutines.length === 0 ? (
+                  <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-light rounded-2xl p-8 items-center">
+                    <Ionicons
+                      name="barbell-outline"
+                      size={48}
+                      color={systemColorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+                      style={{ marginBottom: 16 }}
+                    />
+                    <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary mb-2 text-center">
+                      No routine planned
+                    </Text>
+                    <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary text-center mb-6">
+                      Create a routine for {formatDate(selectedDate, "MMMM d")} to plan your
+                      workout.
+                    </Text>
+                    <Pressable
+                      onPress={() => router.push(`/routines/new?date=${selectedDate}` as never)}
+                      className="bg-primary-500 dark:bg-dark-primary rounded-xl py-3 px-6 active:opacity-70"
+                    >
+                      <Text className="text-base font-semibold text-white dark:text-dark-bg-primary">
+                        Add Routine for This Day
+                      </Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <View className="gap-4">
+                    {filteredRoutines.map((routine) => (
+                      <RoutineCard
+                        key={routine.id}
+                        routine={routine}
+                        onPress={() =>
+                          router.push(`/routines/${routine.id}?date=${selectedDate}` as never)
+                        }
+                        onStartRoutine={() => {
+                          // TODO: Implement routine start flow
+                          console.log("Start routine:", routine.title);
+                        }}
+                      />
+                    ))}
+                  </View>
+                )}
+              </>
+            );
+          })()}
+        </View>
+      </ScrollView>
     </View>
   );
 }

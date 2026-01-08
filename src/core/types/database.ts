@@ -4,7 +4,10 @@ export type Database = {
   exercises: Exercise[];
   sets: Set[];
   plans: Plan[];
+  plannedExercises: PlannedExercise[];
   reflections: Reflection[];
+  routines: Routine[];
+  routineExercises: RoutineExercise[];
 };
 
 export type Session = {
@@ -43,6 +46,17 @@ export type Plan = {
   date: string; // ISO date string
   title: string; // Free-text intent
   notes: string | null; // Optional short note
+  isRest: boolean; // True if this is a rest day
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PlannedExercise = {
+  id: string;
+  planId: string;
+  name: string;
+  note: string | null;
+  order: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -52,6 +66,24 @@ export type Reflection = {
   sessionId: string;
   feeling: string | null; // "How did this feel?"
   notes: string | null; // "Anything to note?"
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Routine = {
+  id: string;
+  title: string;
+  notes: string | null;
+  plannedDate: string | null; // ISO date string
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RoutineExercise = {
+  id: string;
+  routineId: string;
+  name: string;
+  order: number;
   createdAt: string;
   updatedAt: string;
 };

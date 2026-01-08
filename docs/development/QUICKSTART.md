@@ -122,7 +122,7 @@ function PlanScreen() {
   }, []);
 
   const handleSavePlan = async (date: string) => {
-    await savePlan(date, "Upper Body", "Focus on form");
+    await savePlan(date, "Upper Body", "Focus on form", false);
   };
 
   return (

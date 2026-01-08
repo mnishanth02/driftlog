@@ -3,16 +3,19 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
+  Switch,
   Text,
-  TextInput,
   useColorScheme,
   View,
 } from "react-native";
+import { ThemedTextInput } from "@/components/ui";
 import { formatDate } from "@/core/utils/helpers";
 import { usePlanningStore } from "@/features/planning";
+import type { PlannedExercise } from "@/features/planning/types";
 import { BottomSheet } from "../ui/BottomSheet";
-import { Button } from "../ui/Button";
+import { ExerciseList } from "./ExerciseList";
 
 interface PlanEditorProps {
   visible: boolean;
@@ -21,11 +24,23 @@ interface PlanEditorProps {
 }
 
 export function PlanEditor({ visible, onClose, date }: PlanEditorProps) {
-  const { getPlanForDate, savePlan, deletePlan } = usePlanningStore();
+  const {
+    getPlanForDate,
+    savePlan,
+    deletePlan,
+    replacePlannedExercises,
+    activeDate,
+    activeExercises,
+    loadDay,
+  } = usePlanningStore();
   const colorScheme = useColorScheme();
 
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
+  const [isRest, setIsRest] = useState(false);
+  const [exercises, setExercises] = useState<Array<Pick<PlannedExercise, "id" | "name" | "note">>>(
+    [],
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -35,30 +50,64 @@ export function PlanEditor({ visible, onClose, date }: PlanEditorProps) {
   // Theme colors
   const textColor = colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b";
   const secondaryTextColor = colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b";
-  const inputBgColor = colorScheme === "dark" ? "#212121" : "#f9f5f1";
-  const borderColor = colorScheme === "dark" ? "#3a3a3a" : "#d1cbc4";
   const separatorColor = colorScheme === "dark" ? "#3a3a3a" : "#e8e4df";
 
-  // Load existing plan data when editor opens
+  // Load existing plan + exercises when editor opens
   useEffect(() => {
     if (visible) {
+      if (activeDate !== date) {
+        loadDay(date);
+      }
+
       if (existingPlan) {
         setTitle(existingPlan.title);
         setNotes(existingPlan.notes || "");
+        setIsRest(existingPlan.isRest || false);
       } else {
         setTitle("");
         setNotes("");
+        setIsRest(false);
       }
+
+      const sourceExercises = activeDate === date ? activeExercises : [];
+      setExercises(
+        sourceExercises
+          .slice()
+          .sort((a, b) => a.order - b.order)
+          .map((e) => ({ id: e.id, name: e.name, note: e.note })),
+      );
     }
-  }, [visible, existingPlan]);
+  }, [visible, existingPlan, activeDate, activeExercises, date, loadDay]);
 
   const handleSave = async () => {
     const trimmedTitle = title.trim();
-    if (!trimmedTitle) return;
+    if (!isRest && !trimmedTitle) return;
 
     setIsSaving(true);
     try {
-      await savePlan(date, trimmedTitle, notes.trim() || null);
+      const planId = await savePlan(
+        date,
+        isRest ? "Rest" : trimmedTitle,
+        isRest ? null : notes.trim() || null,
+        isRest,
+      );
+
+      // Persist planned exercises (only if not rest)
+      if (!isRest) {
+        await replacePlannedExercises(
+          planId,
+          exercises.map((e, idx) => ({
+            id: e.id,
+            name: e.name.trim(),
+            note: e.note?.trim() ? e.note.trim() : null,
+            order: idx,
+          })),
+        );
+      } else {
+        // Rest day: ensure exercises are cleared
+        await replacePlannedExercises(planId, []);
+      }
+
       handleClose();
     } catch (error) {
       console.error("Failed to save plan:", error);
@@ -85,8 +134,12 @@ export function PlanEditor({ visible, onClose, date }: PlanEditorProps) {
     Keyboard.dismiss();
     setTitle("");
     setNotes("");
+    setIsRest(false);
+    setExercises([]);
     onClose();
   };
+
+  const canEditExercises = !isRest && !!title.trim();
 
   // Format date for display: "Mon, Jan 13"
   const dateDisplay = formatDate(date, "EEE, MMM d");
@@ -96,147 +149,185 @@ export function PlanEditor({ visible, onClose, date }: PlanEditorProps) {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
-        keyboardVerticalOffset={100}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        {/* Enhanced Header with Date */}
+        {/* Header with Cancel and Save Actions */}
         <View
           style={{
             backgroundColor: colorScheme === "dark" ? "#1a1a1a" : "#faf4f0",
             borderBottomWidth: 1,
             borderBottomColor: separatorColor,
             paddingHorizontal: 20,
-            paddingTop: 16,
-            paddingBottom: 16,
+            paddingVertical: 14,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          {/* Subtitle */}
-          <Text
-            style={{
-              color: secondaryTextColor,
-              fontSize: 12,
-              fontWeight: "500",
-              marginBottom: 4,
-              letterSpacing: 0.5,
-              textTransform: "uppercase",
-            }}
-          >
-            Plan for
-          </Text>
+          <Pressable onPress={handleClose} hitSlop={20} className="active:opacity-60">
+            <Text style={{ color: secondaryTextColor, fontSize: 16, fontWeight: "500" }}>
+              Cancel
+            </Text>
+          </Pressable>
 
-          {/* Date Display */}
-          <Text
-            style={{
-              color: textColor,
-              fontSize: 24,
-              fontWeight: "700",
-              letterSpacing: -0.5,
-            }}
+          <View className="items-center">
+            <Text
+              style={{
+                color: secondaryTextColor,
+                fontSize: 10,
+                fontWeight: "500",
+                letterSpacing: 0.5,
+                textTransform: "uppercase",
+              }}
+            >
+              Plan for
+            </Text>
+            <Text style={{ color: textColor, fontSize: 16, fontWeight: "700" }}>{dateDisplay}</Text>
+          </View>
+
+          <Pressable
+            onPress={handleSave}
+            disabled={(!isRest && !title.trim()) || isSaving || isDeleting}
+            hitSlop={20}
+            className="active:opacity-60"
           >
-            {dateDisplay}
-          </Text>
+            <Text
+              style={{
+                color:
+                  (!isRest && !title.trim()) || isSaving || isDeleting
+                    ? secondaryTextColor
+                    : colorScheme === "dark"
+                      ? "#ff9f6c"
+                      : "#f4a261",
+                fontSize: 16,
+                fontWeight: "700",
+              }}
+            >
+              {isSaving ? "..." : isEditing ? "Update" : "Save"}
+            </Text>
+          </Pressable>
         </View>
 
-        {/* Scrollable Form Content */}
+        {/* Scrollable Form Content - Reduced padding */}
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 20 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 32 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="gap-5">
+          <View className="gap-6">
+            {/* Reduced from gap-8 to gap-6 */}
+            {/* Rest Day Toggle Row */}
+            <View
+              key="rest-toggle"
+              className="flex-row items-center justify-between p-4 rounded-2xl border"
+              style={{
+                backgroundColor: colorScheme === "dark" ? "#212121" : "#f9f5f1",
+                borderColor: separatorColor,
+              }}
+            >
+              <View className="flex-1 mr-4">
+                <Text className="text-base font-semibold" style={{ color: textColor }}>
+                  Rest Day
+                </Text>
+                <Text className="text-xs" style={{ color: secondaryTextColor }}>
+                  No sessions or exercises planned
+                </Text>
+              </View>
+              <Switch
+                value={isRest}
+                onValueChange={(val) => {
+                  setIsRest(val);
+                  if (val) {
+                    setTitle("");
+                    setNotes("");
+                    setExercises([]);
+                  }
+                }}
+                trackColor={{
+                  false: "#d1cbc4",
+                  true: colorScheme === "dark" ? "#ff9f6c" : "#f4a261",
+                }}
+                thumbColor={Platform.OS === "ios" ? undefined : isRest ? "#ffffff" : "#f4f3f4"}
+              />
+            </View>
+
             {/* Title Input */}
-            <View>
+            <View className={isRest ? "opacity-30" : ""}>
               <Text className="text-sm font-semibold mb-3" style={{ color: secondaryTextColor }}>
                 What's the intent?
               </Text>
-              <TextInput
+              <ThemedTextInput
                 value={title}
                 onChangeText={setTitle}
-                placeholder="e.g., Upper body strength"
-                placeholderTextColor="#8e8e8e"
-                className="rounded-xl text-base"
-                style={{
-                  backgroundColor: inputBgColor,
-                  color: textColor,
-                  borderWidth: 2,
-                  borderColor: borderColor,
-                  paddingHorizontal: 16,
-                  paddingVertical: 14,
-                  minHeight: 52,
-                }}
-                autoFocus
+                placeholder={isRest ? "Rest" : "e.g., Upper body strength"}
+                autoFocus={!isRest && !isEditing}
                 returnKeyType="next"
                 blurOnSubmit={false}
+                editable={!isRest}
+                maxLength={200}
               />
             </View>
 
             {/* Notes Input */}
-            <View>
+            <View className={isRest ? "opacity-30" : ""}>
               <Text className="text-sm font-semibold mb-3" style={{ color: secondaryTextColor }}>
                 Short note (optional)
               </Text>
-              <TextInput
+              <ThemedTextInput
                 value={notes}
                 onChangeText={setNotes}
-                placeholder="Any specific notes..."
-                placeholderTextColor="#8e8e8e"
+                placeholder="Any specific focus for today..."
                 multiline
-                numberOfLines={4}
-                className="rounded-xl text-base"
-                style={{
-                  backgroundColor: inputBgColor,
-                  color: textColor,
-                  borderWidth: 2,
-                  borderColor: borderColor,
-                  paddingHorizontal: 16,
-                  paddingTop: 14,
-                  paddingBottom: 14,
-                  minHeight: 120,
-                  textAlignVertical: "top",
-                }}
+                numberOfLines={3}
                 returnKeyType="default"
+                editable={!isRest}
+                maxLength={500}
               />
             </View>
+
+            {/* Exercises section - Flat list with inline composer */}
+            <View className={isRest ? "opacity-30" : ""}>
+              <View className="flex-row items-center justify-between mb-3">
+                <Text className="text-sm font-semibold" style={{ color: secondaryTextColor }}>
+                  Exercises{exercises.length > 0 && !isRest ? ` (${exercises.length})` : ""}
+                </Text>
+              </View>
+
+              {!canEditExercises && !isRest ? (
+                <Text
+                  className="text-xs text-center leading-relaxed py-4"
+                  style={{ color: secondaryTextColor }}
+                >
+                  Enter an intent above to start adding exercises
+                </Text>
+              ) : (
+                !isRest && (
+                  <ExerciseList
+                    exercises={exercises}
+                    canEdit={canEditExercises}
+                    onUpdateExercises={setExercises}
+                  />
+                )
+              )}
+            </View>
+
+            {/* Delete Button at the bottom of ScrollView */}
+            {isEditing && (
+              <View className="mt-12 pt-8 border-t" style={{ borderTopColor: separatorColor }}>
+                <Pressable
+                  onPress={handleDelete}
+                  disabled={isSaving || isDeleting}
+                  className="py-4 items-center justify-center active:opacity-60"
+                >
+                  <Text className="text-red-500 font-semibold">
+                    {isDeleting ? "Deleting..." : "Delete Daily Plan"}
+                  </Text>
+                </Pressable>
+              </View>
+            )}
           </View>
         </ScrollView>
-
-        {/* Fixed Actions at Bottom */}
-        <View
-          style={{
-            borderTopWidth: 1,
-            borderTopColor: separatorColor,
-            paddingHorizontal: 20,
-            paddingTop: 16,
-            paddingBottom: 20,
-            gap: 12,
-          }}
-        >
-          {/* Save Button */}
-          <Button
-            title={isSaving ? "Saving..." : isEditing ? "Update Plan" : "Save Plan"}
-            onPress={handleSave}
-            variant="primary"
-            disabled={!title.trim() || isSaving || isDeleting}
-          />
-
-          {/* Delete Button (only if editing) */}
-          {isEditing && (
-            <Button
-              title={isDeleting ? "Deleting..." : "Delete Plan"}
-              onPress={handleDelete}
-              variant="ghost"
-              disabled={isSaving || isDeleting}
-            />
-          )}
-
-          {/* Cancel Button */}
-          <Button
-            title="Cancel"
-            onPress={handleClose}
-            variant="secondary"
-            disabled={isSaving || isDeleting}
-          />
-        </View>
       </KeyboardAvoidingView>
     </BottomSheet>
   );

@@ -1,0 +1,1 @@
+ALTER TABLE `routines` ADD `planned_date` text;

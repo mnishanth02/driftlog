@@ -1,0 +1,1 @@
+ALTER TABLE `plans` ADD `is_rest` integer DEFAULT false NOT NULL;

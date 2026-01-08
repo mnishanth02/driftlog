@@ -4,91 +4,116 @@ import { formatDate } from "@/core/utils/helpers";
 import type { Plan } from "@/features/planning/types";
 
 interface DayCardProps {
-  date: string; // YYYY-MM-DD
+  date: string;
   plan: Plan | undefined;
   onPress: () => void;
+  isFocused?: boolean;
 }
 
-export function DayCard({ date, plan, onPress }: DayCardProps) {
+export function DayCard({ date, plan, onPress, isFocused = false }: DayCardProps) {
   const dateObj = parseISO(date);
   const isTodayDate = isToday(dateObj);
 
-  // Format: "Mon" and "Jan 13"
-  const dayName = formatDate(date, "EEE");
-  const dateDisplay = formatDate(date, "MMM d");
+  // Format: "MON" and "5"
+  const dayName = formatDate(date, "EEE").toUpperCase();
+  const dayNumber = formatDate(date, "d");
+
+  // Accessibility label
+  const accessibilityLabel = `${formatDate(date, "EEEE, MMMM d")}${isTodayDate ? ", today" : ""}${
+    plan ? (plan.isRest ? ", rest day" : ", planned") : ", no plan"
+  }`;
+
+  const emphasizeDate = isTodayDate || isFocused;
 
   return (
     <Pressable
       onPress={onPress}
-      className={`
-        bg-light-surface dark:bg-dark-surface 
-        rounded-xl p-4 
-        border-2 
-        ${
-          isTodayDate
-            ? "border-primary-500 dark:border-dark-primary"
-            : "border-light-border-light dark:border-dark-border-light"
-        }
-        active:opacity-70
-      `}
-      style={{ minHeight: 88, maxHeight: 100 }} // Constrained height prevents layout shifts
+      className="active:opacity-70"
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint="Tap to edit plan for this day"
     >
-      {/* Horizontal Layout: Date on left, Plan on right */}
-      <View className="flex-row gap-3">
-        {/* Left Section: Date - Fixed width */}
-        <View style={{ width: 85 }} className="justify-center">
+      {/* Left accent bar for today */}
+      {isTodayDate && (
+        <View
+          className="bg-primary-500 dark:bg-dark-primary"
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 3,
+          }}
+        />
+      )}
+
+      {/* Horizontal row layout */}
+      <View className="flex-row gap-4 py-4 px-4">
+        {/* Left Section: Date (64px fixed width) */}
+        <View style={{ width: 64 }}>
           <Text
-            className={`text-xs font-bold mb-1 tracking-wide ${
-              isTodayDate
-                ? "text-primary-500 dark:text-dark-primary"
-                : "text-light-text-secondary dark:text-dark-text-secondary"
+            className={`text-xs mb-1 ${
+              emphasizeDate
+                ? "font-bold text-primary-500 dark:text-dark-primary"
+                : "font-semibold text-light-text-secondary dark:text-dark-text-secondary"
             }`}
           >
-            {dayName.toUpperCase()}
+            {dayName}
           </Text>
           <Text
             className={`text-lg ${
-              isTodayDate
-                ? "text-primary-500 dark:text-dark-primary font-bold"
-                : "text-light-text-primary dark:text-dark-text-primary font-semibold"
+              emphasizeDate
+                ? "font-bold text-primary-500 dark:text-dark-primary"
+                : "font-semibold text-light-text-primary dark:text-dark-text-primary"
             }`}
           >
-            {dateDisplay}
+            {dayNumber}
           </Text>
+          {isTodayDate && (
+            <Text className="text-xs font-semibold text-primary-500 dark:text-dark-primary mt-1">
+              TODAY
+            </Text>
+          )}
         </View>
 
-        {/* Right Section: Plan Details - Flexible width */}
+        {/* Right Section: Content */}
         <View className="flex-1 justify-center">
           {plan ? (
-            <View className="gap-1">
-              {/* Title with Dot Indicator */}
-              <View className="flex-row items-start justify-between gap-2">
+            plan.isRest ? (
+              <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
+                Rest
+              </Text>
+            ) : (
+              <View className="bg-light-bg-cream dark:bg-dark-bg-elevated rounded-md p-3">
                 <Text
                   numberOfLines={2}
-                  className="text-sm font-semibold text-light-text-primary dark:text-dark-text-primary flex-1"
+                  className="text-sm font-semibold text-light-text-primary dark:text-dark-text-primary"
                 >
                   {plan.title}
                 </Text>
-                <View className="bg-primary-500 dark:bg-dark-primary rounded-full w-2 h-2 mt-1 shrink-0" />
+                {plan.notes && (
+                  <Text
+                    numberOfLines={3}
+                    className="text-xs text-light-text-tertiary dark:text-dark-text-tertiary leading-relaxed mt-1"
+                  >
+                    {plan.notes}
+                  </Text>
+                )}
               </View>
-
-              {/* Notes - Limited to 3 lines */}
-              {plan.notes && (
-                <Text
-                  numberOfLines={3}
-                  className="text-xs text-light-text-tertiary dark:text-dark-text-tertiary leading-relaxed"
-                >
-                  {plan.notes}
-                </Text>
-              )}
-            </View>
+            )
           ) : (
-            <Text className="text-xs text-light-text-tertiary dark:text-dark-text-tertiary italic">
-              Tap to plan
+            <Text className="text-xs text-light-text-tertiary dark:text-dark-text-tertiary">
+              Add intent
             </Text>
           )}
         </View>
       </View>
+
+      {/* Inset divider */}
+      <View
+        className="h-px bg-light-border-light dark:bg-dark-border-light"
+        style={{ marginLeft: 16, marginRight: 16 }}
+      />
     </Pressable>
   );
 }
