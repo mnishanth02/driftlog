@@ -30,7 +30,7 @@ export function WeekNavigationRail({
   }, [colorScheme]);
 
   const getDayName = (dateString: string): string => {
-    return formatDate(dateString, "EEE");
+    return formatDate(dateString, "EEE").toUpperCase();
   };
 
   const getDayNumber = (dateString: string): string => {
@@ -84,30 +84,34 @@ export function WeekNavigationRail({
         }}
         className="flex-row"
       >
-        <View className="flex-row gap-1.5">
+        <View className="flex-row gap-2">
           {currentWeekDates.map((date) => {
             const isTodayDate = date === todayString;
             const isSelected = date === activeDate;
             const showDot = shouldShowDot(date);
 
             return (
-              <Pressable
-                key={date}
-                onPress={() => onDaySelect(date)}
-                accessibilityRole="button"
-                accessibilityLabel={getAccessibilityLabel(date)}
-                accessibilityHint="Tap to jump to this day"
-                className="items-center"
-              >
-                <View className="relative items-center justify-center w-11 h-11 rounded-full mb-0.5">
-                  {/* Circle */}
+              <View key={date} className="items-center">
+                {/* Day Name Label (at top) */}
+                <Text className="text-xs font-medium uppercase text-light-text-tertiary dark:text-dark-text-tertiary mb-2">
+                  {getDayName(date)}
+                </Text>
+
+                {/* Date Circle */}
+                <Pressable
+                  onPress={() => onDaySelect(date)}
+                  accessibilityRole="button"
+                  accessibilityLabel={getAccessibilityLabel(date)}
+                  accessibilityHint="Tap to jump to this day"
+                  className="relative"
+                >
                   <View
-                    className={`w-11 h-11 rounded-full items-center justify-center ${
+                    className={`min-w-11 min-h-11 w-11 h-11 rounded-full items-center justify-center ${
                       isSelected
                         ? "bg-primary-500 dark:bg-dark-primary"
                         : isTodayDate
-                          ? "border-2 border-primary-500 dark:border-dark-primary"
-                          : "border-2 border-light-border-medium dark:border-dark-border-medium"
+                          ? "bg-light-surface dark:bg-dark-surface border-2 border-primary-500 dark:border-dark-primary"
+                          : "bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium"
                     }`}
                   >
                     <Text
@@ -124,23 +128,11 @@ export function WeekNavigationRail({
                   </View>
 
                   {/* Routine dot indicator */}
-                  {showDot && (
-                    <View
-                      className="w-1.5 h-1.5 rounded-full bg-primary-500 dark:bg-dark-primary"
-                      style={{
-                        position: "absolute",
-                        top: -2,
-                        right: -2,
-                      }}
-                    />
+                  {showDot && !isSelected && (
+                    <View className="absolute -bottom-1.5 left-1/2 -ml-1 w-1.5 h-1.5 rounded-full bg-primary-500 dark:bg-dark-primary" />
                   )}
-                </View>
-
-                {/* Day name label */}
-                <Text className="text-xs uppercase text-light-text-secondary dark:text-dark-text-secondary">
-                  {getDayName(date)}
-                </Text>
-              </Pressable>
+                </Pressable>
+              </View>
             );
           })}
         </View>

@@ -72,6 +72,12 @@ export default function RoutineEditScreen() {
   const handleSave = async () => {
     if (!draftRoutine) return;
 
+    // Validate that title is not empty
+    if (!draftRoutine.title.trim()) {
+      Alert.alert("Title Required", "Please enter a routine name before saving.");
+      return;
+    }
+
     try {
       if (draftRoutine.id) {
         await updateRoutine(
@@ -287,11 +293,11 @@ export default function RoutineEditScreen() {
               onPress={handleSave}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               className="active:opacity-70"
-              disabled={!draftRoutine.title.trim() && draftRoutine.exercises.length === 0}
+              disabled={!draftRoutine.title.trim()}
             >
               <Text
                 className={`text-base font-semibold ${
-                  !draftRoutine.title.trim() && draftRoutine.exercises.length === 0
+                  !draftRoutine.title.trim()
                     ? "text-light-text-tertiary dark:text-dark-text-tertiary"
                     : "text-primary-500 dark:text-dark-primary"
                 }`}
@@ -303,12 +309,12 @@ export default function RoutineEditScreen() {
         </View>
 
         {/* Routine Title Input */}
-        <View className="mx-3 mt-3 mb-3 rounded-full bg-light-surface dark:bg-dark-surface overflow-hidden">
+        <View className="mx-3 my-2  rounded-lg bg-light-surface dark:bg-dark-surface overflow-hidden">
           <TextInput
             value={draftRoutine.title}
             onChangeText={updateDraftTitle}
             placeholder="Routine name (e.g., Upper Body)"
-            className="px-4 py-3 text-xl font-bold text-light-text-primary dark:text-dark-text-primary"
+            className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary"
             placeholderTextColor={systemColorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
           />
         </View>
@@ -352,8 +358,9 @@ export default function RoutineEditScreen() {
         </View>
 
         {/* Footer - Add Exercise Input (Fixed at bottom) */}
-        <View className="bg-light-surface dark:bg-dark-surface border-t border-light-border-light dark:border-dark-border-medium">
-          <View className="flex-row items-center gap-3 px-4 py-3">
+        <View className="bg-light-surface dark:bg-dark-surface border-t border-light-border-light dark:border-dark-border-medium px-4 pt-3 pb-5">
+          {/* Add Exercise Input */}
+          <View className="flex-row items-center gap-3 mb-4">
             <TextInput
               ref={exerciseInputRef}
               value={exerciseInputValue}
@@ -361,29 +368,29 @@ export default function RoutineEditScreen() {
               onSubmitEditing={handleAddExercise}
               placeholder="Add exercise..."
               returnKeyType="done"
-              className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-full px-4 py-3 text-base text-light-text-primary dark:text-dark-text-primary"
+              className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-lg px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
               placeholderTextColor={systemColorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
             />
             <Pressable
               onPress={handleAddExercise}
               disabled={!exerciseInputValue.trim()}
-              className="bg-primary-500 dark:bg-dark-primary rounded-full p-3 items-center justify-center active:opacity-70 disabled:opacity-40"
+              className="w-14 h-14 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-40 shadow-md dark:shadow-dark-md"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons name="add" size={24} color="#ffffff" />
+              <Ionicons name="add" size={28} color="#ffffff" />
             </Pressable>
           </View>
 
           {/* Delete Routine Button (Edit Mode Only) */}
           {draftRoutine.id && (
-            <View className="px-4 pb-3">
-              <Pressable
-                onPress={handleDeleteRoutine}
-                className="bg-light-bg-cream dark:bg-dark-bg-elevated rounded-xl py-4 items-center active:opacity-70 border border-light-border-medium dark:border-dark-border-medium"
-              >
-                <Text className="text-base font-semibold text-red-500">Delete Routine</Text>
-              </Pressable>
-            </View>
+            <Pressable
+              onPress={handleDeleteRoutine}
+              className="w-full rounded-2xl py-4 items-center justify-center active:opacity-80 border-2 border-red-300 dark:border-red-300"
+            >
+              <Text className="text-base font-bold text-red-500 dark:text-red-400">
+                Delete Routine
+              </Text>
+            </Pressable>
           )}
         </View>
       </View>
