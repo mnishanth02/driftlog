@@ -36,11 +36,13 @@ pnpm web        # Web only
 
 ## 📱 Current App Structure
 
+
 ### Navigation (4 Tabs)
 1. **Today** - Active session logging (placeholder ready)
-2. **Plan** - Weekly workout planning (placeholder ready)
+2. **Plan** - Routines management (working)
 3. **History** - Past sessions (placeholder ready)
 4. **Settings** - Theme toggle (working) + future settings
+
 
 ### What Works Now
 - ✅ Tab navigation between screens
@@ -48,10 +50,13 @@ pnpm web        # Web only
 - ✅ NativeWind styling
 - ✅ Database schema defined
 - ✅ State stores configured
+- ✅ Routines CRUD (create, edit, delete)
+- ✅ Week navigation with routine filtering
+
 
 ### What's Next (UI Implementation)
 - [ ] Session logging interface (Today screen)
-- [ ] Weekly planning interface (Plan screen)
+- [ ] Routines assignment and quick start (Plan screen)
 - [ ] History list and detail views (History screen)
 - [ ] Complete settings (units, auto-end, etc.)
 
@@ -109,20 +114,21 @@ function TodayScreen() {
 }
 ```
 
-### Example: Using the Planning Store
+
+### Example: Using the Routines Store
 
 ```typescript
-import { usePlanningStore } from "@/features/planning";
+import { useRoutinesStore } from "@/features/routines";
 
 function PlanScreen() {
-  const { weekPlans, loadWeek, savePlan } = usePlanningStore();
+  const { routines, addRoutine, deleteRoutine } = useRoutinesStore();
 
-  useEffect(() => {
-    loadWeek(); // Load current week
-  }, []);
+  const handleAddRoutine = () => {
+    addRoutine("Push Day");
+  };
 
-  const handleSavePlan = async (date: string) => {
-    await savePlan(date, "Upper Body", "Focus on form", false);
+  const handleDeleteRoutine = (id: string) => {
+    deleteRoutine(id);
   };
 
   return (
@@ -249,11 +255,12 @@ pnpm db:migrate
 5. ⏳ One-tap set logging
 6. ⏳ Session reflection prompt
 
-### Phase 2: Planning
-1. ✅ Planning store (done)
-2. ⏳ Weekly calendar view
-3. ⏳ Day plan editor (title + notes)
-4. ⏳ Plan visibility on Today screen
+
+### Phase 2: Routines
+1. ✅ Routines store (done)
+2. ⏳ Routines CRUD UI
+3. ⏳ Routine assignment to week days
+4. ⏳ Routine quick start from Plan screen
 
 ### Phase 3: History
 1. ✅ History store (done)

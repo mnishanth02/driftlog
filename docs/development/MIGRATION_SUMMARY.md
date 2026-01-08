@@ -1,4 +1,9 @@
+
 # DriftLog Migration Summary
+
+## Architectural Pivot: Planning → Routines
+
+**Note:** The app has shifted from a weekly planning model to a routines-centric architecture. Planning features and components are deprecated; routines and routine assignment now power the Plan screen and related flows. Legacy planning tables remain in the schema for backward compatibility but are unused.
 
 ## ✅ Completed Migration to Production Structure
 
@@ -29,20 +34,22 @@
 - ✅ Set up `drizzle.config.ts` for migrations
 - ✅ Created database initialization in `src/core/db/`
 
+
 #### 4. **State Management**
 - ✅ Installed zustand v5.0.9
 - ✅ Created 4 feature stores:
   - **Session Store**: In-memory session state, persists on end
-  - **Planning Store**: Loads week plans from DB
+  - **Routines Store**: Manage routines and assignments
   - **History Store**: Query-based session history
   - **Settings Store**: AsyncStorage-persisted preferences
+
 
 #### 5. **Modular Architecture**
 - ✅ Created `src/features/` with 4 independent modules:
   ```
   src/features/
   ├── session/    (types, store, index)
-  ├── planning/   (types, store, index)
+  ├── routines/   (types, store, index)
   ├── history/    (types, store, index)
   └── settings/   (types, store, index)
   ```
@@ -170,26 +177,27 @@ driftlog/
 
 ## 🚀 Next Steps
 
+
 ### Immediate (Build v1 Screens)
 1. **Today Screen**: Implement session logging UI
-   - Start session button
-   - Exercise input with one-tap set logging
-   - End session + reflection prompt
+  - Start session button
+  - Exercise input with one-tap set logging
+  - End session + reflection prompt
 
-2. **Plan Screen**: Build weekly planning interface
-   - 7-day week view
-   - Tap day to add/edit plan (title + notes)
-   - Delete plan option
+2. **Plan Screen**: Routines management and assignment
+  - Routines CRUD (create, edit, delete)
+  - Assign routines to week days
+  - Quick start routine from Plan screen
 
 3. **History Screen**: Create session list & detail views
-   - List of past sessions with date + exercises count
-   - Session detail screen (tap to view)
-   - Display reflection notes
+  - List of past sessions with date + exercises count
+  - Session detail screen (tap to view)
+  - Display reflection notes
 
 4. **Settings Screen**: Complete settings UI
-   - Units selector (kg/lb)
-   - Auto-end session toggle + timeout
-   - Theme toggle (already implemented)
+  - Units selector (kg/lb)
+  - Auto-end session toggle + timeout
+  - Theme toggle (already implemented)
 
 ### Database Setup
 ```bash

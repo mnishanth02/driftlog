@@ -2,20 +2,19 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, useColorScheme, View } from "react-native";
 import { formatDate, getTodayString } from "@/core/utils/helpers";
-import type { Plan } from "@/features/planning/types";
 
 interface WeekNavigationRailProps {
   currentWeekDates: string[];
   selectedDate: string | null;
   onDaySelect: (date: string) => void;
-  weekPlans: Map<string, Plan>;
+  routinesMap: Map<string, number>; // Map of date -> routine count
 }
 
 export function WeekNavigationRail({
   currentWeekDates,
   selectedDate,
   onDaySelect,
-  weekPlans,
+  routinesMap,
 }: WeekNavigationRailProps) {
   const todayString = getTodayString();
   const colorScheme = useColorScheme();
@@ -41,7 +40,7 @@ export function WeekNavigationRail({
   const getAccessibilityLabel = (date: string): string => {
     const dayName = formatDate(date, "EEEE, MMMM d");
     const isTodayDate = date === todayString;
-    const plan = weekPlans.get(date);
+    const routineCount = routinesMap.get(date) || 0;
 
     let label = dayName;
 
@@ -49,22 +48,18 @@ export function WeekNavigationRail({
       label += ", today";
     }
 
-    if (plan) {
-      if (plan.isRest) {
-        label += ", rest day";
-      } else {
-        label += ", planned";
-      }
+    if (routineCount > 0) {
+      label += `, ${routineCount} ${routineCount === 1 ? "routine" : "routines"} planned`;
     } else {
-      label += ", no plan";
+      label += ", no routines";
     }
 
     return label;
   };
 
   const shouldShowDot = (date: string): boolean => {
-    const plan = weekPlans.get(date);
-    return plan !== undefined && !plan.isRest;
+    const routineCount = routinesMap.get(date) || 0;
+    return routineCount > 0;
   };
 
   const activeDate = selectedDate ?? todayString;
@@ -128,7 +123,7 @@ export function WeekNavigationRail({
                     </Text>
                   </View>
 
-                  {/* Plan dot indicator */}
+                  {/* Routine dot indicator */}
                   {showDot && (
                     <View
                       className="w-1.5 h-1.5 rounded-full bg-primary-500 dark:bg-dark-primary"

@@ -48,45 +48,22 @@ driftlog/
 │       │   └── store.ts         # Zustand store
 │       ├── planning/            # Weekly planning module
 │       │   ├── index.ts
-│       │   ├── types.ts
-│       │   └── store.ts
-│       ├── history/             # History & reflections module
 │       │   ├── index.ts
 │       │   ├── types.ts
 │       │   └── store.ts
 │       └── settings/            # Settings module
-│           ├── index.ts
-│           ├── types.ts
-│           └── store.ts
 │
 ├── assets/                      # Static assets (images, fonts)
 ├── docs/                        # Documentation
 ├── drizzle/                     # Database migrations (generated)
-│
-├── app.json                     # Expo configuration
-├── babel.config.js              # Babel config (expo-router plugin)
 ├── drizzle.config.ts            # Drizzle ORM config
 ├── metro.config.js              # Metro bundler config (NativeWind)
 ├── tsconfig.json                # TypeScript config (path aliases)
 └── package.json                 # Dependencies & scripts
-```
-
-## Module Architecture
 
 DriftLog follows a **feature-based architecture** with four independent modules:
 
-### 1. Session Module (`src/features/session/`)
-**Purpose**: Manage active workout sessions with one-tap logging.
-
-- **State**: Active session, exercises, sets
-- **Actions**: Start/end session, add exercise, add/update/remove sets
-- **Store**: In-memory state until session ends, then persists to DB
-
 ### 2. Planning Module (`src/features/planning/`)
-**Purpose**: Weekly workout intent (loose planning).
-
-- **State**: Week plans map, current week dates
-- **Actions**: Load week, save/delete plans
 - **Store**: Loads from DB, caches current week in memory
 
 ### 3. History Module (`src/features/history/`)
