@@ -6,7 +6,14 @@ import { useSettingsStore } from "@/features/settings";
 
 export default function SettingsScreen() {
   const { colorScheme } = useTheme();
-  const { units, autoEndSession, setUnits, setAutoEndSession } = useSettingsStore();
+  const { units, autoEndSession, autoEndTimeout, setUnits, setAutoEndSession, setAutoEndTimeout } =
+    useSettingsStore();
+
+  // Timeout presets in minutes
+  const timeoutPresets = [15, 30, 45, 60, 90];
+
+  // Convert weight to selected unit for example display
+  const exampleWeight = units === "kg" ? "100 kg" : "220 lb";
 
   return (
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
@@ -37,7 +44,7 @@ export default function SettingsScreen() {
               Units
             </Text>
             <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-4">
-              Choose your preferred weight unit
+              Choose your preferred weight unit (e.g., {exampleWeight})
             </Text>
 
             <View className="flex-row gap-3">
@@ -48,6 +55,10 @@ export default function SettingsScreen() {
                     ? "bg-primary-500 dark:bg-dark-primary border-primary-500 dark:border-dark-primary"
                     : "bg-light-bg-cream dark:bg-dark-bg-elevated border-light-border-medium dark:border-dark-border-medium"
                 }`}
+                accessibilityRole="button"
+                accessibilityLabel="Kilograms"
+                accessibilityHint="Set weight unit to kilograms"
+                accessibilityState={{ selected: units === "kg" }}
               >
                 <Text
                   className={`text-lg font-semibold ${
@@ -67,6 +78,10 @@ export default function SettingsScreen() {
                     ? "bg-primary-500 dark:bg-dark-primary border-primary-500 dark:border-dark-primary"
                     : "bg-light-bg-cream dark:bg-dark-bg-elevated border-light-border-medium dark:border-dark-border-medium"
                 }`}
+                accessibilityRole="button"
+                accessibilityLabel="Pounds"
+                accessibilityHint="Set weight unit to pounds"
+                accessibilityState={{ selected: units === "lb" }}
               >
                 <Text
                   className={`text-lg font-semibold ${
@@ -83,13 +98,13 @@ export default function SettingsScreen() {
 
           {/* Auto-End Session Section */}
           <View className="bg-light-surface dark:bg-dark-surface rounded-2xl p-5 border border-light-border-light dark:border-dark-border-medium">
-            <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center justify-between mb-3">
               <View className="flex-1 pr-4">
                 <Text className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary mb-1">
                   Auto-End Session
                 </Text>
                 <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
-                  Automatically end session after 60 minutes of inactivity
+                  Automatically end session after {autoEndTimeout} minutes of inactivity
                 </Text>
               </View>
 
@@ -102,8 +117,47 @@ export default function SettingsScreen() {
                 }}
                 thumbColor="#ffffff"
                 ios_backgroundColor={colorScheme === "dark" ? "#3a3a3a" : "#d1cbc4"}
+                accessibilityRole="switch"
+                accessibilityLabel="Auto-end session toggle"
+                accessibilityHint={`Turn ${autoEndSession ? "off" : "on"} automatic session ending`}
               />
             </View>
+
+            {/* Timeout Picker - Only visible when auto-end is enabled */}
+            {autoEndSession && (
+              <View className="pt-4 border-t border-light-border-light dark:border-dark-border-medium">
+                <Text className="text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-3">
+                  Inactivity Timeout
+                </Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {timeoutPresets.map((minutes) => (
+                    <Pressable
+                      key={minutes}
+                      onPress={() => setAutoEndTimeout(minutes)}
+                      className={`px-4 py-2.5 rounded-lg ${
+                        autoEndTimeout === minutes
+                          ? "bg-primary-500 dark:bg-dark-primary"
+                          : "bg-light-bg-cream dark:bg-dark-bg-elevated border border-light-border-medium dark:border-dark-border-medium"
+                      }`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${minutes} minutes`}
+                      accessibilityHint={`Set timeout to ${minutes} minutes`}
+                      accessibilityState={{ selected: autoEndTimeout === minutes }}
+                    >
+                      <Text
+                        className={`text-sm font-semibold ${
+                          autoEndTimeout === minutes
+                            ? "text-white dark:text-dark-bg-primary"
+                            : "text-light-text-primary dark:text-dark-text-primary"
+                        }`}
+                      >
+                        {minutes} min
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            )}
           </View>
 
           {/* Info Footer */}

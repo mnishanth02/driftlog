@@ -23,12 +23,6 @@ export const useSettingsStore = create<SettingsStore>()(
       setAutoEndTimeout: (minutes) => {
         set({ autoEndTimeout: minutes });
       },
-
-      loadSettings: async () => {
-        // Settings are automatically loaded by persist middleware
-        // This is here for explicit loading if needed
-        return Promise.resolve();
-      },
     }),
     {
       name: "driftlog-settings",
