@@ -1,25 +1,34 @@
 import { relations } from "drizzle-orm";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
+// =============================================================================
+// SESSIONS - Active workout sessions
+// =============================================================================
+
 export const sessions = sqliteTable("sessions", {
   id: text("id").primaryKey(),
   date: text("date").notNull(), // ISO date string YYYY-MM-DD
   startTime: text("start_time").notNull(), // ISO datetime
   endTime: text("end_time"),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-  planId: text("plan_id").references(() => plans.id),
+  routineId: text("routine_id").references(() => routines.id), // Reference to routine used for this session
+  targetDuration: integer("target_duration"), // Target duration in minutes (15, 30, 60, 90)
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
 
 export const sessionsRelations = relations(sessions, ({ one, many }) => ({
-  plan: one(plans, {
-    fields: [sessions.planId],
-    references: [plans.id],
+  routine: one(routines, {
+    fields: [sessions.routineId],
+    references: [routines.id],
   }),
   exercises: many(exercises),
   reflection: one(reflections),
 }));
+
+// =============================================================================
+// EXERCISES - Exercises performed in a session
+// =============================================================================
 
 export const exercises = sqliteTable("exercises", {
   id: text("id").primaryKey(),
@@ -28,6 +37,7 @@ export const exercises = sqliteTable("exercises", {
     .references(() => sessions.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   order: integer("order").notNull(),
+  completedAt: text("completed_at"), // ISO datetime when exercise was marked complete
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
@@ -39,6 +49,10 @@ export const exercisesRelations = relations(exercises, ({ one, many }) => ({
   }),
   sets: many(sets),
 }));
+
+// =============================================================================
+// SETS - Individual sets within an exercise
+// =============================================================================
 
 export const sets = sqliteTable("sets", {
   id: text("id").primaryKey(),
@@ -60,39 +74,9 @@ export const setsRelations = relations(sets, ({ one }) => ({
   }),
 }));
 
-export const plans = sqliteTable("plans", {
-  id: text("id").primaryKey(),
-  date: text("date").notNull().unique(), // One plan per day
-  title: text("title").notNull(),
-  notes: text("notes"),
-  isRest: integer("is_rest", { mode: "boolean" }).notNull().default(false),
-  createdAt: text("created_at").notNull(),
-  updatedAt: text("updated_at").notNull(),
-});
-
-export const plannedExercises = sqliteTable("planned_exercises", {
-  id: text("id").primaryKey(),
-  planId: text("plan_id")
-    .notNull()
-    .references(() => plans.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  note: text("note"),
-  order: integer("order").notNull(),
-  createdAt: text("created_at").notNull(),
-  updatedAt: text("updated_at").notNull(),
-});
-
-export const plansRelations = relations(plans, ({ many }) => ({
-  sessions: many(sessions),
-  plannedExercises: many(plannedExercises),
-}));
-
-export const plannedExercisesRelations = relations(plannedExercises, ({ one }) => ({
-  plan: one(plans, {
-    fields: [plannedExercises.planId],
-    references: [plans.id],
-  }),
-}));
+// =============================================================================
+// REFLECTIONS - Post-session reflections
+// =============================================================================
 
 export const reflections = sqliteTable("reflections", {
   id: text("id").primaryKey(),
@@ -112,6 +96,10 @@ export const reflectionsRelations = relations(reflections, ({ one }) => ({
     references: [sessions.id],
   }),
 }));
+
+// =============================================================================
+// ROUTINES - Reusable workout templates
+// =============================================================================
 
 export const routines = sqliteTable("routines", {
   id: text("id").primaryKey(),
@@ -135,6 +123,7 @@ export const routineExercises = sqliteTable("routine_exercises", {
 
 export const routinesRelations = relations(routines, ({ many }) => ({
   exercises: many(routineExercises),
+  sessions: many(sessions),
 }));
 
 export const routineExercisesRelations = relations(routineExercises, ({ one }) => ({

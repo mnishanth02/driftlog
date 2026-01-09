@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import type { SettingsStore } from "./types";
+import type { SessionDuration, SettingsStore } from "./types";
 
 export const useSettingsStore = create<SettingsStore>()(
   persist(
@@ -9,7 +9,8 @@ export const useSettingsStore = create<SettingsStore>()(
       // State with defaults
       units: "kg",
       autoEndSession: false,
-      autoEndTimeout: 60, // 60 minutes default
+      autoEndTimeout: 60, // 60 minutes default for inactivity
+      sessionDuration: 60, // 60 minutes default session duration
 
       // Actions
       setUnits: (units) => {
@@ -22,6 +23,10 @@ export const useSettingsStore = create<SettingsStore>()(
 
       setAutoEndTimeout: (minutes) => {
         set({ autoEndTimeout: minutes });
+      },
+
+      setSessionDuration: (duration: SessionDuration) => {
+        set({ sessionDuration: duration });
       },
     }),
     {

@@ -201,8 +201,7 @@ export default function PlanScreen() {
                           router.push(`/routines/${routine.id}?date=${selectedDate}` as never)
                         }
                         onStartRoutine={() => {
-                          // TODO: Implement routine start flow
-                          console.log("Start routine:", routine.title);
+                          router.push(`/session/${routine.id}` as never);
                         }}
                         onDelete={() => {
                           Alert.alert(

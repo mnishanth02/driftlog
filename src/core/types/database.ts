@@ -3,8 +3,6 @@ export type Database = {
   sessions: Session[];
   exercises: Exercise[];
   sets: Set[];
-  plans: Plan[];
-  plannedExercises: PlannedExercise[];
   reflections: Reflection[];
   routines: Routine[];
   routineExercises: RoutineExercise[];
@@ -16,7 +14,8 @@ export type Session = {
   startTime: string; // ISO datetime string
   endTime: string | null;
   isActive: boolean;
-  planId: string | null; // Reference to plan if exists
+  routineId: string | null; // Reference to routine used for this session
+  targetDuration: number | null; // Target duration in minutes (15, 30, 60, 90)
   createdAt: string;
   updatedAt: string;
 };
@@ -26,6 +25,7 @@ export type Exercise = {
   sessionId: string;
   name: string;
   order: number; // For display ordering
+  completedAt: string | null; // ISO datetime when marked complete
   createdAt: string;
   updatedAt: string;
 };
@@ -37,26 +37,6 @@ export type Set = {
   weight: number | null; // Optional weight
   order: number; // Set number
   timestamp: string; // When this set was logged
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type Plan = {
-  id: string;
-  date: string; // ISO date string
-  title: string; // Free-text intent
-  notes: string | null; // Optional short note
-  isRest: boolean; // True if this is a rest day
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type PlannedExercise = {
-  id: string;
-  planId: string;
-  name: string;
-  note: string | null;
-  order: number;
   createdAt: string;
   updatedAt: string;
 };

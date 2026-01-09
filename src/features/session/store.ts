@@ -1,240 +1,466 @@
 import { eq } from "drizzle-orm";
+import { Alert } from "react-native";
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { db } from "../../core/db";
-import { exercises, sessions, sets } from "../../core/db/schema";
+import { exercises, routineExercises, routines, sessions, sets } from "../../core/db/schema";
 import { generateId, getNowString, getTodayString } from "../../core/utils/helpers";
 import { useSettingsStore } from "../settings";
-import type { ExerciseLog, SessionStore, SetLog } from "./types";
+import { sessionPersistConfig } from "./persistence";
+import type { ExerciseLog, SessionStore } from "./types";
 
-export const useSessionStore = create<SessionStore>((set, get) => ({
-  // State
-  activeSessionId: null,
-  currentExercises: [],
-  isSessionActive: false,
-  lastActivityTimestamp: null,
-  autoEndTimerId: null,
+// Constants
+const AUTO_END_MIN_TO_MS = 60000; // Convert minutes to milliseconds
 
-  // Actions
-  startSession: async () => {
-    const sessionId = generateId();
-    const now = getNowString();
-    const today = getTodayString();
+export const useSessionStore = create<SessionStore>()(
+  persist(
+    (set, get) => ({
+      // State
+      activeSessionId: null,
+      currentRoutineId: null,
+      currentRoutineTitle: null,
+      currentExercises: [],
+      activeExerciseIndex: 0,
+      isSessionActive: false,
+      sessionStartTime: null,
+      timerStartTime: null, // Separate timer that resets when duration changes
+      targetDuration: 60,
+      lastActivityTimestamp: null,
+      autoEndTimerId: null,
+      timerWarningShown: false,
 
-    try {
-      // Insert session into database
-      await db.insert(sessions).values({
-        id: sessionId,
-        date: today,
-        startTime: now,
-        endTime: null,
-        isActive: true,
-        planId: null,
-        createdAt: now,
-        updatedAt: now,
-      });
+      // Actions
 
-      set({
-        activeSessionId: sessionId,
-        isSessionActive: true,
-        currentExercises: [],
-        lastActivityTimestamp: now,
-      });
+      startSession: async () => {
+        // Prevent concurrent sessions
+        if (get().isSessionActive) {
+          Alert.alert(
+            "Session Already Active",
+            "You have a workout in progress. Please end it before starting a new one.",
+            [{ text: "OK" }],
+          );
+          throw new Error("A session is already active. End it first.");
+        }
 
-      // Start auto-end timer if enabled
-      get().resetActivityTimer();
+        const sessionId = generateId();
+        const now = getNowString();
+        const today = getTodayString();
+        const { sessionDuration } = useSettingsStore.getState();
 
-      return sessionId;
-    } catch (error) {
-      console.error("Failed to start session:", error);
-      throw error;
-    }
-  },
-
-  resetActivityTimer: () => {
-    const { autoEndTimerId, isSessionActive } = get();
-    const { autoEndSession, autoEndTimeout } = useSettingsStore.getState();
-
-    // Clear existing timer
-    if (autoEndTimerId) {
-      clearTimeout(autoEndTimerId);
-      set({ autoEndTimerId: null });
-    }
-
-    // Only set new timer if session is active and auto-end is enabled
-    if (isSessionActive && autoEndSession) {
-      const timeoutMs = autoEndTimeout * 60 * 1000; // Convert minutes to milliseconds
-      const timerId = setTimeout(() => {
-        console.log("Auto-ending session due to inactivity");
-        get().endSession();
-      }, timeoutMs);
-
-      set({
-        lastActivityTimestamp: getNowString(),
-        autoEndTimerId: timerId,
-      });
-    }
-  },
-
-  endSession: async () => {
-    const { activeSessionId, currentExercises, autoEndTimerId } = get();
-    if (!activeSessionId) return;
-
-    // Clear auto-end timer
-    if (autoEndTimerId) {
-      clearTimeout(autoEndTimerId);
-    }
-
-    const now = getNowString();
-
-    try {
-      // Save all exercises and sets to database
-      for (const exercise of currentExercises) {
-        // Insert exercise
-        await db.insert(exercises).values({
-          id: exercise.id,
-          sessionId: activeSessionId,
-          name: exercise.name,
-          order: exercise.order,
-          createdAt: now,
-          updatedAt: now,
-        });
-
-        // Insert sets for this exercise
-        for (const set of exercise.sets) {
-          await db.insert(sets).values({
-            id: set.id,
-            exerciseId: exercise.id,
-            reps: set.reps,
-            weight: set.weight,
-            order: set.order,
-            timestamp: set.timestamp,
+        try {
+          await db.insert(sessions).values({
+            id: sessionId,
+            date: today,
+            startTime: now,
+            endTime: null,
+            isActive: true,
+            routineId: null,
+            targetDuration: sessionDuration,
             createdAt: now,
             updatedAt: now,
           });
+
+          set({
+            activeSessionId: sessionId,
+            currentRoutineId: null,
+            currentRoutineTitle: null,
+            isSessionActive: true,
+            currentExercises: [],
+            activeExerciseIndex: 0,
+            sessionStartTime: now,
+            timerStartTime: now, // Initialize timer start time
+            targetDuration: sessionDuration,
+            lastActivityTimestamp: now,
+            timerWarningShown: false,
+          });
+
+          get().resetActivityTimer();
+          return sessionId;
+        } catch (error) {
+          console.error("Failed to start session:", error);
+          throw error;
         }
-      }
+      },
 
-      // Update session as completed
-      await db
-        .update(sessions)
-        .set({
-          endTime: now,
-          isActive: false,
-          updatedAt: now,
-        })
-        .where(eq(sessions.id, activeSessionId));
+      startSessionFromRoutine: async (routineId: string) => {
+        // Prevent concurrent sessions
+        if (get().isSessionActive) {
+          Alert.alert(
+            "Session Already Active",
+            "You have a workout in progress. Please end it before starting a new one.",
+            [{ text: "OK" }],
+          );
+          throw new Error("A session is already active. End it first.");
+        }
 
-      set({
-        activeSessionId: null,
-        isSessionActive: false,
-        currentExercises: [],
-        lastActivityTimestamp: null,
-        autoEndTimerId: null,
-      });
-    } catch (error) {
-      console.error("Failed to end session:", error);
-      throw error;
-    }
-  },
+        const sessionId = generateId();
+        const now = getNowString();
+        const today = getTodayString();
+        const { sessionDuration } = useSettingsStore.getState();
 
-  addExercise: (name: string) => {
-    const { currentExercises } = get();
-    const exerciseId = generateId();
+        try {
+          const routine = await db.query.routines.findFirst({
+            where: eq(routines.id, routineId),
+          });
 
-    const newExercise: ExerciseLog = {
-      id: exerciseId,
-      name,
-      sets: [],
-      order: currentExercises.length,
-    };
+          if (!routine) {
+            throw new Error("Routine not found");
+          }
 
-    set({
-      currentExercises: [...currentExercises, newExercise],
-    });
+          const routineExercisesList = await db.query.routineExercises.findMany({
+            where: eq(routineExercises.routineId, routineId),
+            orderBy: (re, { asc }) => [asc(re.order)],
+          });
 
-    // Reset activity timer on user action
-    get().resetActivityTimer();
-  },
+          await db.insert(sessions).values({
+            id: sessionId,
+            date: today,
+            startTime: now,
+            endTime: null,
+            isActive: true,
+            routineId: routineId,
+            targetDuration: sessionDuration,
+            createdAt: now,
+            updatedAt: now,
+          });
 
-  addSet: (exerciseId: string, reps: number, weight: number | null) => {
-    const { currentExercises } = get();
-    const setId = generateId();
+          const exerciseLogs: ExerciseLog[] = [];
+          for (const routineExercise of routineExercisesList) {
+            const exerciseId = generateId();
 
-    const updatedExercises = currentExercises.map((exercise) => {
-      if (exercise.id === exerciseId) {
-        const newSet: SetLog = {
-          id: setId,
-          reps,
-          weight,
-          order: exercise.sets.length,
-          timestamp: getNowString(),
+            await db.insert(exercises).values({
+              id: exerciseId,
+              sessionId: sessionId,
+              name: routineExercise.name,
+              order: routineExercise.order,
+              completedAt: null,
+              createdAt: now,
+              updatedAt: now,
+            });
+
+            exerciseLogs.push({
+              id: exerciseId,
+              name: routineExercise.name,
+              sets: [],
+              order: routineExercise.order,
+              completedAt: null,
+            });
+          }
+
+          set({
+            activeSessionId: sessionId,
+            currentRoutineId: routineId,
+            currentRoutineTitle: routine.title,
+            isSessionActive: true,
+            currentExercises: exerciseLogs,
+            activeExerciseIndex: 0,
+            sessionStartTime: now,
+            timerStartTime: now, // Initialize timer start time
+            targetDuration: sessionDuration,
+            lastActivityTimestamp: now,
+            timerWarningShown: false,
+          });
+
+          get().resetActivityTimer();
+          return sessionId;
+        } catch (error) {
+          console.error("Failed to start session from routine:", error);
+          throw error;
+        }
+      },
+
+      endSession: async () => {
+        const { activeSessionId, currentExercises, autoEndTimerId } = get();
+        if (!activeSessionId) return;
+
+        if (autoEndTimerId) {
+          clearTimeout(autoEndTimerId);
+        }
+
+        const now = getNowString();
+
+        try {
+          // Save any sets that might exist
+          for (const exercise of currentExercises) {
+            for (const setData of exercise.sets) {
+              await db.insert(sets).values({
+                id: setData.id,
+                exerciseId: exercise.id,
+                reps: setData.reps,
+                weight: setData.weight,
+                order: setData.order,
+                timestamp: setData.timestamp,
+                createdAt: now,
+                updatedAt: now,
+              });
+            }
+          }
+
+          // Update session as completed
+          await db
+            .update(sessions)
+            .set({
+              endTime: now,
+              isActive: false,
+              updatedAt: now,
+            })
+            .where(eq(sessions.id, activeSessionId));
+
+          set({
+            activeSessionId: null,
+            currentRoutineId: null,
+            currentRoutineTitle: null,
+            isSessionActive: false,
+            currentExercises: [],
+            activeExerciseIndex: 0,
+            sessionStartTime: null,
+            timerStartTime: null,
+            lastActivityTimestamp: null,
+            autoEndTimerId: null,
+            timerWarningShown: false,
+          });
+        } catch (error) {
+          console.error("Failed to end session:", error);
+          throw error;
+        }
+      },
+
+      clearSession: () => {
+        const { autoEndTimerId } = get();
+
+        if (autoEndTimerId) {
+          clearTimeout(autoEndTimerId);
+        }
+
+        set({
+          activeSessionId: null,
+          currentRoutineId: null,
+          currentRoutineTitle: null,
+          isSessionActive: false,
+          currentExercises: [],
+          activeExerciseIndex: 0,
+          sessionStartTime: null,
+          timerStartTime: null,
+          lastActivityTimestamp: null,
+          autoEndTimerId: null,
+          timerWarningShown: false,
+        });
+      },
+
+      addExercise: (name: string) => {
+        const { currentExercises, activeSessionId, isSessionActive } = get();
+
+        // Validate input with user-friendly messages
+        const trimmedName = name.trim();
+        if (!trimmedName) {
+          Alert.alert("Invalid Exercise Name", "Please enter an exercise name.");
+          throw new Error("Exercise name cannot be empty");
+        }
+        if (trimmedName.length > 100) {
+          Alert.alert("Name Too Long", "Exercise name must be less than 100 characters.");
+          throw new Error("Exercise name too long (max 100 characters)");
+        }
+        if (!isSessionActive) {
+          Alert.alert("No Active Session", "Please start a session first.");
+          throw new Error("No active session");
+        }
+
+        const exerciseId = generateId();
+        const now = getNowString();
+
+        const newExercise: ExerciseLog = {
+          id: exerciseId,
+          name: trimmedName,
+          sets: [],
+          order: currentExercises.length,
+          completedAt: null,
         };
-        return {
-          ...exercise,
-          sets: [...exercise.sets, newSet],
-        };
-      }
-      return exercise;
-    });
 
-    set({ currentExercises: updatedExercises });
+        if (activeSessionId) {
+          db.insert(exercises)
+            .values({
+              id: exerciseId,
+              sessionId: activeSessionId,
+              name,
+              order: currentExercises.length,
+              completedAt: null,
+              createdAt: now,
+              updatedAt: now,
+            })
+            .catch((error) => console.error("Failed to save exercise:", error));
+        }
 
-    // Reset activity timer on user action
-    get().resetActivityTimer();
-  },
+        set({
+          currentExercises: [...currentExercises, newExercise],
+        });
 
-  updateSet: (exerciseId: string, setId: string, reps: number, weight: number | null) => {
-    const { currentExercises } = get();
+        get().resetActivityTimer();
+      },
 
-    const updatedExercises = currentExercises.map((exercise) => {
-      if (exercise.id === exerciseId) {
-        return {
-          ...exercise,
-          sets: exercise.sets.map((set) => (set.id === setId ? { ...set, reps, weight } : set)),
-        };
-      }
-      return exercise;
-    });
+      toggleExerciseComplete: async (exerciseId: string) => {
+        const { currentExercises, activeExerciseIndex } = get();
+        const now = getNowString();
 
-    set({ currentExercises: updatedExercises });
+        const exerciseIndex = currentExercises.findIndex((e) => e.id === exerciseId);
+        if (exerciseIndex === -1) return;
 
-    // Reset activity timer on user action
-    get().resetActivityTimer();
-  },
+        const exercise = currentExercises[exerciseIndex];
+        const newCompletedAt = exercise.completedAt ? null : now;
 
-  removeSet: (exerciseId: string, setId: string) => {
-    const { currentExercises } = get();
+        try {
+          // Update DB first
+          await db
+            .update(exercises)
+            .set({
+              completedAt: newCompletedAt,
+              updatedAt: now,
+            })
+            .where(eq(exercises.id, exerciseId));
 
-    const updatedExercises = currentExercises.map((exercise) => {
-      if (exercise.id === exerciseId) {
-        return {
-          ...exercise,
-          sets: exercise.sets.filter((set) => set.id !== setId),
-        };
-      }
-      return exercise;
-    });
+          // Only update UI after DB confirms
+          const updatedExercises = currentExercises.map((e) =>
+            e.id === exerciseId ? { ...e, completedAt: newCompletedAt } : e,
+          );
 
-    set({ currentExercises: updatedExercises });
+          let newActiveIndex = activeExerciseIndex;
+          if (newCompletedAt) {
+            const nextIncomplete = updatedExercises.findIndex(
+              (e, idx) => idx > exerciseIndex && !e.completedAt,
+            );
+            if (nextIncomplete !== -1) {
+              newActiveIndex = nextIncomplete;
+            }
+          } else {
+            // If unchecking, make this the active exercise
+            newActiveIndex = exerciseIndex;
+          }
 
-    // Reset activity timer on user action
-    get().resetActivityTimer();
-  },
+          set({
+            currentExercises: updatedExercises,
+            activeExerciseIndex: newActiveIndex,
+          });
 
-  clearSession: () => {
-    const { autoEndTimerId } = get();
+          get().resetActivityTimer();
+        } catch (error) {
+          console.error("Failed to update exercise completion:", error);
+          Alert.alert("Error", "Failed to update exercise. Please try again.");
+        }
+      },
 
-    // Clear timer when clearing session
-    if (autoEndTimerId) {
-      clearTimeout(autoEndTimerId);
-    }
+      reorderExercises: async (newExercises: ExerciseLog[]) => {
+        const { currentExercises, activeExerciseIndex } = get();
 
-    set({
-      activeSessionId: null,
-      isSessionActive: false,
-      currentExercises: [],
-      lastActivityTimestamp: null,
-      autoEndTimerId: null,
-    });
-  },
-}));
+        // Track the currently active exercise to maintain focus after reorder
+        const activeExerciseId = currentExercises[activeExerciseIndex]?.id;
+
+        const reorderedExercises = newExercises.map((e, index) => ({
+          ...e,
+          order: index,
+        }));
+
+        const now = getNowString();
+
+        try {
+          // Update all exercises in DB first (atomically)
+          const updatePromises = reorderedExercises.map((exercise) =>
+            db
+              .update(exercises)
+              .set({ order: exercise.order, updatedAt: now })
+              .where(eq(exercises.id, exercise.id)),
+          );
+
+          await Promise.all(updatePromises);
+
+          // Find new index of the active exercise after reordering
+          const newActiveIndex = activeExerciseId
+            ? reorderedExercises.findIndex((e) => e.id === activeExerciseId)
+            : 0;
+
+          // Only update UI after all DB operations succeed
+          set({
+            currentExercises: reorderedExercises,
+            activeExerciseIndex: newActiveIndex >= 0 ? newActiveIndex : 0,
+          });
+          get().resetActivityTimer();
+        } catch (error) {
+          console.error("Failed to update exercise order:", error);
+          Alert.alert("Error", "Failed to reorder exercises. Please try again.");
+        }
+      },
+
+      setActiveExerciseIndex: (index: number) => {
+        set({ activeExerciseIndex: index });
+      },
+
+      // Note: Set management functions (addSet, updateSet, removeSet) not implemented yet.
+      // Sets are currently only created during session restoration.
+      // These will be added when set logging UI is implemented.
+
+      setTargetDuration: (duration) => {
+        // Always reset timer when duration changes (per requirements)
+        const { activeSessionId } = get();
+        const now = getNowString();
+
+        set({
+          targetDuration: duration,
+          timerStartTime: now, // Reset timer
+          timerWarningShown: false,
+        });
+
+        if (activeSessionId) {
+          db.update(sessions)
+            .set({ targetDuration: duration, updatedAt: now })
+            .where(eq(sessions.id, activeSessionId))
+            .catch((error) => console.error("Failed to update session duration:", error));
+        }
+      },
+
+      resetTimerWithDuration: (duration) => {
+        const { activeSessionId } = get();
+        const now = getNowString();
+
+        // Reset the timer start time AND set new duration
+        set({
+          targetDuration: duration,
+          timerStartTime: now, // This is the key - reset timer to now
+          timerWarningShown: false,
+        });
+
+        if (activeSessionId) {
+          db.update(sessions)
+            .set({ targetDuration: duration, updatedAt: now })
+            .where(eq(sessions.id, activeSessionId))
+            .catch((error) => console.error("Failed to update session duration:", error));
+        }
+      },
+
+      resetActivityTimer: () => {
+        const { autoEndTimerId, isSessionActive } = get();
+        const { autoEndSession, autoEndTimeout } = useSettingsStore.getState();
+
+        if (autoEndTimerId) {
+          clearTimeout(autoEndTimerId);
+          set({ autoEndTimerId: null });
+        }
+
+        if (isSessionActive && autoEndSession) {
+          const timeoutMs = autoEndTimeout * AUTO_END_MIN_TO_MS;
+          const timerId = setTimeout(() => {
+            console.log("Auto-ending session due to inactivity");
+            get().endSession();
+          }, timeoutMs);
+
+          set({
+            lastActivityTimestamp: getNowString(),
+            autoEndTimerId: timerId,
+          });
+        }
+      },
+
+      setTimerWarningShown: (shown: boolean) => {
+        set({ timerWarningShown: shown });
+      },
+    }),
+    sessionPersistConfig,
+  ),
+);

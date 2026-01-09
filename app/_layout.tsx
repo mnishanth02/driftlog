@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/core/contexts/ThemeContext";
 import { initDatabase } from "@/core/db";
 
@@ -24,7 +25,14 @@ export default function RootLayout() {
   // Initialize database
   useEffect(() => {
     initDatabase()
-      .then(() => setDbInitialized(true))
+      .then((success) => {
+        if (success) {
+          setDbInitialized(true);
+        } else {
+          console.error("Database initialization failed");
+          throw new Error("Database initialization failed");
+        }
+      })
       .catch((err) => {
         console.error("Failed to initialize database:", err);
         throw err;
@@ -42,15 +50,17 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: "fade",
-          }}
-        />
-      </ThemeProvider>
-    </GestureHandlerRootView>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ThemeProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: "fade",
+            }}
+          />
+        </ThemeProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }

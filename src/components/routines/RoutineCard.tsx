@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { memo } from "react";
 import { Pressable, Text, useColorScheme, View } from "react-native";
 import { Button } from "@/components/ui";
 import type { RoutineWithExercises } from "@/features/routines";
@@ -10,7 +11,7 @@ interface RoutineCardProps {
   onDelete?: () => void;
 }
 
-export function RoutineCard({ routine, onPress, onStartRoutine, onDelete }: RoutineCardProps) {
+function RoutineCardComponent({ routine, onPress, onStartRoutine, onDelete }: RoutineCardProps) {
   const { title, exercises } = routine;
   const colorScheme = useColorScheme();
 
@@ -83,3 +84,5 @@ export function RoutineCard({ routine, onPress, onStartRoutine, onDelete }: Rout
     </View>
   );
 }
+
+export const RoutineCard = memo(RoutineCardComponent);

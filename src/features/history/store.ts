@@ -22,7 +22,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         with: {
           exercises: true,
           reflection: true,
-          plan: true,
+          routine: true,
         },
       });
 
@@ -31,7 +31,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         date: session.date,
         startTime: session.startTime,
         endTime: session.endTime,
-        planTitle: session.plan?.title ?? null,
+        planTitle: session.routine?.title ?? null,
         exerciseCount: session.exercises?.length ?? 0,
         hasReflection: !!session.reflection,
       }));
@@ -59,7 +59,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
             orderBy: [asc(exercises.order)],
           },
           reflection: true,
-          plan: true,
+          routine: true,
         },
       });
 
@@ -73,7 +73,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         date: session.date,
         startTime: session.startTime,
         endTime: session.endTime,
-        planTitle: session.plan?.title ?? null,
+        planTitle: session.routine?.title ?? null,
         exercises:
           session.exercises?.map((exercise) => ({
             id: exercise.id,

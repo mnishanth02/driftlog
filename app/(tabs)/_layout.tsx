@@ -12,14 +12,14 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: isDark ? "#1a1a1a" : "#ffffff",
-          borderTopColor: isDark ? "#2a2a2a" : "#e5e5e5",
+          backgroundColor: isDark ? "#1a1a1a" : "#faf4f0",
+          borderTopColor: isDark ? "#3a3a3a" : "#e8e4df",
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: isDark ? "#ffffff" : "#000000",
-        tabBarInactiveTintColor: isDark ? "#666666" : "#999999",
+        tabBarActiveTintColor: isDark ? "#ff9f6c" : "#f4a261",
+        tabBarInactiveTintColor: isDark ? "#8e8e8e" : "#b5b5b5",
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "600",

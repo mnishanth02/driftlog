@@ -60,3 +60,12 @@ export function getWeekOffset(date: Date): number {
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
   return Math.round(diffDays / 7);
 }
+
+/**
+ * Format time in seconds to MM:SS format
+ */
+export function formatTime(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}

@@ -1,64 +1,143 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, Text, View } from "react-native";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { MetricCard } from "@/components/ui/MetricCard";
+import { useEffect } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { RoutineCard } from "@/components/routines";
 import { useTheme } from "@/core/contexts/ThemeContext";
+import { getTodayString } from "@/core/utils/helpers";
+import { useRoutineStore } from "@/features/routines";
 
 export default function TodayScreen() {
+  const router = useRouter();
   const { colorScheme } = useTheme();
+  const { routines, loadRoutines } = useRoutineStore();
+
+  // Load routines on mount
+  useEffect(() => {
+    loadRoutines();
+  }, [loadRoutines]);
+
+  // Filter routines for today
+  const todayRoutines = routines.filter((r) => r.plannedDate === getTodayString());
+
+  // Handle starting a freestyle session (no routine)
+  const handleStartFreestyle = () => {
+    router.push("/session/freestyle" as never);
+  };
+
+  // Handle starting a routine
+  const handleStartRoutine = (routineId: string) => {
+    router.push(`/session/${routineId}` as never);
+  };
 
   return (
-    <View className="flex-1 bg-white dark:bg-black">
+    <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-      <ScrollView className="flex-1 px-4 pt-12">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
-        <View className="mb-6">
-          <Text className="text-sm text-gray-600 dark:text-gray-400">
+        <View className="pt-12 pb-6">
+          <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
               month: "long",
               day: "numeric",
             })}
           </Text>
-          <Text className="text-3xl font-bold text-black dark:text-white mt-1">Today's Drift</Text>
-        </View>
-
-        {/* Quick Stats */}
-        <View className="flex-row gap-3 mb-6">
-          <View className="flex-1">
-            <MetricCard label="Duration" value="0" unit="min" icon="⏱️" />
-          </View>
-          <View className="flex-1">
-            <MetricCard label="Distance" value="0" unit="km" icon="📍" />
-          </View>
-        </View>
-
-        {/* Today's Session Card */}
-        <Card title="Start Your Session">
-          <View className="py-4">
-            <Text className="text-base text-gray-600 dark:text-gray-400 mb-6 text-center">
-              Log your training, track your drift
-            </Text>
-
-            <Button
-              title="Start Session"
-              onPress={() => console.log("Start session")}
-              variant="primary"
-            />
-          </View>
-        </Card>
-
-        {/* Recent Note */}
-        <View className="mt-6 bg-gray-100 dark:bg-gray-900 rounded-2xl p-6">
-          <Text className="text-sm font-semibold text-black dark:text-white mb-2">Quick Note</Text>
-          <Text className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-            How did you feel today?
+          <Text className="text-3xl font-bold text-light-text-primary dark:text-dark-text-primary mt-1">
+            Today
           </Text>
         </View>
 
-        {/* Spacer for bottom tab bar */}
-        <View className="h-6" />
+        {/* Today's Routines */}
+        {todayRoutines.length > 0 && (
+          <View className="mb-6">
+            <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary mb-4">
+              Planned for Today
+            </Text>
+            <View className="gap-4">
+              {todayRoutines.map((routine) => (
+                <RoutineCard
+                  key={routine.id}
+                  routine={routine}
+                  onPress={() => router.push(`/routines/${routine.id}` as never)}
+                  onStartRoutine={() => handleStartRoutine(routine.id)}
+                />
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Quick Start Section */}
+        <View className="mb-6">
+          <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary mb-4">
+            {todayRoutines.length > 0 ? "Or start freestyle" : "Start a Workout"}
+          </Text>
+
+          <Pressable
+            onPress={handleStartFreestyle}
+            className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-6 flex-row items-center justify-between active:opacity-80"
+          >
+            <View className="flex-row items-center gap-4">
+              <View className="w-12 h-12 rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated items-center justify-center">
+                <Ionicons
+                  name="flash-outline"
+                  size={24}
+                  color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                />
+              </View>
+              <View>
+                <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary">
+                  Freestyle Session
+                </Text>
+                <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
+                  Build as you go
+                </Text>
+              </View>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={24}
+              color={colorScheme === "dark" ? "#6b6b6b" : "#8e8e8e"}
+            />
+          </Pressable>
+        </View>
+
+        {/* Empty State when no routines planned */}
+        {todayRoutines.length === 0 && (
+          <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-8 items-center">
+            <View className="w-16 h-16 rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated items-center justify-center mb-4">
+              <Ionicons
+                name="calendar-outline"
+                size={32}
+                color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+              />
+            </View>
+            <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary mb-2 text-center">
+              No routine planned
+            </Text>
+            <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary text-center mb-4">
+              Plan a routine or start a freestyle session
+            </Text>
+            <Pressable
+              onPress={() => router.push("/(tabs)/plan" as never)}
+              className="flex-row items-center gap-2 py-2 px-4 active:opacity-70"
+            >
+              <Text className="text-base font-semibold text-primary-500 dark:text-dark-primary">
+                Go to Plan
+              </Text>
+              <Ionicons
+                name="arrow-forward"
+                size={18}
+                color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+              />
+            </Pressable>
+          </View>
+        )}
       </ScrollView>
     </View>
   );

@@ -9,7 +9,32 @@ const expoDb = openDatabaseSync("driftlog.db", { enableChangeListener: true });
 export const db = drizzle(expoDb, { schema });
 
 // Initialize database (run migrations if needed)
-export async function initDatabase() {
+export async function initDatabase(): Promise<boolean> {
+  let retryCount = 0;
+  const maxRetries = 3;
+
+  while (retryCount < maxRetries) {
+    try {
+      await runMigrations();
+      return true;
+    } catch (error) {
+      retryCount++;
+      console.error(`Database initialization failed (attempt ${retryCount}/${maxRetries}):`, error);
+
+      if (retryCount >= maxRetries) {
+        console.error("❌ Database initialization failed after max retries");
+        return false;
+      }
+
+      // Wait before retry (exponential backoff)
+      await new Promise((resolve) => setTimeout(resolve, 100 * 2 ** retryCount));
+    }
+  }
+
+  return false;
+}
+
+async function runMigrations() {
   try {
     const ensurePlansTable = () => {
       try {
@@ -34,7 +59,8 @@ export async function initDatabase() {
           console.log("✓ Created plans table");
         }
       } catch (error) {
-        console.warn("Database migration for plans table failed:", error);
+        console.error("❌ Database migration for plans table failed:", error);
+        throw error; // Re-throw to trigger retry
       }
     };
 
@@ -134,18 +160,48 @@ export async function initDatabase() {
       }
     };
 
-    const ensureSessionsPlanId = () => {
+    const ensureSessionsRoutineId = () => {
       try {
         const columns = expoDb.getAllSync<{ name: string }>("PRAGMA table_info(sessions)");
-        const hasPlanId = columns.some((c) => c.name === "plan_id");
+        const hasRoutineId = columns.some((c) => c.name === "routine_id");
 
-        if (!hasPlanId) {
-          console.log("Migrating database: adding sessions.plan_id...");
-          expoDb.execSync("ALTER TABLE sessions ADD COLUMN plan_id text;");
-          console.log("✓ Added sessions.plan_id");
+        if (!hasRoutineId) {
+          console.log("Migrating database: adding sessions.routine_id...");
+          expoDb.execSync("ALTER TABLE sessions ADD COLUMN routine_id text;");
+          console.log("✓ Added sessions.routine_id");
         }
       } catch (error) {
-        console.warn("Database migration for sessions.plan_id failed (non-fatal):", error);
+        console.warn("Database migration for sessions.routine_id failed (non-fatal):", error);
+      }
+    };
+
+    const ensureSessionsTargetDuration = () => {
+      try {
+        const columns = expoDb.getAllSync<{ name: string }>("PRAGMA table_info(sessions)");
+        const hasTargetDuration = columns.some((c) => c.name === "target_duration");
+
+        if (!hasTargetDuration) {
+          console.log("Migrating database: adding sessions.target_duration...");
+          expoDb.execSync("ALTER TABLE sessions ADD COLUMN target_duration integer;");
+          console.log("✓ Added sessions.target_duration");
+        }
+      } catch (error) {
+        console.warn("Database migration for sessions.target_duration failed (non-fatal):", error);
+      }
+    };
+
+    const ensureExercisesCompletedAt = () => {
+      try {
+        const columns = expoDb.getAllSync<{ name: string }>("PRAGMA table_info(exercises)");
+        const hasCompletedAt = columns.some((c) => c.name === "completed_at");
+
+        if (!hasCompletedAt) {
+          console.log("Migrating database: adding exercises.completed_at...");
+          expoDb.execSync("ALTER TABLE exercises ADD COLUMN completed_at text;");
+          console.log("✓ Added exercises.completed_at");
+        }
+      } catch (error) {
+        console.warn("Database migration for exercises.completed_at failed (non-fatal):", error);
       }
     };
 
@@ -266,7 +322,9 @@ export async function initDatabase() {
       ensurePlannedExercisesTable();
       ensureRoutinesTables();
       ensureRoutinesPlannedDate();
-      ensureSessionsPlanId();
+      ensureSessionsRoutineId();
+      ensureSessionsTargetDuration();
+      ensureExercisesCompletedAt();
       ensureReflectionsTable();
     } else {
       console.log("✓ Database already initialized");
@@ -276,13 +334,51 @@ export async function initDatabase() {
       ensurePlannedExercisesTable();
       ensureRoutinesTables();
       ensureRoutinesPlannedDate();
-      ensureSessionsPlanId();
+      ensureSessionsRoutineId();
+      ensureSessionsTargetDuration();
+      ensureExercisesCompletedAt();
       ensureReflectionsTable();
-    }
 
-    return true;
+      // Add performance indexes
+      console.log("Creating performance indexes...");
+      createPerformanceIndexes();
+    }
   } catch (error) {
-    console.error("Database initialization failed:", error);
-    return false;
+    console.error("❌ Migration failed:", error);
+    throw error; // Re-throw to trigger retry in initDatabase
+  }
+}
+
+function createPerformanceIndexes() {
+  try {
+    // Index for finding active sessions quickly
+    expoDb.execSync(
+      "CREATE INDEX IF NOT EXISTS idx_sessions_is_active ON sessions(is_active) WHERE is_active = 1;",
+    );
+
+    // Index for session date lookups
+    expoDb.execSync("CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions(date);");
+
+    // Index for exercises by session
+    expoDb.execSync(
+      "CREATE INDEX IF NOT EXISTS idx_exercises_session_id ON exercises(session_id);",
+    );
+
+    // Index for sets by exercise
+    expoDb.execSync("CREATE INDEX IF NOT EXISTS idx_sets_exercise_id ON sets(exercise_id);");
+
+    // Index for routines by planned date
+    expoDb.execSync(
+      "CREATE INDEX IF NOT EXISTS idx_routines_planned_date ON routines(planned_date) WHERE planned_date IS NOT NULL;",
+    );
+
+    // Index for routine exercises by routine
+    expoDb.execSync(
+      "CREATE INDEX IF NOT EXISTS idx_routine_exercises_routine_id ON routine_exercises(routine_id);",
+    );
+
+    console.log("✓ Performance indexes created");
+  } catch (error) {
+    console.warn("⚠️ Failed to create some indexes (non-fatal):", error);
   }
 }

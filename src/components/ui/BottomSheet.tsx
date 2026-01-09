@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Dimensions, Modal, Pressable, StyleSheet, useColorScheme, View } from "react-native";
+import { Dimensions, Modal, Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -17,7 +17,13 @@ interface BottomSheetProps {
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-export function BottomSheet({ visible, onClose, children, height = "60%" }: BottomSheetProps) {
+export function BottomSheet({
+  visible,
+  onClose,
+  title,
+  children,
+  height = "60%",
+}: BottomSheetProps) {
   const translateY = useSharedValue(SCREEN_HEIGHT);
   const backdropOpacity = useSharedValue(0);
   const colorScheme = useColorScheme();
@@ -75,7 +81,7 @@ export function BottomSheet({ visible, onClose, children, height = "60%" }: Bott
             {
               backgroundColor,
             },
-            typeof height === "number" ? { height } : undefined,
+            height ? { height: typeof height === "number" ? height : undefined } : undefined,
           ]}
         >
           {/* Handle Bar */}
@@ -86,8 +92,17 @@ export function BottomSheet({ visible, onClose, children, height = "60%" }: Bott
             />
           </View>
 
+          {/* Title */}
+          {title && (
+            <View className="px-5 pb-4">
+              <Text className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary text-center">
+                {title}
+              </Text>
+            </View>
+          )}
+
           {/* Content */}
-          <View className="flex-1">{children}</View>
+          <View className="flex-1 px-5">{children}</View>
         </Animated.View>
       </View>
     </Modal>
