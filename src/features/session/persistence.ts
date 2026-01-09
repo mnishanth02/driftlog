@@ -8,6 +8,19 @@ import type { SessionStore } from "./types";
 const SESSION_STORAGE_KEY = "@driftlog_active_session";
 
 /**
+ * Utility function to clear session storage
+ * Use this BEFORE navigating to a new session to prevent race conditions
+ */
+export async function clearSessionStorage(): Promise<void> {
+  try {
+    const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+    await AsyncStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch (error) {
+    console.error("Failed to clear session storage:", error);
+  }
+}
+
+/**
  * Configuration for Zustand persist middleware
  *
  * Defines which state should be persisted and which should be omitted.
@@ -37,6 +50,7 @@ export const sessionPersistConfig = {
    * NOT persisted (reset on restart):
    * - autoEndTimerId: Will be recreated on restore
    * - timerWarningShown: Reset warning state on restart
+   * - hasHydrated: Internal tracking flag
    */
   partialize: (state: SessionStore) => ({
     activeSessionId: state.activeSessionId,
@@ -53,4 +67,13 @@ export const sessionPersistConfig = {
     pausedAt: state.pausedAt,
     accumulatedPausedTime: state.accumulatedPausedTime,
   }),
+  /**
+   * Track when rehydration completes to prevent race conditions
+   * Sets hasHydrated flag after AsyncStorage data is loaded
+   */
+  onRehydrateStorage: () => (state: SessionStore | undefined) => {
+    if (state) {
+      state.hasHydrated = true;
+    }
+  },
 };

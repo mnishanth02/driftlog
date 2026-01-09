@@ -6,7 +6,7 @@ import { db } from "../../core/db";
 import { exercises, routineExercises, routines, sessions, sets } from "../../core/db/schema";
 import { generateId, getNowString, getTodayString } from "../../core/utils/helpers";
 import { useSettingsStore } from "../settings";
-import { sessionPersistConfig } from "./persistence";
+import { clearSessionStorage, sessionPersistConfig } from "./persistence";
 import type { ExerciseLog, SessionStore } from "./types";
 
 // Constants
@@ -28,6 +28,7 @@ export const useSessionStore = create<SessionStore>()(
       lastActivityTimestamp: null,
       autoEndTimerId: null,
       timerWarningShown: false,
+      hasHydrated: false, // Will be set to true after rehydration completes
 
       // Timer pause/play state
       isTimerPaused: true, // Start paused by default
@@ -37,17 +38,24 @@ export const useSessionStore = create<SessionStore>()(
       // Actions
 
       startSession: async () => {
-        // CRITICAL FIX: Clear any stale persisted data BEFORE checking isSessionActive
-        // This prevents race conditions where old session data rehydrates after navigation
-        try {
-          const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
-          await AsyncStorage.removeItem("@driftlog_active_session");
-        } catch (error) {
-          console.warn("Failed to clear stale session storage:", error);
-        }
+        // Wait for hydration to complete to avoid race conditions
+        const waitForHydration = async () => {
+          const maxWait = 1000; // 1 second max
+          const startTime = Date.now();
+          while (!get().hasHydrated && Date.now() - startTime < maxWait) {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+          }
+        };
+        await waitForHydration();
 
         // Prevent concurrent sessions
-        if (get().isSessionActive) {
+        const currentState = get();
+        if (currentState.isSessionActive) {
+          console.warn("Session already active, ignoring duplicate start request");
+          // Return existing session ID instead of creating duplicate
+          if (currentState.activeSessionId) {
+            return currentState.activeSessionId;
+          }
           Alert.alert(
             "Session Already Active",
             "You have a workout in progress. Please end it before starting a new one.",
@@ -100,17 +108,24 @@ export const useSessionStore = create<SessionStore>()(
       },
 
       startSessionFromRoutine: async (routineId: string) => {
-        // CRITICAL FIX: Clear any stale persisted data BEFORE checking isSessionActive
-        // This prevents race conditions where old session data rehydrates after navigation
-        try {
-          const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
-          await AsyncStorage.removeItem("@driftlog_active_session");
-        } catch (error) {
-          console.warn("Failed to clear stale session storage:", error);
-        }
+        // Wait for hydration to complete to avoid race conditions
+        const waitForHydration = async () => {
+          const maxWait = 1000; // 1 second max
+          const startTime = Date.now();
+          while (!get().hasHydrated && Date.now() - startTime < maxWait) {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+          }
+        };
+        await waitForHydration();
 
         // Prevent concurrent sessions
-        if (get().isSessionActive) {
+        const currentState = get();
+        if (currentState.isSessionActive) {
+          console.warn("Session already active, ignoring duplicate routine start request");
+          // Return existing session ID instead of creating duplicate
+          if (currentState.activeSessionId) {
+            return currentState.activeSessionId;
+          }
           Alert.alert(
             "Session Already Active",
             "You have a workout in progress. Please end it before starting a new one.",
@@ -235,7 +250,9 @@ export const useSessionStore = create<SessionStore>()(
             })
             .where(eq(sessions.id, activeSessionId));
 
-          // Clear state
+          // CRITICAL: Clear state FIRST (synchronous) before AsyncStorage (async)
+          // This ensures navigation sees cleared state immediately
+          const { sessionDuration } = useSettingsStore.getState();
           set({
             activeSessionId: null,
             currentRoutineId: null,
@@ -245,18 +262,18 @@ export const useSessionStore = create<SessionStore>()(
             activeExerciseIndex: 0,
             sessionStartTime: null,
             timerStartTime: null,
+            targetDuration: sessionDuration, // Reset to user's default from settings
             lastActivityTimestamp: null,
             autoEndTimerId: null,
             timerWarningShown: false,
+            hasHydrated: false, // Reset hydration flag for consistency
             isTimerPaused: true,
             pausedAt: null,
             accumulatedPausedTime: 0,
           });
 
-          // CRITICAL FIX: Explicitly clear AsyncStorage to prevent stale data rehydration
-          // Without this, old session data persists and causes race conditions
-          const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
-          await AsyncStorage.removeItem("@driftlog_active_session");
+          // Then clear AsyncStorage to prevent rehydration on next mount
+          await clearSessionStorage();
         } catch (error) {
           console.error("Failed to end session:", error);
           throw error;
@@ -270,6 +287,9 @@ export const useSessionStore = create<SessionStore>()(
           clearTimeout(autoEndTimerId);
         }
 
+        // CRITICAL: Clear state FIRST before AsyncStorage to prevent race conditions
+        // This ensures any new session creation sees cleared state immediately
+        const { sessionDuration } = useSettingsStore.getState();
         set({
           activeSessionId: null,
           currentRoutineId: null,
@@ -279,21 +299,18 @@ export const useSessionStore = create<SessionStore>()(
           activeExerciseIndex: 0,
           sessionStartTime: null,
           timerStartTime: null,
+          targetDuration: sessionDuration, // Reset to user's default from settings
           lastActivityTimestamp: null,
           autoEndTimerId: null,
           timerWarningShown: false,
+          hasHydrated: false, // Reset hydration flag for consistency
           isTimerPaused: true,
           pausedAt: null,
           accumulatedPausedTime: 0,
         });
 
-        // CRITICAL FIX: Also clear AsyncStorage when manually clearing session
-        try {
-          const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
-          await AsyncStorage.removeItem("@driftlog_active_session");
-        } catch (error) {
-          console.error("Failed to clear session from storage:", error);
-        }
+        // Then clear AsyncStorage (async operation)
+        await clearSessionStorage();
       },
 
       addExercise: (name: string) => {

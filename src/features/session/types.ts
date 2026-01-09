@@ -15,6 +15,7 @@ export type SessionState = {
   lastActivityTimestamp: string | null;
   autoEndTimerId: ReturnType<typeof setTimeout> | null;
   timerWarningShown: boolean; // Whether we've shown the time's up warning
+  hasHydrated: boolean; // Tracks if Zustand has finished rehydrating from AsyncStorage
 
   // Timer pause/play state
   isTimerPaused: boolean; // Whether timer is currently paused

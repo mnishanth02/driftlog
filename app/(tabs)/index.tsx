@@ -7,6 +7,7 @@ import { useTheme } from "@/core/contexts/ThemeContext";
 import { getTodayString } from "@/core/utils/helpers";
 import { Navigation } from "@/core/utils/navigation";
 import { useRoutineStore } from "@/features/routines";
+import { useSessionStore } from "@/features/session";
 
 export default function TodayScreen() {
   const { colorScheme } = useTheme();
@@ -22,11 +23,21 @@ export default function TodayScreen() {
 
   // Handle starting a freestyle session (no routine)
   const handleStartFreestyle = () => {
+    // CRITICAL: Clear store SYNCHRONOUSLY before navigation
+    // This guarantees clean state when session screen mounts
+    useSessionStore.getState().clearSession();
+
+    // Navigate immediately (store is already clean)
     Navigation.goToSession("freestyle");
   };
 
   // Handle starting a routine
   const handleStartRoutine = (routineId: string) => {
+    // CRITICAL: Clear store SYNCHRONOUSLY before navigation
+    // This guarantees clean state when session screen mounts
+    useSessionStore.getState().clearSession();
+
+    // Navigate immediately (store is already clean)
     Navigation.goToSession(routineId);
   };
 
