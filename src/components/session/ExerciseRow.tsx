@@ -5,7 +5,6 @@ import type { ExerciseLog } from "@/features/session/types";
 
 interface ExerciseRowProps {
   exercise: ExerciseLog;
-  index: number;
   isActive: boolean;
   onPress: () => void;
   onLongPress?: () => void;
@@ -14,7 +13,6 @@ interface ExerciseRowProps {
 
 function ExerciseRowComponent({
   exercise,
-  index,
   isActive,
   onPress,
   onLongPress,
@@ -64,13 +62,6 @@ function ExerciseRowComponent({
             <View className="w-4 h-0.5 rounded-full bg-light-text-tertiary dark:bg-dark-text-tertiary" />
           </View>
         </Pressable>
-
-        {/* Position indicator */}
-        <View className="w-7 h-7 rounded-full items-center justify-center mr-3 bg-light-bg-cream dark:bg-dark-bg-accent">
-          <Text className="text-xs font-bold text-light-text-tertiary dark:text-dark-text-tertiary">
-            {index + 1}
-          </Text>
-        </View>
 
         {/* Exercise name - flex-1 to take remaining space */}
         <Text

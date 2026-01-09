@@ -29,6 +29,11 @@ export const useSessionStore = create<SessionStore>()(
       autoEndTimerId: null,
       timerWarningShown: false,
 
+      // Timer pause/play state
+      isTimerPaused: true, // Start paused by default
+      pausedAt: null,
+      accumulatedPausedTime: 0,
+
       // Actions
 
       startSession: async () => {
@@ -77,10 +82,13 @@ export const useSessionStore = create<SessionStore>()(
             currentExercises: [],
             activeExerciseIndex: 0,
             sessionStartTime: now,
-            timerStartTime: now, // Initialize timer start time
+            timerStartTime: null, // Don't start timer until user clicks play
             targetDuration: sessionDuration,
             lastActivityTimestamp: now,
             timerWarningShown: false,
+            isTimerPaused: true, // Start paused by default
+            pausedAt: null, // No pause time until timer starts
+            accumulatedPausedTime: 0,
           });
 
           get().resetActivityTimer();
@@ -173,10 +181,13 @@ export const useSessionStore = create<SessionStore>()(
             currentExercises: exerciseLogs,
             activeExerciseIndex: 0,
             sessionStartTime: now,
-            timerStartTime: now, // Initialize timer start time
+            timerStartTime: null, // Don't start timer until user clicks play
             targetDuration: sessionDuration,
             lastActivityTimestamp: now,
             timerWarningShown: false,
+            isTimerPaused: true, // Start paused by default
+            pausedAt: null, // No pause time until timer starts
+            accumulatedPausedTime: 0,
           });
 
           get().resetActivityTimer();
@@ -237,6 +248,9 @@ export const useSessionStore = create<SessionStore>()(
             lastActivityTimestamp: null,
             autoEndTimerId: null,
             timerWarningShown: false,
+            isTimerPaused: true,
+            pausedAt: null,
+            accumulatedPausedTime: 0,
           });
 
           // CRITICAL FIX: Explicitly clear AsyncStorage to prevent stale data rehydration
@@ -268,6 +282,9 @@ export const useSessionStore = create<SessionStore>()(
           lastActivityTimestamp: null,
           autoEndTimerId: null,
           timerWarningShown: false,
+          isTimerPaused: true,
+          pausedAt: null,
+          accumulatedPausedTime: 0,
         });
 
         // CRITICAL FIX: Also clear AsyncStorage when manually clearing session
@@ -430,13 +447,14 @@ export const useSessionStore = create<SessionStore>()(
 
       setTargetDuration: (duration) => {
         // Always reset timer when duration changes (per requirements)
-        const { activeSessionId } = get();
+        const { activeSessionId, isTimerPaused } = get();
         const now = getNowString();
 
         set({
           targetDuration: duration,
-          timerStartTime: now, // Reset timer
+          timerStartTime: isTimerPaused ? null : now, // If paused, don't set start time; if playing, reset to now
           timerWarningShown: false,
+          accumulatedPausedTime: 0, // Clear accumulated pause time when changing duration
         });
 
         if (activeSessionId) {
@@ -448,14 +466,16 @@ export const useSessionStore = create<SessionStore>()(
       },
 
       resetTimerWithDuration: (duration) => {
-        const { activeSessionId } = get();
+        const { activeSessionId, isTimerPaused } = get();
         const now = getNowString();
 
-        // Reset the timer start time AND set new duration
+        // Reset the timer: clear accumulated pause time and reset start time
         set({
           targetDuration: duration,
-          timerStartTime: now, // This is the key - reset timer to now
+          timerStartTime: isTimerPaused ? null : now, // If paused, don't set start time; if playing, reset to now
           timerWarningShown: false,
+          accumulatedPausedTime: 0, // Clear accumulated pause time on reset
+          pausedAt: isTimerPaused ? null : null, // Clear pause timestamp
         });
 
         if (activeSessionId) {
@@ -491,6 +511,68 @@ export const useSessionStore = create<SessionStore>()(
 
       setTimerWarningShown: (shown: boolean) => {
         set({ timerWarningShown: shown });
+      },
+
+      pauseTimer: () => {
+        const { isTimerPaused, isSessionActive, timerStartTime } = get();
+
+        if (!isSessionActive || isTimerPaused || !timerStartTime) return;
+
+        const now = getNowString();
+        set({
+          isTimerPaused: true,
+          pausedAt: now,
+        });
+      },
+
+      resumeTimer: () => {
+        const { isTimerPaused, pausedAt, accumulatedPausedTime, isSessionActive, timerStartTime } =
+          get();
+
+        if (!isSessionActive || !isTimerPaused) return;
+
+        const now = getNowString();
+
+        // First play - timer hasn't been started yet
+        if (!timerStartTime) {
+          set({
+            isTimerPaused: false,
+            pausedAt: null,
+            timerStartTime: now, // Start the timer now
+            accumulatedPausedTime: 0,
+          });
+          return;
+        }
+
+        // Resume after pause - calculate pause duration
+        if (pausedAt) {
+          const nowDate = new Date();
+          const pausedAtDate = new Date(pausedAt);
+          const pauseDurationMs = nowDate.getTime() - pausedAtDate.getTime();
+          const pauseDurationSeconds = Math.floor(pauseDurationMs / 1000);
+
+          set({
+            isTimerPaused: false,
+            pausedAt: null,
+            accumulatedPausedTime: accumulatedPausedTime + pauseDurationSeconds,
+          });
+        } else {
+          // Edge case: paused but no pausedAt timestamp
+          set({
+            isTimerPaused: false,
+            pausedAt: null,
+          });
+        }
+      },
+
+      toggleTimerPause: () => {
+        const { isTimerPaused } = get();
+
+        if (isTimerPaused) {
+          get().resumeTimer();
+        } else {
+          get().pauseTimer();
+        }
       },
     }),
     sessionPersistConfig,

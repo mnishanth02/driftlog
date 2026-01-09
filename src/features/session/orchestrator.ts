@@ -199,7 +199,7 @@ export namespace SessionOrchestrator {
 
                 // Navigate back to main screen
                 setTimeout(() => {
-                  router.replace("/(tabs)");
+                  router.replace("/" as never);
                 }, 100);
 
                 resolve(true);
@@ -231,7 +231,7 @@ export namespace SessionOrchestrator {
 
       // Navigate back to main screen
       setTimeout(() => {
-        router.replace("/(tabs)");
+        router.replace("/" as never);
       }, 100);
 
       return true;

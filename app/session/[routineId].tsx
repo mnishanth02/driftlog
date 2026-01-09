@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -18,10 +18,10 @@ import DraggableFlatList, {
 } from "react-native-draggable-flatlist";
 import { ExerciseRow, SessionHeader, TimerPicker } from "@/components/session";
 import { useTheme } from "@/core/contexts/ThemeContext";
+import { Navigation } from "@/core/utils/navigation";
 import { type ExerciseLog, useSessionStore } from "@/features/session";
 
 export default function ActiveSessionScreen() {
-  const router = useRouter();
   const { routineId } = useLocalSearchParams<{ routineId?: string | string[] }>();
   const { colorScheme } = useTheme();
   const systemColorScheme = useColorScheme();
@@ -77,35 +77,27 @@ export default function ActiveSessionScreen() {
         } catch (error) {
           console.error("Failed to start session:", error);
           Alert.alert("Error", "Failed to start session", [
-            { text: "OK", onPress: () => router.back() },
+            { text: "OK", onPress: () => Navigation.goBack() },
           ]);
         }
       }
     };
 
     initSession();
-  }, [
-    actualRoutineId,
-    isFreestyle,
-    isSessionActive,
-    startSession,
-    startSessionFromRoutine,
-    router,
-  ]);
+  }, [actualRoutineId, isFreestyle, isSessionActive, startSession, startSessionFromRoutine]);
 
   const handleEndSession = useCallback(async () => {
     try {
       await endSession();
-      // Small delay to ensure state updates before navigation
-      const NAVIGATION_DELAY = 100;
-      setTimeout(() => {
-        router.replace("/(tabs)");
-      }, NAVIGATION_DELAY);
+      // Navigate immediately after session cleanup completes
+      // Use endSessionAndGoHome() which uses replace() to fix corrupted navigation stack
+      // This is critical when auto-end has already cleared session state
+      Navigation.endSessionAndGoHome();
     } catch (error) {
       console.error("Failed to end session:", error);
       Alert.alert("Error", "Failed to end session");
     }
-  }, [endSession, router]);
+  }, [endSession]);
 
   // Store latest callback in ref to avoid memory leaks
   const handleEndSessionRef = useRef(handleEndSession);
@@ -197,7 +189,6 @@ export default function ActiveSessionScreen() {
       <ScaleDecorator>
         <ExerciseRow
           exercise={item}
-          index={index}
           isActive={isActiveExercise}
           onPress={() => handleExercisePress(item.id)}
           onLongPress={drag}

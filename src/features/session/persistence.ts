@@ -30,6 +30,9 @@ export const sessionPersistConfig = {
    * - timerStartTime: For timer display
    * - targetDuration: Session goal
    * - lastActivityTimestamp: For auto-end timer calculation
+   * - isTimerPaused: Timer pause state
+   * - pausedAt: When timer was paused
+   * - accumulatedPausedTime: Total paused time accumulation
    *
    * NOT persisted (reset on restart):
    * - autoEndTimerId: Will be recreated on restore
@@ -46,5 +49,8 @@ export const sessionPersistConfig = {
     timerStartTime: state.timerStartTime,
     targetDuration: state.targetDuration,
     lastActivityTimestamp: state.lastActivityTimestamp,
+    isTimerPaused: state.isTimerPaused,
+    pausedAt: state.pausedAt,
+    accumulatedPausedTime: state.accumulatedPausedTime,
   }),
 };

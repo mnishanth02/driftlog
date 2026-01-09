@@ -10,6 +10,10 @@ export interface UseSessionTimerOptions {
   onTimeUp?: () => void;
   /** Whether timer is active (pauses when false) */
   isActive?: boolean;
+  /** Whether timer is currently paused */
+  isPaused?: boolean;
+  /** Total accumulated paused time in seconds */
+  accumulatedPausedTime?: number;
 }
 
 export interface UseSessionTimerResult {
@@ -52,6 +56,8 @@ export function useSessionTimer({
   targetDuration,
   onTimeUp,
   isActive = true,
+  isPaused = false,
+  accumulatedPausedTime = 0,
 }: UseSessionTimerOptions): UseSessionTimerResult {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [hasCalledTimeUp, setHasCalledTimeUp] = useState(false);
@@ -67,19 +73,25 @@ export function useSessionTimer({
     const startTimeMs = new Date(startTime).getTime();
 
     const updateElapsed = () => {
+      // Don't update time when paused
+      if (isPaused) return;
+
       const now = Date.now();
-      const elapsed = Math.floor((now - startTimeMs) / 1000);
+      const totalElapsed = Math.floor((now - startTimeMs) / 1000);
+
+      // Subtract accumulated paused time to get actual elapsed time
+      const elapsed = Math.max(0, totalElapsed - accumulatedPausedTime);
       setElapsedSeconds(elapsed);
     };
 
     // Update immediately
     updateElapsed();
 
-    // Then update every second
+    // Then update every second (but only when not paused)
     const interval = setInterval(updateElapsed, 1000);
 
     return () => clearInterval(interval);
-  }, [startTime, isActive]);
+  }, [startTime, isActive, isPaused, accumulatedPausedTime]);
 
   // Calculate derived values
   const targetSeconds = targetDuration * 60;

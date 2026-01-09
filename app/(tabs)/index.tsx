@@ -1,15 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { RoutineCard } from "@/components/routines";
 import { useTheme } from "@/core/contexts/ThemeContext";
 import { getTodayString } from "@/core/utils/helpers";
+import { Navigation } from "@/core/utils/navigation";
 import { useRoutineStore } from "@/features/routines";
 
 export default function TodayScreen() {
-  const router = useRouter();
   const { colorScheme } = useTheme();
   const { routines, loadRoutines } = useRoutineStore();
 
@@ -23,12 +22,12 @@ export default function TodayScreen() {
 
   // Handle starting a freestyle session (no routine)
   const handleStartFreestyle = () => {
-    router.push("/session/freestyle" as never);
+    Navigation.goToSession("freestyle");
   };
 
   // Handle starting a routine
   const handleStartRoutine = (routineId: string) => {
-    router.push(`/session/${routineId}` as never);
+    Navigation.goToSession(routineId);
   };
 
   return (
@@ -64,7 +63,7 @@ export default function TodayScreen() {
                 <RoutineCard
                   key={routine.id}
                   routine={routine}
-                  onPress={() => router.push(`/routines/${routine.id}` as never)}
+                  onPress={() => Navigation.goToRoutine(routine.id)}
                   onStartRoutine={() => handleStartRoutine(routine.id)}
                 />
               ))}
@@ -124,7 +123,7 @@ export default function TodayScreen() {
               Plan a routine or start a freestyle session
             </Text>
             <Pressable
-              onPress={() => router.push("/(tabs)/plan" as never)}
+              onPress={() => Navigation.goToTab("plan")}
               className="flex-row items-center gap-2 py-2 px-4 active:opacity-70"
             >
               <Text className="text-base font-semibold text-primary-500 dark:text-dark-primary">

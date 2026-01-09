@@ -15,6 +15,11 @@ export type SessionState = {
   lastActivityTimestamp: string | null;
   autoEndTimerId: ReturnType<typeof setTimeout> | null;
   timerWarningShown: boolean; // Whether we've shown the time's up warning
+
+  // Timer pause/play state
+  isTimerPaused: boolean; // Whether timer is currently paused
+  pausedAt: string | null; // ISO datetime when timer was paused
+  accumulatedPausedTime: number; // Total seconds paused (accumulates across multiple pause/resume cycles)
 };
 
 export type ExerciseLog = {
@@ -53,6 +58,11 @@ export type SessionActions = {
   resetTimerWithDuration: (duration: SessionDuration) => void; // Resets timer completely with new duration
   resetActivityTimer: () => void;
   setTimerWarningShown: (shown: boolean) => void;
+
+  // Timer pause/play
+  pauseTimer: () => void;
+  resumeTimer: () => void;
+  toggleTimerPause: () => void;
 };
 
 export type SessionStore = SessionState & SessionActions;
