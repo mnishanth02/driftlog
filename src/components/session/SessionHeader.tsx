@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
+import { useTheme } from "@/core/contexts/ThemeContext";
 import { useSessionStore } from "@/features/session";
 import { useSessionTimer } from "@/hooks";
-import { useTheme } from "@/core/contexts/ThemeContext";
 
 interface SessionHeaderProps {
   onTimerPress: () => void;

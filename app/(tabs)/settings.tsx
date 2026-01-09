@@ -6,14 +6,11 @@ import { useSettingsStore } from "@/features/settings";
 
 export default function SettingsScreen() {
   const { colorScheme } = useTheme();
-  const { units, autoEndSession, autoEndTimeout, setUnits, setAutoEndSession, setAutoEndTimeout } =
+  const { autoEndSession, autoEndTimeout, setAutoEndSession, setAutoEndTimeout } =
     useSettingsStore();
 
   // Timeout presets in minutes
   const timeoutPresets = [15, 30, 45, 60, 90];
-
-  // Convert weight to selected unit for example display
-  const exampleWeight = units === "kg" ? "100 kg" : "220 lb";
 
   return (
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
@@ -36,64 +33,6 @@ export default function SettingsScreen() {
               Appearance
             </Text>
             <ThemeToggle />
-          </View>
-
-          {/* Units Section */}
-          <View className="bg-light-surface dark:bg-dark-surface rounded-2xl p-5 border border-light-border-light dark:border-dark-border-medium">
-            <Text className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary mb-2">
-              Units
-            </Text>
-            <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-4">
-              Choose your preferred weight unit (e.g., {exampleWeight})
-            </Text>
-
-            <View className="flex-row gap-3">
-              <Pressable
-                onPress={() => setUnits("kg")}
-                className={`flex-1 py-4 rounded-xl border-2 items-center justify-center ${
-                  units === "kg"
-                    ? "bg-primary-500 dark:bg-dark-primary border-primary-500 dark:border-dark-primary"
-                    : "bg-light-bg-cream dark:bg-dark-bg-elevated border-light-border-medium dark:border-dark-border-medium"
-                }`}
-                accessibilityRole="button"
-                accessibilityLabel="Kilograms"
-                accessibilityHint="Set weight unit to kilograms"
-                accessibilityState={{ selected: units === "kg" }}
-              >
-                <Text
-                  className={`text-lg font-semibold ${
-                    units === "kg"
-                      ? "text-white dark:text-dark-bg-primary"
-                      : "text-light-text-primary dark:text-dark-text-primary"
-                  }`}
-                >
-                  kg
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => setUnits("lb")}
-                className={`flex-1 py-4 rounded-xl border-2 items-center justify-center ${
-                  units === "lb"
-                    ? "bg-primary-500 dark:bg-dark-primary border-primary-500 dark:border-dark-primary"
-                    : "bg-light-bg-cream dark:bg-dark-bg-elevated border-light-border-medium dark:border-dark-border-medium"
-                }`}
-                accessibilityRole="button"
-                accessibilityLabel="Pounds"
-                accessibilityHint="Set weight unit to pounds"
-                accessibilityState={{ selected: units === "lb" }}
-              >
-                <Text
-                  className={`text-lg font-semibold ${
-                    units === "lb"
-                      ? "text-white dark:text-dark-bg-primary"
-                      : "text-light-text-primary dark:text-dark-text-primary"
-                  }`}
-                >
-                  lb
-                </Text>
-              </Pressable>
-            </View>
           </View>
 
           {/* Auto-End Session Section */}

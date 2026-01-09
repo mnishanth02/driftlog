@@ -7,16 +7,11 @@ export const useSettingsStore = create<SettingsStore>()(
   persist(
     (set) => ({
       // State with defaults
-      units: "kg",
       autoEndSession: false,
       autoEndTimeout: 60, // 60 minutes default for inactivity
       sessionDuration: 60, // 60 minutes default session duration
 
       // Actions
-      setUnits: (units) => {
-        set({ units });
-      },
-
       setAutoEndSession: (enabled) => {
         set({ autoEndSession: enabled });
       },
