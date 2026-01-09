@@ -38,7 +38,7 @@ export type SessionActions = {
   startSession: () => Promise<string>;
   startSessionFromRoutine: (routineId: string) => Promise<string>;
   endSession: () => Promise<void>;
-  clearSession: () => void;
+  clearSession: () => Promise<void>;
 
   // Exercise management
   addExercise: (name: string) => void;

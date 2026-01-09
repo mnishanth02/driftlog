@@ -75,7 +75,7 @@ function RoutineCardComponent({ routine, onPress, onStartRoutine, onDelete }: Ro
       {/* Footer - Start Routine button */}
       <View className="p-5">
         <Button
-          title="Start Routine"
+          title="Start Session"
           onPress={onStartRoutine}
           variant="primary"
           className="min-h-11"

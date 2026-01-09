@@ -32,6 +32,15 @@ export const useSessionStore = create<SessionStore>()(
       // Actions
 
       startSession: async () => {
+        // CRITICAL FIX: Clear any stale persisted data BEFORE checking isSessionActive
+        // This prevents race conditions where old session data rehydrates after navigation
+        try {
+          const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+          await AsyncStorage.removeItem("@driftlog_active_session");
+        } catch (error) {
+          console.warn("Failed to clear stale session storage:", error);
+        }
+
         // Prevent concurrent sessions
         if (get().isSessionActive) {
           Alert.alert(
@@ -83,6 +92,15 @@ export const useSessionStore = create<SessionStore>()(
       },
 
       startSessionFromRoutine: async (routineId: string) => {
+        // CRITICAL FIX: Clear any stale persisted data BEFORE checking isSessionActive
+        // This prevents race conditions where old session data rehydrates after navigation
+        try {
+          const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+          await AsyncStorage.removeItem("@driftlog_active_session");
+        } catch (error) {
+          console.warn("Failed to clear stale session storage:", error);
+        }
+
         // Prevent concurrent sessions
         if (get().isSessionActive) {
           Alert.alert(
@@ -206,6 +224,7 @@ export const useSessionStore = create<SessionStore>()(
             })
             .where(eq(sessions.id, activeSessionId));
 
+          // Clear state
           set({
             activeSessionId: null,
             currentRoutineId: null,
@@ -219,13 +238,18 @@ export const useSessionStore = create<SessionStore>()(
             autoEndTimerId: null,
             timerWarningShown: false,
           });
+
+          // CRITICAL FIX: Explicitly clear AsyncStorage to prevent stale data rehydration
+          // Without this, old session data persists and causes race conditions
+          const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+          await AsyncStorage.removeItem("@driftlog_active_session");
         } catch (error) {
           console.error("Failed to end session:", error);
           throw error;
         }
       },
 
-      clearSession: () => {
+      clearSession: async () => {
         const { autoEndTimerId } = get();
 
         if (autoEndTimerId) {
@@ -245,6 +269,14 @@ export const useSessionStore = create<SessionStore>()(
           autoEndTimerId: null,
           timerWarningShown: false,
         });
+
+        // CRITICAL FIX: Also clear AsyncStorage when manually clearing session
+        try {
+          const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+          await AsyncStorage.removeItem("@driftlog_active_session");
+        } catch (error) {
+          console.error("Failed to clear session from storage:", error);
+        }
       },
 
       addExercise: (name: string) => {

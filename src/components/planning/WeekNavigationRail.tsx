@@ -84,7 +84,7 @@ export function WeekNavigationRail({
         }}
         className="flex-row"
       >
-        <View className="flex-row gap-2">
+        <View className="flex-row gap-2.5">
           {currentWeekDates.map((date) => {
             const isTodayDate = date === todayString;
             const isSelected = date === activeDate;
@@ -106,7 +106,7 @@ export function WeekNavigationRail({
                   className="relative"
                 >
                   <View
-                    className={`min-w-11 min-h-11 w-11 h-11 rounded-full items-center justify-center ${
+                    className={`min-w-11 min-h-11 w-12 h-12 rounded-full items-center justify-center ${
                       isSelected
                         ? "bg-primary-500 dark:bg-dark-primary"
                         : isTodayDate
