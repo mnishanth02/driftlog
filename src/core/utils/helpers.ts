@@ -69,3 +69,34 @@ export function formatTime(totalSeconds: number): string {
   const seconds = totalSeconds % 60;
   return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }
+
+/**
+ * Calculate elapsed time in seconds since session start
+ * Accounts for accumulated paused time
+ * @param startTime ISO datetime when session/timer started
+ * @param accumulatedPausedTime Total seconds the timer was paused
+ * @returns Total elapsed seconds
+ */
+export function calculateElapsedSeconds(
+  startTime: string,
+  accumulatedPausedTime: number = 0,
+): number {
+  const now = new Date();
+  const start = new Date(startTime);
+  const wallClockElapsed = Math.floor((now.getTime() - start.getTime()) / 1000);
+  // Subtract paused time to get actual active time
+  return Math.max(0, wallClockElapsed - accumulatedPausedTime);
+}
+
+/**
+ * Format elapsed seconds into human-readable duration (e.g., "30 min", "1h 15m")
+ */
+export function formatElapsedTime(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (hours > 0) {
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+  return `${minutes} min`;
+}

@@ -29,6 +29,7 @@ export const useSessionStore = create<SessionStore>()(
       autoEndTimerId: null,
       timerWarningShown: false,
       hasHydrated: false, // Will be set to true after rehydration completes
+      isResumedFromKill: false, // Set to true when app relaunches with active session
 
       // Timer pause/play state
       isTimerPaused: true, // Start paused by default
@@ -266,7 +267,8 @@ export const useSessionStore = create<SessionStore>()(
             lastActivityTimestamp: null,
             autoEndTimerId: null,
             timerWarningShown: false,
-            hasHydrated: false, // Reset hydration flag for consistency
+            hasHydrated: true, // Keep hydration true to prevent re-restore
+            isResumedFromKill: false, // CRITICAL: Must be false after manual end
             isTimerPaused: true,
             pausedAt: null,
             accumulatedPausedTime: 0,
@@ -303,7 +305,9 @@ export const useSessionStore = create<SessionStore>()(
           lastActivityTimestamp: null,
           autoEndTimerId: null,
           timerWarningShown: false,
-          hasHydrated: false, // Reset hydration flag for consistency
+          // Keep hydration true once rehydration has occurred; avoids hydration wait loops.
+          hasHydrated: true,
+          isResumedFromKill: false,
           isTimerPaused: true,
           pausedAt: null,
           accumulatedPausedTime: 0,
@@ -590,6 +594,10 @@ export const useSessionStore = create<SessionStore>()(
         } else {
           get().pauseTimer();
         }
+      },
+
+      dismissResumedFromKillBanner: () => {
+        set({ isResumedFromKill: false });
       },
     }),
     sessionPersistConfig,

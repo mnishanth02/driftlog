@@ -16,6 +16,7 @@ export type SessionState = {
   autoEndTimerId: ReturnType<typeof setTimeout> | null;
   timerWarningShown: boolean; // Whether we've shown the time's up warning
   hasHydrated: boolean; // Tracks if Zustand has finished rehydrating from AsyncStorage
+  isResumedFromKill: boolean; // True only when app relaunches with active session (not tab navigation)
 
   // Timer pause/play state
   isTimerPaused: boolean; // Whether timer is currently paused
@@ -64,6 +65,9 @@ export type SessionActions = {
   pauseTimer: () => void;
   resumeTimer: () => void;
   toggleTimerPause: () => void;
+
+  // App lifecycle
+  dismissResumedFromKillBanner: () => void;
 };
 
 export type SessionStore = SessionState & SessionActions;

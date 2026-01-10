@@ -70,10 +70,15 @@ export const sessionPersistConfig = {
   /**
    * Track when rehydration completes to prevent race conditions
    * Sets hasHydrated flag after AsyncStorage data is loaded
+   * If an active session is found, sets isResumedFromKill flag (app was killed/restarted)
    */
   onRehydrateStorage: () => (state: SessionStore | undefined) => {
     if (state) {
       state.hasHydrated = true;
+      // Set isResumedFromKill ONLY if there's an active session being restored
+      if (state.isSessionActive && state.activeSessionId) {
+        state.isResumedFromKill = true;
+      }
     }
   },
 };

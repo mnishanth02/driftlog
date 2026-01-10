@@ -16,14 +16,28 @@ export default function PlanScreen() {
   // State for selected date
   const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
   const [currentWeekDates, setCurrentWeekDates] = useState<string[]>([]);
+  const [isLoadingRoutines, setIsLoadingRoutines] = useState(true);
 
   // Routines store
   const { routines, loadRoutines } = useRoutineStore();
 
   // Load routines on mount
   useEffect(() => {
-    loadRoutines();
-    setCurrentWeekDates(getWeekDates(new Date()));
+    let isMounted = true;
+
+    const load = async () => {
+      setIsLoadingRoutines(true);
+      await loadRoutines();
+      if (isMounted) {
+        setCurrentWeekDates(getWeekDates(new Date()));
+        setIsLoadingRoutines(false);
+      }
+    };
+
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, [loadRoutines]);
 
   // Week navigation handlers (memoized for performance)
@@ -67,6 +81,25 @@ export default function PlanScreen() {
     }
     return map;
   }, [routines]);
+
+  // Filter routines for selected date (memoized)
+  const filteredRoutines = useMemo(
+    () => routines.filter((r) => r.plannedDate === selectedDate),
+    [routines, selectedDate],
+  );
+
+  const isToday = selectedDate === getTodayString();
+
+  // Show loading state while routines are being fetched
+  if (isLoadingRoutines) {
+    return (
+      <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary items-center justify-center">
+        <Text className="text-light-text-secondary dark:text-dark-text-secondary">
+          Loading routines...
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
@@ -133,99 +166,89 @@ export default function PlanScreen() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
       >
         <View>
-          {/* Filter routines for selected date (memoized) */}
-          {useMemo(() => {
-            const filteredRoutines = routines.filter((r) => r.plannedDate === selectedDate);
-            const isToday = selectedDate === getTodayString();
+          {/* Section Header */}
+          <View className="mb-6 flex-row items-center justify-between">
+            <View className="flex-1 mr-4">
+              <Text className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary">
+                {isToday ? "Planned for today" : formatDate(selectedDate, "EEEE, MMMM d")}
+              </Text>
+              <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
+                {filteredRoutines.length === 0
+                  ? "No routines planned"
+                  : `${filteredRoutines.length} ${filteredRoutines.length === 1 ? "routine" : "routines"}`}
+              </Text>
+            </View>
+            {filteredRoutines.length > 0 && (
+              <Pressable
+                onPress={() => router.push(`/routines/new?date=${selectedDate}` as never)}
+                className="bg-primary-500 dark:bg-dark-primary rounded-xl py-2.5 px-5 active:opacity-70"
+                accessibilityRole="button"
+                accessibilityLabel="Create routine"
+              >
+                <Text className="text-sm font-semibold text-white dark:text-dark-bg-primary">
+                  Create
+                </Text>
+              </Pressable>
+            )}
+          </View>
 
-            return (
-              <>
-                {/* Section Header */}
-                <View className="mb-6 flex-row items-center justify-between">
-                  <View className="flex-1 mr-4">
-                    <Text className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary">
-                      {isToday ? "Planned for today" : formatDate(selectedDate, "EEEE, MMMM d")}
-                    </Text>
-                    <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
-                      {filteredRoutines.length === 0
-                        ? "No routines planned"
-                        : `${filteredRoutines.length} ${filteredRoutines.length === 1 ? "routine" : "routines"}`}
-                    </Text>
-                  </View>
-                  {filteredRoutines.length > 0 && (
-                    <Pressable
-                      onPress={() => router.push(`/routines/new?date=${selectedDate}` as never)}
-                      className="bg-primary-500 dark:bg-dark-primary rounded-xl py-2.5 px-5 active:opacity-70"
-                      accessibilityRole="button"
-                      accessibilityLabel="Create routine"
-                    >
-                      <Text className="text-sm font-semibold text-white dark:text-dark-bg-primary">
-                        Create
-                      </Text>
-                    </Pressable>
-                  )}
-                </View>
-
-                {filteredRoutines.length === 0 ? (
-                  <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-light rounded-2xl p-8 items-center">
-                    <Ionicons
-                      name="calendar-outline"
-                      size={48}
-                      color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
-                      style={{ marginBottom: 16 }}
-                    />
-                    <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary mb-2 text-center">
-                      No routine planned
-                    </Text>
-                    <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary text-center mb-6 px-4">
-                      Create a routine to plan your workout for this day.
-                    </Text>
-                    <Pressable
-                      onPress={() => router.push(`/routines/new?date=${selectedDate}` as never)}
-                      className="min-h-11 bg-primary-500 dark:bg-dark-primary rounded-xl py-3 px-6 active:opacity-70"
-                      accessibilityRole="button"
-                      accessibilityLabel="Create routine"
-                    >
-                      <Text className="text-base font-semibold text-white dark:text-dark-bg-primary">
-                        Create Routine
-                      </Text>
-                    </Pressable>
-                  </View>
-                ) : (
-                  <View className="gap-4">
-                    {filteredRoutines.map((routine) => (
-                      <RoutineCard
-                        key={routine.id}
-                        routine={routine}
-                        onPress={() =>
-                          router.push(`/routines/${routine.id}?date=${selectedDate}` as never)
-                        }
-                        onStartRoutine={() => {
-                          router.push(`/session/${routine.id}` as never);
-                        }}
-                        onDelete={() => {
-                          Alert.alert(
-                            "Delete Routine",
-                            `Are you sure you want to delete "${routine.title}"?`,
-                            [
-                              { text: "Cancel", style: "cancel" },
-                              {
-                                text: "Delete",
-                                style: "destructive",
-                                onPress: async () => {
-                                  await useRoutineStore.getState().deleteRoutine(routine.id);
-                                },
-                              },
-                            ],
-                          );
-                        }}
-                      />
-                    ))}
-                  </View>
-                )}
-              </>
-            );
-          }, [routines, selectedDate, router, colorScheme])}
+          {filteredRoutines.length === 0 ? (
+            <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-light rounded-2xl p-8 items-center">
+              <Ionicons
+                name="calendar-outline"
+                size={48}
+                color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+                style={{ marginBottom: 16 }}
+              />
+              <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary mb-2 text-center">
+                No routine planned
+              </Text>
+              <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary text-center mb-6 px-4">
+                Create a routine to plan your workout for this day.
+              </Text>
+              <Pressable
+                onPress={() => router.push(`/routines/new?date=${selectedDate}` as never)}
+                className="min-h-11 bg-primary-500 dark:bg-dark-primary rounded-xl py-3 px-6 active:opacity-70"
+                accessibilityRole="button"
+                accessibilityLabel="Create routine"
+              >
+                <Text className="text-base font-semibold text-white dark:text-dark-bg-primary">
+                  Create Routine
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View className="gap-4">
+              {filteredRoutines.map((routine) => (
+                <RoutineCard
+                  key={routine.id}
+                  routine={routine}
+                  onPress={() =>
+                    router.push(`/routines/${routine.id}?date=${selectedDate}` as never)
+                  }
+                  onStartRoutine={() => {
+                    router.push(`/session/${routine.id}` as never);
+                  }}
+                  onDelete={() => {
+                    Alert.alert(
+                      "Delete Routine",
+                      `Are you sure you want to delete "${routine.title}"?`,
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        {
+                          text: "Delete",
+                          style: "destructive",
+                          onPress: async () => {
+                            await useRoutineStore.getState().deleteRoutine(routine.id);
+                          },
+                        },
+                      ],
+                    );
+                  }}
+                />
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>

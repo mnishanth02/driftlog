@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { RoutineCard } from "@/components/routines";
+import { ActiveSessionBanner } from "@/components/session";
+import { FreestyleCard } from "@/components/ui";
 import { useTheme } from "@/core/contexts/ThemeContext";
 import { getTodayString } from "@/core/utils/helpers";
 import { Navigation } from "@/core/utils/navigation";
@@ -13,33 +15,88 @@ export default function TodayScreen() {
   const { colorScheme } = useTheme();
   const { routines, loadRoutines } = useRoutineStore();
 
+  // Subscribe to session store with individual selectors
+  const isSessionActive = useSessionStore((state) => state.isSessionActive);
+  const activeSessionId = useSessionStore((state) => state.activeSessionId);
+  const isResumedFromKill = useSessionStore((state) => state.isResumedFromKill);
+  const dismissResumedFromKillBanner = useSessionStore(
+    (state) => state.dismissResumedFromKillBanner,
+  );
+
+  // Loading state
+  const [isLoadingRoutines, setIsLoadingRoutines] = useState(true);
+
   // Load routines on mount
   useEffect(() => {
-    loadRoutines();
+    let isMounted = true;
+    const load = async () => {
+      setIsLoadingRoutines(true);
+      await loadRoutines();
+      if (isMounted) {
+        setIsLoadingRoutines(false);
+      }
+    };
+
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, [loadRoutines]);
+
+  // Safeguard: If isSessionActive but no activeSessionId, clear session
+  // This prevents showing "Workout In Progress" banner after manual end
+  useEffect(() => {
+    if (isSessionActive && !activeSessionId) {
+      useSessionStore.getState().clearSession();
+    }
+  }, [isSessionActive, activeSessionId]);
 
   // Filter routines for today
   const todayRoutines = routines.filter((r) => r.plannedDate === getTodayString());
 
   // Handle starting a freestyle session (no routine)
   const handleStartFreestyle = () => {
-    // CRITICAL: Clear store SYNCHRONOUSLY before navigation
-    // This guarantees clean state when session screen mounts
-    useSessionStore.getState().clearSession();
+    // If a session is active, never wipe it from Today.
+    // Route to resume instead.
+    if (isSessionActive) {
+      Navigation.goToSession("active");
+      return;
+    }
 
-    // Navigate immediately (store is already clean)
+    // Clear any stale session remnants before starting a new session.
+    // (In-memory state is cleared synchronously; AsyncStorage cleanup happens async.)
+    useSessionStore.getState().clearSession();
     Navigation.goToSession("freestyle");
   };
 
   // Handle starting a routine
   const handleStartRoutine = (routineId: string) => {
-    // CRITICAL: Clear store SYNCHRONOUSLY before navigation
-    // This guarantees clean state when session screen mounts
-    useSessionStore.getState().clearSession();
+    // If a session is active, never wipe it from Today.
+    // Route to resume instead.
+    if (isSessionActive) {
+      Navigation.goToSession("active");
+      return;
+    }
 
-    // Navigate immediately (store is already clean)
+    // Clear any stale session remnants before starting a new session.
+    // (In-memory state is cleared synchronously; AsyncStorage cleanup happens async.)
+    useSessionStore.getState().clearSession();
     Navigation.goToSession(routineId);
   };
+
+  // Only show banner when session was restored from app kill (not after manual end)
+  // isResumedFromKill is set ONLY during rehydration when app restarts with active session
+  // It's NOT persisted, so it's false for new sessions and after manual endSession()
+  const shouldShowBanner = isSessionActive && activeSessionId !== null && isResumedFromKill;
+
+  // Show loading state while routines are being fetched
+  if (isLoadingRoutines) {
+    return (
+      <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary items-center justify-center">
+        <Text className="text-light-text-secondary dark:text-dark-text-secondary">Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
@@ -63,8 +120,11 @@ export default function TodayScreen() {
           </Text>
         </View>
 
-        {/* Today's Routines */}
-        {todayRoutines.length > 0 && (
+        {/* Active Session Banner - Show when there's an active session */}
+        {shouldShowBanner && <ActiveSessionBanner onDismiss={dismissResumedFromKillBanner} />}
+
+        {/* Today's Routines - Show when banner is NOT displayed */}
+        {!shouldShowBanner && todayRoutines.length > 0 && (
           <View className="mb-6">
             <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary mb-4">
               Planned for Today
@@ -82,43 +142,18 @@ export default function TodayScreen() {
           </View>
         )}
 
-        {/* Quick Start Section */}
-        <View className="mb-6">
-          <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary mb-4">
-            {todayRoutines.length > 0 ? "Or start freestyle" : "Start a Workout"}
-          </Text>
+        {/* Quick Start Section - Show when banner is NOT displayed */}
+        {!shouldShowBanner && (
+          <View className="mb-6">
+            <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary mb-4">
+              {todayRoutines.length > 0 ? "Or start freestyle" : "Start a Workout"}
+            </Text>
+            <FreestyleCard onPress={handleStartFreestyle} />
+          </View>
+        )}
 
-          <Pressable
-            onPress={handleStartFreestyle}
-            className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-6 flex-row items-center justify-between active:opacity-80"
-          >
-            <View className="flex-row items-center gap-4">
-              <View className="w-12 h-12 rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated items-center justify-center">
-                <Ionicons
-                  name="flash-outline"
-                  size={24}
-                  color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
-                />
-              </View>
-              <View>
-                <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary">
-                  Freestyle Session
-                </Text>
-                <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
-                  Build as you go
-                </Text>
-              </View>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={24}
-              color={colorScheme === "dark" ? "#6b6b6b" : "#8e8e8e"}
-            />
-          </Pressable>
-        </View>
-
-        {/* Empty State when no routines planned */}
-        {todayRoutines.length === 0 && (
+        {/* Empty State when no routines planned and banner is NOT displayed */}
+        {!shouldShowBanner && todayRoutines.length === 0 && (
           <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-8 items-center">
             <View className="w-16 h-16 rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated items-center justify-center mb-4">
               <Ionicons

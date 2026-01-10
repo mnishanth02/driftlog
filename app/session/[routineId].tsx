@@ -28,6 +28,7 @@ export default function ActiveSessionScreen() {
 
   const actualRoutineId = Array.isArray(routineId) ? routineId[0] : routineId;
   const isFreestyle = !actualRoutineId || actualRoutineId === "freestyle";
+  const isResumingActive = actualRoutineId === "active"; // Resuming existing session
 
   // Use selectors to prevent unnecessary re-renders
   const isSessionActive = useSessionStore((state) => state.isSessionActive);
@@ -36,6 +37,7 @@ export default function ActiveSessionScreen() {
   const sessionStartTime = useSessionStore((state) => state.sessionStartTime);
   const targetDuration = useSessionStore((state) => state.targetDuration);
   const timerWarningShown = useSessionStore((state) => state.timerWarningShown);
+  const hasHydrated = useSessionStore((state) => state.hasHydrated);
 
   // Actions don't change, so can destructure from store
   const {
@@ -66,32 +68,53 @@ export default function ActiveSessionScreen() {
   // Initialize session on mount
   useEffect(() => {
     const initSession = async () => {
+      // Skip initialization if resuming active session or if session already active
+      if (isResumingActive || isSessionActive) {
+        return;
+      }
+
       // Only initialize if no session is active
-      if (!isSessionActive) {
-        try {
-          if (isFreestyle) {
-            await startSession();
-          } else if (actualRoutineId) {
-            await startSessionFromRoutine(actualRoutineId);
-          }
-        } catch (error) {
-          console.error("Failed to start session:", error);
-          Alert.alert("Error", "Failed to start session", [
-            { text: "OK", onPress: () => Navigation.goBack() },
-          ]);
+      try {
+        if (isFreestyle) {
+          await startSession();
+        } else if (actualRoutineId) {
+          await startSessionFromRoutine(actualRoutineId);
         }
+      } catch (error) {
+        console.error("Failed to start session:", error);
+        Alert.alert("Error", "Failed to start session", [
+          { text: "OK", onPress: () => Navigation.goBack() },
+        ]);
       }
     };
 
     initSession();
-  }, [actualRoutineId, isFreestyle, isSessionActive, startSession, startSessionFromRoutine]);
+  }, [
+    actualRoutineId,
+    isFreestyle,
+    isResumingActive,
+    isSessionActive,
+    startSession,
+    startSessionFromRoutine,
+  ]);
+
+  // If user navigates to /session/active but there's nothing to resume, go back.
+  useEffect(() => {
+    if (!hasHydrated) return;
+    if (!isResumingActive) return;
+    if (isSessionActive) return;
+
+    Alert.alert("No active workout", "There isn't an active workout to resume.", [
+      { text: "OK", onPress: () => Navigation.goBack() },
+    ]);
+  }, [hasHydrated, isResumingActive, isSessionActive]);
 
   const handleEndSession = useCallback(async () => {
     try {
       await endSession();
-      // Navigate immediately after session cleanup completes
+
+      // Navigate after session cleanup completes
       // Use endSessionAndGoHome() which uses replace() to fix corrupted navigation stack
-      // This is critical when auto-end has already cleared session state
       Navigation.endSessionAndGoHome();
     } catch (error) {
       console.error("Failed to end session:", error);
@@ -143,18 +166,18 @@ export default function ActiveSessionScreen() {
     const completedCount = currentExercises.filter((e) => e.completedAt).length;
     const totalCount = currentExercises.length;
 
-    if (totalCount > 0 && completedCount < totalCount) {
-      Alert.alert(
-        "End workout?",
-        `You've completed ${completedCount} of ${totalCount} exercises.`,
-        [
-          { text: "Continue", style: "cancel" },
-          { text: "End", style: "destructive", onPress: handleEndSession },
-        ],
-      );
-    } else {
-      handleEndSession();
-    }
+    // Always show confirmation with context-aware message
+    const message =
+      totalCount === 0
+        ? "Are you sure you want to end this workout? No exercises were logged."
+        : completedCount === totalCount
+          ? "Great work! Ready to end your workout?"
+          : `You've completed ${completedCount} of ${totalCount} exercises. End workout?`;
+
+    Alert.alert("End Workout", message, [
+      { text: "Continue", style: "cancel" },
+      { text: "End Workout", style: "destructive", onPress: handleEndSession },
+    ]);
   };
 
   const handleExercisePress = (exerciseId: string) => {
