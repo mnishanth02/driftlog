@@ -38,6 +38,8 @@ export default function ActiveSessionScreen() {
   const targetDuration = useSessionStore((state) => state.targetDuration);
   const timerWarningShown = useSessionStore((state) => state.timerWarningShown);
   const hasHydrated = useSessionStore((state) => state.hasHydrated);
+  const timerStartTime = useSessionStore((state) => state.timerStartTime);
+  const isTimerPaused = useSessionStore((state) => state.isTimerPaused);
 
   // Actions don't change, so can destructure from store
   const {
@@ -47,12 +49,18 @@ export default function ActiveSessionScreen() {
     addExercise,
     toggleExerciseComplete,
     reorderExercises,
+    pauseTimer,
+    resumeTimer,
   } = useSessionStore();
 
   const [showTimerPicker, setShowTimerPicker] = useState(false);
   const [exerciseInputValue, setExerciseInputValue] = useState("");
   const [showAddInput, setShowAddInput] = useState(false);
   const exerciseInputRef = useRef<TextInput>(null);
+
+  // CRITICAL: Track ending state to prevent re-initialization during cleanup
+  // This ref persists across renders and prevents race conditions
+  const isEndingRef = useRef(false);
 
   // Cleanup auto-end timer when component unmounts
   useEffect(() => {
@@ -68,6 +76,12 @@ export default function ActiveSessionScreen() {
   // Initialize session on mount
   useEffect(() => {
     const initSession = async () => {
+      // CRITICAL: Don't initialize if we're ending the session
+      // This prevents race conditions during cleanup
+      if (isEndingRef.current) {
+        return;
+      }
+
       // Skip initialization if resuming active session or if session already active
       if (isResumingActive || isSessionActive) {
         return;
@@ -110,6 +124,10 @@ export default function ActiveSessionScreen() {
   }, [hasHydrated, isResumingActive, isSessionActive]);
 
   const handleEndSession = useCallback(async () => {
+    // CRITICAL: Set ending flag immediately (synchronous)
+    // This prevents re-initialization during async cleanup
+    isEndingRef.current = true;
+
     try {
       await endSession();
 
@@ -119,6 +137,8 @@ export default function ActiveSessionScreen() {
     } catch (error) {
       console.error("Failed to end session:", error);
       Alert.alert("Error", "Failed to end session");
+      // Reset flag on error so user can retry
+      isEndingRef.current = false;
     }
   }, [endSession]);
 
@@ -277,58 +297,100 @@ export default function ActiveSessionScreen() {
 
         {/* Footer - Add Exercise & End Session */}
         <View className="bg-light-surface dark:bg-dark-surface border-t border-light-border-light dark:border-dark-border-medium px-4 pt-4 pb-8">
-          {/* Add Exercise */}
-          {showAddInput ? (
-            <View className="flex-row items-center gap-3 mb-4">
-              <TextInput
-                ref={exerciseInputRef}
-                value={exerciseInputValue}
-                onChangeText={setExerciseInputValue}
-                onSubmitEditing={handleAddExercise}
-                onBlur={() => {
-                  if (!exerciseInputValue.trim()) {
-                    setShowAddInput(false);
-                  }
-                }}
-                placeholder="Exercise name..."
-                returnKeyType="done"
-                className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-lg px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
-                placeholderTextColor={systemColorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
-              />
+          {/* Add Exercise - Only show when timer not running (idle or paused) */}
+          {!timerStartTime || isTimerPaused ? (
+            showAddInput ? (
+              <View className="flex-row items-center gap-3 mb-4">
+                <TextInput
+                  ref={exerciseInputRef}
+                  value={exerciseInputValue}
+                  onChangeText={setExerciseInputValue}
+                  onSubmitEditing={handleAddExercise}
+                  onBlur={() => {
+                    if (!exerciseInputValue.trim()) {
+                      setShowAddInput(false);
+                    }
+                  }}
+                  placeholder="Exercise name..."
+                  returnKeyType="done"
+                  className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-lg px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
+                  placeholderTextColor={systemColorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+                />
+                <Pressable
+                  onPress={handleAddExercise}
+                  disabled={!exerciseInputValue.trim()}
+                  className="w-14 h-14 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-40"
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="add" size={28} color="#ffffff" />
+                </Pressable>
+              </View>
+            ) : (
               <Pressable
-                onPress={handleAddExercise}
-                disabled={!exerciseInputValue.trim()}
-                className="w-14 h-14 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-40"
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                onPress={handleShowAddInput}
+                className="flex-row items-center justify-center gap-2 py-3 mb-3 rounded-xl border border-dashed border-light-border-medium dark:border-dark-border-medium active:opacity-70"
               >
-                <Ionicons name="add" size={28} color="#ffffff" />
+                <Ionicons
+                  name="add-circle-outline"
+                  size={22}
+                  color={systemColorScheme === "dark" ? "#8e8e8e" : "#6b6b6b"}
+                />
+                <Text className="text-base text-light-text-secondary dark:text-dark-text-secondary">
+                  Add exercise
+                </Text>
+              </Pressable>
+            )
+          ) : null}
+
+          {/* Session Controls - State-dependent */}
+          {!timerStartTime ? (
+            // STATE 1: IDLE - Timer not started yet, show primary "Start" action
+            <Pressable
+              onPress={resumeTimer}
+              className="w-full bg-primary-500 dark:bg-dark-primary rounded-2xl py-5 flex-row items-center justify-center gap-2 active:opacity-80"
+            >
+              <Ionicons name="play" size={24} color="#ffffff" />
+              <Text className="text-lg font-bold text-white dark:text-dark-bg-primary">
+                Start Workout
+              </Text>
+            </Pressable>
+          ) : isTimerPaused ? (
+            // STATE 3: PAUSED - Timer paused, show Resume (primary) + End (secondary)
+            <View className="gap-3">
+              <Pressable
+                onPress={resumeTimer}
+                className="w-full bg-primary-500 dark:bg-dark-primary rounded-2xl py-5 flex-row items-center justify-center gap-2 active:opacity-80"
+              >
+                <Ionicons name="play" size={24} color="#ffffff" />
+                <Text className="text-lg font-bold text-white dark:text-dark-bg-primary">
+                  Resume Workout
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={handleConfirmEnd}
+                className="w-full bg-light-bg-cream dark:bg-dark-bg-elevated border border-light-border-medium dark:border-dark-border-medium rounded-xl py-4 items-center justify-center active:opacity-70"
+              >
+                <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary">
+                  End Workout
+                </Text>
               </Pressable>
             </View>
           ) : (
+            // STATE 2: RUNNING - Timer active, show Pause action (secondary styling - less alarming)
             <Pressable
-              onPress={handleShowAddInput}
-              className="flex-row items-center justify-center gap-2 py-3 mb-3 rounded-xl border border-dashed border-light-border-medium dark:border-dark-border-medium active:opacity-70"
+              onPress={pauseTimer}
+              className="w-full bg-light-bg-cream dark:bg-dark-bg-elevated border border-light-border-medium dark:border-dark-border-medium rounded-2xl py-5 flex-row items-center justify-center gap-2 active:opacity-80"
             >
               <Ionicons
-                name="add-circle-outline"
-                size={22}
-                color={systemColorScheme === "dark" ? "#8e8e8e" : "#6b6b6b"}
+                name="pause"
+                size={24}
+                color={systemColorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
               />
-              <Text className="text-base text-light-text-secondary dark:text-dark-text-secondary">
-                Add exercise
+              <Text className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">
+                Pause Workout
               </Text>
             </Pressable>
           )}
-
-          {/* End Session Button */}
-          <Pressable
-            onPress={handleConfirmEnd}
-            className="w-full bg-primary-500 dark:bg-dark-primary rounded-2xl py-4 items-center justify-center active:opacity-80"
-          >
-            <Text className="text-lg font-bold text-white dark:text-dark-bg-primary">
-              End Workout
-            </Text>
-          </Pressable>
         </View>
 
         {/* Timer Picker Bottom Sheet */}

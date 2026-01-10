@@ -20,7 +20,6 @@ function SessionHeaderComponent({ onTimerPress }: SessionHeaderProps) {
     setTimerWarningShown,
     isTimerPaused,
     accumulatedPausedTime,
-    toggleTimerPause,
     resetTimerWithDuration,
   } = useSessionStore();
 
@@ -48,15 +47,10 @@ function SessionHeaderComponent({ onTimerPress }: SessionHeaderProps) {
         {currentRoutineTitle || "Workout"}
       </Text>
 
-      {/* Timer Display with Play/Pause - Redesigned Layout */}
-      <View className="flex-row items-center justify-between px-2">
-        {/* Play/Pause Button - Left side */}
-        <Pressable
-          onPress={toggleTimerPause}
-          className="w-14 h-14 items-center justify-center rounded-full bg-primary-500 dark:bg-dark-primary active:opacity-70"
-        >
-          <Ionicons name={isTimerPaused ? "play" : "pause"} size={24} color="#ffffff" />
-        </Pressable>
+      {/* Timer Display - Centered with Reset on Right */}
+      <View className="flex-row items-center px-2">
+        {/* Left Spacer - Balances reset button on right for perfect centering */}
+        <View className="w-14 ml-3" />
 
         {/* Timer Display - Centered */}
         <View className="flex-1 items-center">
@@ -92,7 +86,7 @@ function SessionHeaderComponent({ onTimerPress }: SessionHeaderProps) {
         {/* Reset Button - Right side */}
         <Pressable
           onPress={() => resetTimerWithDuration(targetDuration)}
-          className="w-14 h-14 items-center justify-center rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated border border-light-border-medium dark:border-dark-border-medium active:opacity-70"
+          className="w-14 h-14 items-center justify-center rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated border border-light-border-medium dark:border-dark-border-medium active:opacity-70 ml-3"
         >
           <Ionicons name="refresh" size={24} color={isDark ? "#ff9f6c" : "#f4a261"} />
         </Pressable>
