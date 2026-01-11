@@ -35,6 +35,8 @@ export function Button({
       onPress={onPress}
       disabled={disabled}
       className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      accessibilityRole="button"
+      accessibilityLabel={title}
     >
       <Text className={`text-base font-semibold text-center ${textClasses[variant]}`}>{title}</Text>
     </Pressable>

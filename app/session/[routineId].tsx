@@ -4,12 +4,12 @@ import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
+  BackHandler,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   Text,
   TextInput,
-  useColorScheme,
   View,
 } from "react-native";
 import DraggableFlatList, {
@@ -24,7 +24,6 @@ import { type ExerciseLog, useSessionStore } from "@/features/session";
 export default function ActiveSessionScreen() {
   const { routineId } = useLocalSearchParams<{ routineId?: string | string[] }>();
   const { colorScheme } = useTheme();
-  const systemColorScheme = useColorScheme();
 
   const actualRoutineId = Array.isArray(routineId) ? routineId[0] : routineId;
   const isFreestyle = !actualRoutineId || actualRoutineId === "freestyle";
@@ -72,6 +71,21 @@ export default function ActiveSessionScreen() {
       }
     };
   }, []);
+
+  // Android back button handler - prevent accidental exit during active session
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (isSessionActive) {
+        Alert.alert("End Workout?", "Your workout is in progress. Are you sure you want to exit?", [
+          { text: "Cancel", style: "cancel" },
+          { text: "End Workout", onPress: handleEndSessionRef.current, style: "destructive" },
+        ]);
+        return true; // Prevent default back
+      }
+      return false; // Allow default back
+    });
+    return () => backHandler.remove();
+  }, [isSessionActive]);
 
   // Initialize session on mount
   useEffect(() => {
@@ -272,7 +286,7 @@ export default function ActiveSessionScreen() {
                   <Ionicons
                     name="fitness-outline"
                     size={40}
-                    color={systemColorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                    color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
                   />
                 </View>
                 <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary mb-2 text-center">
@@ -314,7 +328,7 @@ export default function ActiveSessionScreen() {
                   placeholder="Exercise name..."
                   returnKeyType="done"
                   className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-lg px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
-                  placeholderTextColor={systemColorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+                  placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
                 />
                 <Pressable
                   onPress={handleAddExercise}
@@ -333,7 +347,7 @@ export default function ActiveSessionScreen() {
                 <Ionicons
                   name="add-circle-outline"
                   size={22}
-                  color={systemColorScheme === "dark" ? "#8e8e8e" : "#6b6b6b"}
+                  color={colorScheme === "dark" ? "#8e8e8e" : "#6b6b6b"}
                 />
                 <Text className="text-base text-light-text-secondary dark:text-dark-text-secondary">
                   Add exercise
@@ -384,7 +398,7 @@ export default function ActiveSessionScreen() {
               <Ionicons
                 name="pause"
                 size={24}
-                color={systemColorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
               />
               <Text className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">
                 Pause Workout

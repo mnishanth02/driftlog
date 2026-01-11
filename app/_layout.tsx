@@ -1,10 +1,11 @@
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ThemeProvider } from "@/core/contexts/ThemeContext";
+import { ThemeProvider, useTheme } from "@/core/contexts/ThemeContext";
 import { initDatabase } from "@/core/db";
 
 import "../global.css";
@@ -53,14 +54,25 @@ export default function RootLayout() {
     <ErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              animation: "fade",
-            }}
-          />
+          <RootLayoutContent />
         </ThemeProvider>
       </GestureHandlerRootView>
     </ErrorBoundary>
+  );
+}
+
+function RootLayoutContent() {
+  const { colorScheme } = useTheme();
+
+  return (
+    <>
+      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: "fade",
+        }}
+      />
+    </>
   );
 }

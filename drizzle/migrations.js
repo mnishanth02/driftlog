@@ -5,6 +5,7 @@ import m0001 from "./0001_steady_umar.sql";
 import m0002 from "./0002_aspiring_plazm.sql";
 import m0003 from "./0003_third_valkyrie.sql";
 import m0004 from "./0004_material_firestar.sql";
+import m0005 from "./0005_broad_zarek.sql";
 import journal from "./meta/_journal.json";
 
 export default {
@@ -15,5 +16,6 @@ export default {
     m0002,
     m0003,
     m0004,
+    m0005,
   },
 };

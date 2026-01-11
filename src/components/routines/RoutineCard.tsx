@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { memo } from "react";
-import { Pressable, Text, useColorScheme, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { Button } from "@/components/ui";
+import { useTheme } from "@/core/contexts/ThemeContext";
 import type { RoutineWithExercises } from "@/features/routines";
 
 interface RoutineCardProps {
@@ -13,7 +14,7 @@ interface RoutineCardProps {
 
 function RoutineCardComponent({ routine, onPress, onStartRoutine, onDelete }: RoutineCardProps) {
   const { title, exercises } = routine;
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useTheme();
 
   // Fallback: use first exercise name if title is empty/default
   const normalizedTitle = title.trim();
@@ -30,7 +31,13 @@ function RoutineCardComponent({ routine, onPress, onStartRoutine, onDelete }: Ro
     <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl overflow-hidden shadow-sm">
       {/* Card Header with Delete Button */}
       <View className="flex-row items-start justify-between px-5 pt-5 pb-3">
-        <Pressable onPress={onPress} className="flex-1 pr-3 active:opacity-70">
+        <Pressable
+          onPress={onPress}
+          className="flex-1 pr-3 active:opacity-70"
+          accessibilityRole="button"
+          accessibilityLabel={`Edit routine: ${displayTitle}`}
+          accessibilityHint="Opens routine editor"
+        >
           {/* Title */}
           <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary mb-2">
             {displayTitle}

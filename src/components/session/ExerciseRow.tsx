@@ -47,6 +47,10 @@ function ExerciseRowComponent({
       style={
         isDragging ? { elevation: 5, shadowOpacity: 0.3, transform: [{ scale: 1.02 }] } : undefined
       }
+      accessibilityRole="button"
+      accessibilityLabel={`${exercise.name}${isCompleted ? " - completed" : isActive ? " - active" : ""}`}
+      accessibilityHint={isCompleted ? "Tap to mark as incomplete" : "Tap to mark as complete"}
+      accessibilityState={{ selected: isActive, disabled: isCompleted }}
     >
       <View className="flex-row items-center">
         {/* Drag handle - hamburger icon on left */}

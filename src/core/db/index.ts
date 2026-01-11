@@ -43,7 +43,6 @@ async function runMigrations() {
         );
 
         if (!existing) {
-          console.log("Migrating database: creating plans table...");
           expoDb.execSync(`
             CREATE TABLE IF NOT EXISTS plans (
               id text PRIMARY KEY NOT NULL,
@@ -56,7 +55,6 @@ async function runMigrations() {
             );
             CREATE UNIQUE INDEX IF NOT EXISTS plans_date_unique ON plans (date);
           `);
-          console.log("✓ Created plans table");
         }
       } catch (error) {
         console.error("❌ Database migration for plans table failed:", error);
@@ -71,10 +69,8 @@ async function runMigrations() {
         const hasIsRest = columns.some((c) => c.name === "is_rest");
 
         if (!hasIsRest) {
-          console.log("Migrating database: adding plans.is_rest...");
           expoDb.execSync("ALTER TABLE plans ADD COLUMN is_rest integer DEFAULT 0;");
           expoDb.execSync("UPDATE plans SET is_rest = 0 WHERE is_rest IS NULL;");
-          console.log("✓ Added plans.is_rest");
         }
       } catch (error) {
         // If anything goes wrong here, leave the DB as-is; the app can still run.
@@ -89,7 +85,6 @@ async function runMigrations() {
         );
 
         if (!existing) {
-          console.log("Migrating database: creating planned_exercises table...");
           expoDb.execSync(`
             CREATE TABLE IF NOT EXISTS planned_exercises (
               id text PRIMARY KEY NOT NULL,
@@ -103,7 +98,6 @@ async function runMigrations() {
             );
             CREATE INDEX IF NOT EXISTS planned_exercises_plan_id_idx ON planned_exercises (plan_id);
           `);
-          console.log("✓ Created planned_exercises");
         }
       } catch (error) {
         console.warn("Database migration for planned_exercises failed (non-fatal):", error);
@@ -117,7 +111,6 @@ async function runMigrations() {
         );
 
         if (!existing) {
-          console.log("Migrating database: creating routines and routine_exercises tables...");
           expoDb.execSync(`
             CREATE TABLE IF NOT EXISTS routines (
               id text PRIMARY KEY NOT NULL,
@@ -138,7 +131,6 @@ async function runMigrations() {
               FOREIGN KEY (routine_id) REFERENCES routines(id) ON UPDATE no action ON DELETE cascade
             );
           `);
-          console.log("✓ Created routines and routine_exercises");
         }
       } catch (error) {
         console.warn("Database migration for routines failed (non-fatal):", error);
@@ -151,57 +143,10 @@ async function runMigrations() {
         const hasPlannedDate = columns.some((c) => c.name === "planned_date");
 
         if (!hasPlannedDate) {
-          console.log("Migrating database: adding routines.planned_date...");
           expoDb.execSync("ALTER TABLE routines ADD COLUMN planned_date text;");
-          console.log("✓ Added routines.planned_date");
         }
       } catch (error) {
         console.warn("Database migration for routines.planned_date failed (non-fatal):", error);
-      }
-    };
-
-    const ensureSessionsRoutineId = () => {
-      try {
-        const columns = expoDb.getAllSync<{ name: string }>("PRAGMA table_info(sessions)");
-        const hasRoutineId = columns.some((c) => c.name === "routine_id");
-
-        if (!hasRoutineId) {
-          console.log("Migrating database: adding sessions.routine_id...");
-          expoDb.execSync("ALTER TABLE sessions ADD COLUMN routine_id text;");
-          console.log("✓ Added sessions.routine_id");
-        }
-      } catch (error) {
-        console.warn("Database migration for sessions.routine_id failed (non-fatal):", error);
-      }
-    };
-
-    const ensureSessionsTargetDuration = () => {
-      try {
-        const columns = expoDb.getAllSync<{ name: string }>("PRAGMA table_info(sessions)");
-        const hasTargetDuration = columns.some((c) => c.name === "target_duration");
-
-        if (!hasTargetDuration) {
-          console.log("Migrating database: adding sessions.target_duration...");
-          expoDb.execSync("ALTER TABLE sessions ADD COLUMN target_duration integer;");
-          console.log("✓ Added sessions.target_duration");
-        }
-      } catch (error) {
-        console.warn("Database migration for sessions.target_duration failed (non-fatal):", error);
-      }
-    };
-
-    const ensureExercisesCompletedAt = () => {
-      try {
-        const columns = expoDb.getAllSync<{ name: string }>("PRAGMA table_info(exercises)");
-        const hasCompletedAt = columns.some((c) => c.name === "completed_at");
-
-        if (!hasCompletedAt) {
-          console.log("Migrating database: adding exercises.completed_at...");
-          expoDb.execSync("ALTER TABLE exercises ADD COLUMN completed_at text;");
-          console.log("✓ Added exercises.completed_at");
-        }
-      } catch (error) {
-        console.warn("Database migration for exercises.completed_at failed (non-fatal):", error);
       }
     };
 
@@ -212,7 +157,6 @@ async function runMigrations() {
         );
 
         if (!existing) {
-          console.log("Migrating database: creating reflections table...");
           expoDb.execSync(`
             CREATE TABLE IF NOT EXISTS reflections (
               id text PRIMARY KEY NOT NULL,
@@ -225,10 +169,47 @@ async function runMigrations() {
             );
             CREATE UNIQUE INDEX IF NOT EXISTS reflections_session_id_unique ON reflections (session_id);
           `);
-          console.log("✓ Created reflections table");
         }
       } catch (error) {
         console.warn("Database migration for reflections failed (non-fatal):", error);
+      }
+    };
+
+    const ensureSessionsColumns = () => {
+      try {
+        const columns = expoDb.getAllSync<{ name: string }>("PRAGMA table_info(sessions)");
+        const columnNames = columns.map((c) => c.name);
+
+        // Ensure is_active column exists
+        if (!columnNames.includes("is_active")) {
+          expoDb.execSync("ALTER TABLE sessions ADD COLUMN is_active integer DEFAULT 1 NOT NULL;");
+        }
+
+        // Ensure routine_id column exists
+        if (!columnNames.includes("routine_id")) {
+          expoDb.execSync("ALTER TABLE sessions ADD COLUMN routine_id text;");
+        }
+
+        // Ensure target_duration column exists
+        if (!columnNames.includes("target_duration")) {
+          expoDb.execSync("ALTER TABLE sessions ADD COLUMN target_duration integer;");
+        }
+      } catch (error) {
+        console.warn("Database migration for sessions columns failed (non-fatal):", error);
+      }
+    };
+
+    const ensureExercisesColumns = () => {
+      try {
+        const columns = expoDb.getAllSync<{ name: string }>("PRAGMA table_info(exercises)");
+        const columnNames = columns.map((c) => c.name);
+
+        // Ensure completed_at column exists
+        if (!columnNames.includes("completed_at")) {
+          expoDb.execSync("ALTER TABLE exercises ADD COLUMN completed_at text;");
+        }
+      } catch (error) {
+        console.warn("Database migration for exercises columns failed (non-fatal):", error);
       }
     };
 
@@ -238,18 +219,43 @@ async function runMigrations() {
     );
 
     if (!result) {
-      console.log("Running database migrations...");
-
-      // Run migration SQL
+      // Run migration SQL - create all tables with complete schema
       const migrationSQL = `
+        CREATE TABLE IF NOT EXISTS sessions (
+          id text PRIMARY KEY NOT NULL,
+          date text NOT NULL,
+          start_time text NOT NULL,
+          end_time text,
+          is_active integer DEFAULT 1 NOT NULL,
+          routine_id text,
+          target_duration integer,
+          plan_id text,
+          created_at text NOT NULL,
+          updated_at text NOT NULL,
+          FOREIGN KEY (plan_id) REFERENCES plans(id) ON UPDATE no action ON DELETE no action
+        );
+        
         CREATE TABLE IF NOT EXISTS exercises (
           id text PRIMARY KEY NOT NULL,
           session_id text NOT NULL,
           name text NOT NULL,
           "order" integer NOT NULL,
+          completed_at text,
           created_at text NOT NULL,
           updated_at text NOT NULL,
           FOREIGN KEY (session_id) REFERENCES sessions(id) ON UPDATE no action ON DELETE cascade
+        );
+        
+        CREATE TABLE IF NOT EXISTS sets (
+          id text PRIMARY KEY NOT NULL,
+          exercise_id text NOT NULL,
+          reps integer NOT NULL,
+          weight real,
+          "order" integer NOT NULL,
+          timestamp text NOT NULL,
+          created_at text NOT NULL,
+          updated_at text NOT NULL,
+          FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON UPDATE no action ON DELETE cascade
         );
         
         CREATE TABLE IF NOT EXISTS plans (
@@ -275,29 +281,24 @@ async function runMigrations() {
         );
         
         CREATE UNIQUE INDEX IF NOT EXISTS reflections_session_id_unique ON reflections (session_id);
-        
-        CREATE TABLE IF NOT EXISTS sessions (
+
+        CREATE TABLE IF NOT EXISTS routines (
           id text PRIMARY KEY NOT NULL,
-          date text NOT NULL,
-          start_time text NOT NULL,
-          end_time text,
-          is_active integer DEFAULT 1 NOT NULL,
-          plan_id text,
+          title text NOT NULL,
+          notes text,
+          planned_date text,
           created_at text NOT NULL,
-          updated_at text NOT NULL,
-          FOREIGN KEY (plan_id) REFERENCES plans(id) ON UPDATE no action ON DELETE no action
+          updated_at text NOT NULL
         );
-        
-        CREATE TABLE IF NOT EXISTS sets (
+
+        CREATE TABLE IF NOT EXISTS routine_exercises (
           id text PRIMARY KEY NOT NULL,
-          exercise_id text NOT NULL,
-          reps integer NOT NULL,
-          weight real,
+          routine_id text NOT NULL,
+          name text NOT NULL,
           "order" integer NOT NULL,
-          timestamp text NOT NULL,
           created_at text NOT NULL,
           updated_at text NOT NULL,
-          FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON UPDATE no action ON DELETE cascade
+          FOREIGN KEY (routine_id) REFERENCES routines(id) ON UPDATE no action ON DELETE cascade
         );
 
         CREATE TABLE IF NOT EXISTS planned_exercises (
@@ -315,32 +316,30 @@ async function runMigrations() {
       `;
 
       expoDb.execSync(migrationSQL);
-      console.log("✓ Database migrations completed");
 
       ensurePlansTable();
       ensurePlansIsRestColumn();
       ensurePlannedExercisesTable();
       ensureRoutinesTables();
       ensureRoutinesPlannedDate();
-      ensureSessionsRoutineId();
-      ensureSessionsTargetDuration();
-      ensureExercisesCompletedAt();
       ensureReflectionsTable();
+      ensureSessionsColumns();
+      ensureExercisesColumns();
     } else {
-      console.log("✓ Database already initialized");
+      // Sessions table exists - ensure all columns are present FIRST
+      // (critical: must run before createPerformanceIndexes to avoid missing column errors)
+      ensureSessionsColumns();
+      ensureExercisesColumns();
 
+      // Then ensure other tables exist
       ensurePlansTable();
       ensurePlansIsRestColumn();
       ensurePlannedExercisesTable();
       ensureRoutinesTables();
       ensureRoutinesPlannedDate();
-      ensureSessionsRoutineId();
-      ensureSessionsTargetDuration();
-      ensureExercisesCompletedAt();
       ensureReflectionsTable();
 
-      // Add performance indexes
-      console.log("Creating performance indexes...");
+      // Add performance indexes AFTER all columns are ensured
       createPerformanceIndexes();
     }
   } catch (error) {
@@ -349,35 +348,71 @@ async function runMigrations() {
   }
 }
 
+/**
+ * Helper to check if a column exists in a table
+ */
+function columnExists(tableName: string, columnName: string): boolean {
+  try {
+    const columns = expoDb.getAllSync<{ name: string }>(`PRAGMA table_info(${tableName})`);
+    return columns.some((c) => c.name === columnName);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Helper to check if a table exists
+ */
+function tableExists(tableName: string): boolean {
+  try {
+    const result = expoDb.getFirstSync<{ name: string }>(
+      `SELECT name FROM sqlite_master WHERE type='table' AND name='${tableName}'`,
+    );
+    return !!result;
+  } catch {
+    return false;
+  }
+}
+
 function createPerformanceIndexes() {
   try {
-    // Index for finding active sessions quickly
-    expoDb.execSync(
-      "CREATE INDEX IF NOT EXISTS idx_sessions_is_active ON sessions(is_active) WHERE is_active = 1;",
-    );
+    // Index for finding active sessions quickly (only if column exists)
+    if (tableExists("sessions") && columnExists("sessions", "is_active")) {
+      expoDb.execSync(
+        "CREATE INDEX IF NOT EXISTS idx_sessions_is_active ON sessions(is_active) WHERE is_active = 1;",
+      );
+    }
 
     // Index for session date lookups
-    expoDb.execSync("CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions(date);");
+    if (tableExists("sessions") && columnExists("sessions", "date")) {
+      expoDb.execSync("CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions(date);");
+    }
 
     // Index for exercises by session
-    expoDb.execSync(
-      "CREATE INDEX IF NOT EXISTS idx_exercises_session_id ON exercises(session_id);",
-    );
+    if (tableExists("exercises") && columnExists("exercises", "session_id")) {
+      expoDb.execSync(
+        "CREATE INDEX IF NOT EXISTS idx_exercises_session_id ON exercises(session_id);",
+      );
+    }
 
     // Index for sets by exercise
-    expoDb.execSync("CREATE INDEX IF NOT EXISTS idx_sets_exercise_id ON sets(exercise_id);");
+    if (tableExists("sets") && columnExists("sets", "exercise_id")) {
+      expoDb.execSync("CREATE INDEX IF NOT EXISTS idx_sets_exercise_id ON sets(exercise_id);");
+    }
 
     // Index for routines by planned date
-    expoDb.execSync(
-      "CREATE INDEX IF NOT EXISTS idx_routines_planned_date ON routines(planned_date) WHERE planned_date IS NOT NULL;",
-    );
+    if (tableExists("routines") && columnExists("routines", "planned_date")) {
+      expoDb.execSync(
+        "CREATE INDEX IF NOT EXISTS idx_routines_planned_date ON routines(planned_date) WHERE planned_date IS NOT NULL;",
+      );
+    }
 
     // Index for routine exercises by routine
-    expoDb.execSync(
-      "CREATE INDEX IF NOT EXISTS idx_routine_exercises_routine_id ON routine_exercises(routine_id);",
-    );
-
-    console.log("✓ Performance indexes created");
+    if (tableExists("routine_exercises") && columnExists("routine_exercises", "routine_id")) {
+      expoDb.execSync(
+        "CREATE INDEX IF NOT EXISTS idx_routine_exercises_routine_id ON routine_exercises(routine_id);",
+      );
+    }
   } catch (error) {
     console.warn("⚠️ Failed to create some indexes (non-fatal):", error);
   }

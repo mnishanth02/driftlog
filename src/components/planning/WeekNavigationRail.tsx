@@ -1,6 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, useColorScheme, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { useTheme } from "@/core/contexts/ThemeContext";
 import { formatDate, getTodayString } from "@/core/utils/helpers";
 
 interface WeekNavigationRailProps {
@@ -17,7 +18,7 @@ export function WeekNavigationRail({
   routinesMap,
 }: WeekNavigationRailProps) {
   const todayString = getTodayString();
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useTheme();
 
   const [containerWidth, setContainerWidth] = useState(0);
   const [contentWidth, setContentWidth] = useState(0);

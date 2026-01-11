@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/core/contexts/ThemeContext";
 import { useSessionStore } from "@/features/session";
 import { useSessionTimer } from "@/hooks";
@@ -12,6 +13,7 @@ interface SessionHeaderProps {
 function SessionHeaderComponent({ onTimerPress }: SessionHeaderProps) {
   const { colorScheme } = useTheme();
   const isDark = colorScheme === "dark";
+  const insets = useSafeAreaInsets();
 
   const {
     currentRoutineTitle,
@@ -41,7 +43,10 @@ function SessionHeaderComponent({ onTimerPress }: SessionHeaderProps) {
     : `${targetDuration.toString().padStart(2, "0")}:00`;
 
   return (
-    <View className="px-5 pt-14 pb-3 bg-light-surface dark:bg-dark-surface border-b border-light-border-light dark:border-dark-border-medium">
+    <View
+      className="px-5 pb-3 bg-light-surface dark:bg-dark-surface border-b border-light-border-light dark:border-dark-border-medium"
+      style={{ paddingTop: insets.top + 14 }}
+    >
       {/* Routine Title */}
       <Text className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary text-center mb-2">
         {currentRoutineTitle || "Workout"}

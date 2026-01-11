@@ -1,11 +1,13 @@
 import { StatusBar } from "expo-status-bar";
 import { Pressable, ScrollView, Switch, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useTheme } from "@/core/contexts/ThemeContext";
 import { useSettingsStore } from "@/features/settings";
 
 export default function SettingsScreen() {
   const { colorScheme } = useTheme();
+  const insets = useSafeAreaInsets();
   const { autoEndSession, autoEndTimeout, setAutoEndSession, setAutoEndTimeout } =
     useSettingsStore();
 
@@ -16,7 +18,7 @@ export default function SettingsScreen() {
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
       <ScrollView className="flex-1 px-5">
-        <View className="pt-12 gap-6 pb-8">
+        <View className="gap-6 pb-8" style={{ paddingTop: insets.top + 12 }}>
           {/* Header */}
           <View>
             <Text className="text-3xl font-bold text-light-text-primary dark:text-dark-text-primary">

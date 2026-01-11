@@ -1,9 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/core/contexts/ThemeContext";
 
 export default function TabsLayout() {
   const { colorScheme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const isDark = colorScheme === "dark";
 
@@ -14,8 +16,8 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: isDark ? "#1a1a1a" : "#faf4f0",
           borderTopColor: isDark ? "#3a3a3a" : "#e8e4df",
-          height: 60,
-          paddingBottom: 8,
+          height: 60 + (insets.bottom || 0),
+          paddingBottom: insets.bottom || 8,
           paddingTop: 8,
         },
         tabBarActiveTintColor: isDark ? "#ff9f6c" : "#f4a261",
@@ -45,11 +47,11 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="history"
+        name="routines"
         options={{
-          title: "History",
+          title: "Routines",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="time-outline" size={size} color={color} />
+            <Ionicons name="barbell-outline" size={size} color={color} />
           ),
         }}
       />

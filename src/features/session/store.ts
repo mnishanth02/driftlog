@@ -519,7 +519,6 @@ export const useSessionStore = create<SessionStore>()(
         if (isSessionActive && autoEndSession) {
           const timeoutMs = autoEndTimeout * AUTO_END_MIN_TO_MS;
           const timerId = setTimeout(() => {
-            console.log("Auto-ending session due to inactivity");
             get().endSession();
           }, timeoutMs);
 

@@ -29,14 +29,23 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.driftlog.app"
+      "bundleIdentifier": "com.driftlog.app",
+      "buildNumber": "1",
+      "infoPlist": {}
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#f4a261"
       },
-      "package": "com.driftlog.app"
-    }
+      "package": "com.driftlog.app",
+      "versionCode": 1,
+      "permissions": [],
+      "softwareKeyboardLayoutMode": "resize"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "privacy": "unlisted"
   }
 }

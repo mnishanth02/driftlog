@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RoutineCard } from "@/components/routines";
 import { ActiveSessionBanner } from "@/components/session";
 import { FreestyleCard } from "@/components/ui";
@@ -14,6 +15,7 @@ import { useSessionStore } from "@/features/session";
 export default function TodayScreen() {
   const { colorScheme } = useTheme();
   const { routines, loadRoutines } = useRoutineStore();
+  const insets = useSafeAreaInsets();
 
   // Subscribe to session store with individual selectors
   const isSessionActive = useSessionStore((state) => state.isSessionActive);
@@ -107,7 +109,7 @@ export default function TodayScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View className="pt-12 pb-6">
+        <View className="pb-6" style={{ paddingTop: insets.top + 12 }}>
           <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",

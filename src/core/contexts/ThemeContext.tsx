@@ -1,7 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useContext, useEffect, useState } from "react";
-import { type ColorSchemeName, useColorScheme } from "react-native";
-import { colorScheme as nativeWindColorScheme } from "react-native-css";
+import {
+  Appearance,
+  type ColorSchemeName,
+  useColorScheme as useNativeColorScheme,
+} from "react-native";
 
 type ColorScheme = "light" | "dark" | "system";
 
@@ -17,7 +20,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 const THEME_STORAGE_KEY = "@driftlog_theme";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemColorScheme = useColorScheme();
+  const nativeColorScheme = useNativeColorScheme();
   const [selectedScheme, setSelectedScheme] = useState<ColorScheme>("system");
 
   // Load saved theme preference on mount
@@ -29,11 +32,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (saved && (saved === "light" || saved === "dark" || saved === "system")) {
           const preference = saved as ColorScheme;
           setSelectedScheme(preference);
-          // Apply the preference immediately
+
+          // Apply the preference immediately to React Native's Appearance API
+          // NativeWind v5 runtime listens to these changes automatically
           if (preference === "system") {
-            nativeWindColorScheme.set(null); // null means follow system
+            Appearance.setColorScheme(null);
           } else {
-            nativeWindColorScheme.set(preference);
+            Appearance.setColorScheme(preference as "light" | "dark");
           }
         }
       } catch (error) {
@@ -49,11 +54,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setSelectedScheme(scheme);
       await AsyncStorage.setItem(THEME_STORAGE_KEY, scheme);
 
-      // Apply the scheme using NativeWind's color scheme API
+      // Apply the scheme using the native Appearance API
       if (scheme === "system") {
-        nativeWindColorScheme.set(null); // null means follow system
+        Appearance.setColorScheme(null);
       } else {
-        nativeWindColorScheme.set(scheme);
+        Appearance.setColorScheme(scheme as "light" | "dark");
       }
     } catch (error) {
       console.error("Failed to save theme preference:", error);
@@ -61,23 +66,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleColorScheme = () => {
-    // Get the effective current color scheme
-    const currentScheme = nativeWindColorScheme.get() || systemColorScheme || "light";
-
-    // If currently in system mode, toggle to the opposite of current effective scheme
-    if (selectedScheme === "system") {
-      const newScheme: Exclude<ColorScheme, "system"> = currentScheme === "dark" ? "light" : "dark";
-      void setColorSchemeWithPersistence(newScheme);
-      return;
-    }
-
-    // Otherwise, toggle between light and dark
-    const newScheme: Exclude<ColorScheme, "system"> = selectedScheme === "dark" ? "light" : "dark";
+    // Toggle between light and dark
+    const current = Appearance.getColorScheme();
+    const newScheme: Exclude<ColorScheme, "system"> = current === "dark" ? "light" : "dark";
     void setColorSchemeWithPersistence(newScheme);
   };
 
-  // Get the effective color scheme (either override or system)
-  const effectiveColorScheme = nativeWindColorScheme.get() || systemColorScheme || "light";
+  // The effectively active color scheme is reactive via useNativeColorScheme()
+  // which React Native updates whenever Appearance.setColorScheme is called.
+  const effectiveColorScheme = nativeColorScheme || "light";
 
   return (
     <ThemeContext.Provider

@@ -4,19 +4,20 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   Text,
   TextInput,
-  useColorScheme,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import DraggableFlatList, {
   type RenderItemParams,
   ScaleDecorator,
 } from "react-native-draggable-flatlist";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/core/contexts/ThemeContext";
 import { type DraftExercise, useRoutineStore } from "@/features/routines";
 
@@ -24,7 +25,7 @@ export default function RoutineEditScreen() {
   const router = useRouter();
   const { id, date } = useLocalSearchParams<{ id?: string | string[]; date?: string | string[] }>();
   const { colorScheme } = useTheme();
-  const systemColorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
 
   const routineId = Array.isArray(id) ? id[0] : id;
   const plannedDate = (Array.isArray(date) ? date[0] : date) || null;
@@ -194,7 +195,7 @@ export default function RoutineEditScreen() {
                   onChangeText={setEditingExerciseName}
                   autoFocus
                   className="flex-1 text-base text-light-text-primary dark:text-dark-text-primary px-2 py-1"
-                  placeholderTextColor={systemColorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+                  placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
                 />
                 <Pressable
                   onPress={handleSaveEdit}
@@ -204,7 +205,7 @@ export default function RoutineEditScreen() {
                   <Ionicons
                     name="checkmark"
                     size={22}
-                    color={systemColorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                    color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
                   />
                 </Pressable>
                 <Pressable
@@ -215,7 +216,7 @@ export default function RoutineEditScreen() {
                   <Ionicons
                     name="close"
                     size={22}
-                    color={systemColorScheme === "dark" ? "#8e8e8e" : "#6b6b6b"}
+                    color={colorScheme === "dark" ? "#8e8e8e" : "#6b6b6b"}
                   />
                 </Pressable>
               </View>
@@ -233,7 +234,7 @@ export default function RoutineEditScreen() {
                   <Ionicons
                     name="pencil"
                     size={20}
-                    color={systemColorScheme === "dark" ? "#8e8e8e" : "#6b6b6b"}
+                    color={colorScheme === "dark" ? "#8e8e8e" : "#6b6b6b"}
                   />
                 </Pressable>
                 <Pressable
@@ -245,7 +246,7 @@ export default function RoutineEditScreen() {
                   <Ionicons
                     name="trash-outline"
                     size={20}
-                    color={systemColorScheme === "dark" ? "#ef4444" : "#dc2626"}
+                    color={colorScheme === "dark" ? "#ef4444" : "#dc2626"}
                   />
                 </Pressable>
               </View>
@@ -266,74 +267,85 @@ export default function RoutineEditScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary"
     >
-      <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
-        <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
+          <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
 
-        {/* Header with better spacing from status bar */}
-        <View className="bg-light-bg-primary dark:bg-dark-bg-primary border-b border-light-border-light dark:border-dark-border-medium">
-          <View className="px-5 pt-16 pb-4 flex-row items-center justify-between">
-            <Pressable
-              onPress={handleCancel}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              className="active:opacity-70"
-            >
-              <Text className="text-base font-semibold text-light-text-secondary dark:text-dark-text-secondary">
-                Cancel
-              </Text>
-            </Pressable>
-
-            <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary">
-              {draftRoutine.id ? "Edit Routine" : "New Routine"}
-            </Text>
-
-            <Pressable
-              onPress={handleSave}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              className="active:opacity-70"
-              disabled={!draftRoutine.title.trim()}
-            >
-              <Text
-                className={`text-base font-semibold ${
-                  !draftRoutine.title.trim()
-                    ? "text-light-text-tertiary dark:text-dark-text-tertiary"
-                    : "text-primary-500 dark:text-dark-primary"
-                }`}
+          {/* Header - Redesigned for better visibility */}
+          <View
+            className="bg-light-surface dark:bg-dark-surface border-b border-light-border-light dark:border-dark-border-medium shadow-sm dark:shadow-dark-sm z-10"
+            style={{ paddingTop: insets.top }}
+          >
+            <View className="h-13 px-4 flex-row items-center justify-between">
+              {/* Cancel Button */}
+              <Pressable
+                onPress={handleCancel}
+                hitSlop={16}
+                className="min-w-17.5 h-full justify-center items-start active:opacity-60"
               >
-                Save
-              </Text>
-            </Pressable>
+                <Text className="text-[17px] text-light-text-secondary dark:text-dark-text-secondary font-normal">
+                  Cancel
+                </Text>
+              </Pressable>
+
+              {/* Title */}
+              <View className="flex-1 items-center justify-center px-2">
+                <Text
+                  className="text-[17px] font-bold text-light-text-primary dark:text-dark-text-primary text-center"
+                  numberOfLines={1}
+                >
+                  {isCreateMode ? "New Routine" : "Edit Routine"}
+                </Text>
+              </View>
+
+              {/* Save Button */}
+              <Pressable
+                onPress={handleSave}
+                hitSlop={16}
+                className="min-w-17.5 h-full justify-center items-end active:opacity-60"
+                disabled={!draftRoutine.title.trim()}
+              >
+                <Text
+                  className={`text-[17px] font-bold ${
+                    !draftRoutine.title.trim()
+                      ? "text-light-text-light dark:text-dark-text-light opacity-50"
+                      : "text-primary-600 dark:text-dark-primary"
+                  }`}
+                >
+                  Save
+                </Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
 
-        {/* Routine Title Input */}
-        <View className="mx-3 my-2  rounded-lg bg-light-surface dark:bg-dark-surface overflow-hidden">
-          <TextInput
-            value={draftRoutine.title}
-            onChangeText={updateDraftTitle}
-            placeholder="Routine name (e.g., Upper Body)"
-            className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary"
-            placeholderTextColor={systemColorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
-          />
-        </View>
+          {/* Routine Title Input - Fixed padding and height */}
+          <View className="mx-5 my-4 rounded-xl bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium overflow-hidden">
+            <TextInput
+              value={draftRoutine.title}
+              onChangeText={updateDraftTitle}
+              placeholder="Routine name (e.g., Upper Body)"
+              className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary px-4 py-4"
+              placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+              autoCapitalize="words"
+              returnKeyType="done"
+              blurOnSubmit
+            />
+          </View>
 
-        {/* Exercise List - Scrollable with proper centering for empty state */}
-        <View className="flex-1">
-          {draftRoutine.exercises.length === 0 ? (
-            <ScrollView
-              className="flex-1"
-              contentContainerStyle={{ flexGrow: 1 }}
-              showsVerticalScrollIndicator={false}
-            >
+          {/* Exercise List - Scrollable with proper centering for empty state */}
+          <View className="flex-1">
+            {draftRoutine.exercises.length === 0 ? (
               <View className="flex-1 items-center justify-center px-5">
                 <View className="bg-light-surface dark:bg-dark-surface rounded-3xl p-12 items-center shadow-sm dark:shadow-dark-sm border border-light-border-light dark:border-dark-border-medium max-w-xs">
                   <View className="w-20 h-20 rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated items-center justify-center mb-4">
                     <Ionicons
                       name="barbell-outline"
                       size={40}
-                      color={systemColorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                      color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
                     />
                   </View>
                   <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary mb-2 text-center">
@@ -344,56 +356,63 @@ export default function RoutineEditScreen() {
                   </Text>
                 </View>
               </View>
-            </ScrollView>
-          ) : (
-            <DraggableFlatList
-              data={draftRoutine.exercises}
-              onDragEnd={({ data }) => reorderDraftExercises(data)}
-              keyExtractor={(item) => item.id}
-              renderItem={renderExerciseItem}
-              contentContainerStyle={{ paddingHorizontal: 12, paddingTop: 8, paddingBottom: 8 }}
-              showsVerticalScrollIndicator={false}
-            />
-          )}
-        </View>
-
-        {/* Footer - Add Exercise Input (Fixed at bottom) */}
-        <View className="bg-light-surface dark:bg-dark-surface border-t border-light-border-light dark:border-dark-border-medium px-4 pt-3 pb-5">
-          {/* Add Exercise Input */}
-          <View className="flex-row items-center gap-3 mb-4">
-            <TextInput
-              ref={exerciseInputRef}
-              value={exerciseInputValue}
-              onChangeText={setExerciseInputValue}
-              onSubmitEditing={handleAddExercise}
-              placeholder="Add exercise..."
-              returnKeyType="done"
-              className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-lg px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
-              placeholderTextColor={systemColorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
-            />
-            <Pressable
-              onPress={handleAddExercise}
-              disabled={!exerciseInputValue.trim()}
-              className="w-14 h-14 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-40 shadow-md dark:shadow-dark-md"
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Ionicons name="add" size={28} color="#ffffff" />
-            </Pressable>
+            ) : (
+              <DraggableFlatList
+                data={draftRoutine.exercises}
+                onDragEnd={({ data }) => reorderDraftExercises(data)}
+                keyExtractor={(item) => item.id}
+                renderItem={renderExerciseItem}
+                contentContainerStyle={{ paddingHorizontal: 12, paddingTop: 8, paddingBottom: 8 }}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+              />
+            )}
           </View>
 
-          {/* Delete Routine Button (Edit Mode Only) */}
-          {draftRoutine.id && (
-            <Pressable
-              onPress={handleDeleteRoutine}
-              className="w-full rounded-2xl py-4 items-center justify-center active:opacity-80 border-2 border-red-300 dark:border-red-300"
-            >
-              <Text className="text-base font-bold text-red-500 dark:text-red-400">
-                Delete Routine
-              </Text>
-            </Pressable>
-          )}
+          {/* Footer - Add Exercise Input (Fixed at bottom with safe area) */}
+          <View
+            className="bg-light-surface dark:bg-dark-surface border-t border-light-border-light dark:border-dark-border-medium px-4 pt-3"
+            style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+          >
+            {/* Add Exercise Input */}
+            <View className="flex-row items-center gap-2 px-4 mb-2">
+              <TextInput
+                ref={exerciseInputRef}
+                value={exerciseInputValue}
+                onChangeText={setExerciseInputValue}
+                onSubmitEditing={handleAddExercise}
+                placeholder="Add exercise..."
+                returnKeyType="done"
+                className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-xl px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
+                placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+                autoCapitalize="words"
+                blurOnSubmit={false}
+              />
+              <Pressable
+                onPress={handleAddExercise}
+                disabled={!exerciseInputValue.trim()}
+                className="w-14 h-14 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-40 shadow-md dark:shadow-dark-md"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="add" size={28} color="#ffffff" />
+              </Pressable>
+            </View>
+
+            {/* Delete Routine Button (Edit Mode Only) */}
+            {draftRoutine.id && (
+              <Pressable
+                onPress={handleDeleteRoutine}
+                className="w-full rounded-2xl py-4 mb-2 items-center justify-center active:opacity-80 border-2 border-red-300 dark:border-red-300"
+              >
+                <Text className="text-base font-bold text-red-500 dark:text-red-400">
+                  Delete Routine
+                </Text>
+              </Pressable>
+            )}
+          </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }

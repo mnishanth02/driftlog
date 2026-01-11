@@ -1,11 +1,12 @@
 import { useEffect } from "react";
-import { Dimensions, Modal, Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
+import { Dimensions, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { useTheme } from "@/core/contexts/ThemeContext";
 
 interface BottomSheetProps {
   visible: boolean;
@@ -26,7 +27,7 @@ export function BottomSheet({
 }: BottomSheetProps) {
   const translateY = useSharedValue(SCREEN_HEIGHT);
   const backdropOpacity = useSharedValue(0);
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useTheme();
 
   // Define actual color values based on theme
   const backgroundColor = colorScheme === "dark" ? "#252525" : "#ffffff";
@@ -60,13 +61,7 @@ export function BottomSheet({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={styles.container}>
         {/* Backdrop */}
         <Animated.View style={[styles.backdrop, backdropStyle]}>

@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WeekNavigationRail } from "@/components/planning";
 import { RoutineCard } from "@/components/routines";
 import { useTheme } from "@/core/contexts/ThemeContext";
@@ -12,6 +13,7 @@ import { useRoutineStore } from "@/features/routines";
 export default function PlanScreen() {
   const router = useRouter();
   const { colorScheme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   // State for selected date
   const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
@@ -106,8 +108,8 @@ export default function PlanScreen() {
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
 
       {/* Header */}
-      <View className="px-5 pt-12 pb-4">
-        <Text className="text-3xl font-bold text-light-text-primary dark:text-dark-text-primary">
+      <View className="" style={{ paddingTop: insets.top + 12 }}>
+        <Text className="text-3xl px-5 pb-3 font-bold text-light-text-primary dark:text-dark-text-primary">
           Plan
         </Text>
       </View>
