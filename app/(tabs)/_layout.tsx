@@ -47,11 +47,11 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="routines"
+        name="history"
         options={{
-          title: "Routines",
+          title: "History",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="barbell-outline" size={size} color={color} />
+            <Ionicons name="time-outline" size={size} color={color} />
           ),
         }}
       />

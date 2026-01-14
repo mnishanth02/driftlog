@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { Alert } from "react-native";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { db } from "../../core/db";
+import { db, waitForDb } from "../../core/db";
 import { exercises, routineExercises, routines, sessions, sets } from "../../core/db/schema";
 import { generateId, getNowString, getTodayString } from "../../core/utils/helpers";
 import { useSettingsStore } from "../settings";
@@ -71,6 +71,9 @@ export const useSessionStore = create<SessionStore>()(
         const { sessionDuration } = useSettingsStore.getState();
 
         try {
+          // Wait for database to be initialized before querying
+          await waitForDb();
+
           await db.insert(sessions).values({
             id: sessionId,
             date: today,
@@ -141,6 +144,9 @@ export const useSessionStore = create<SessionStore>()(
         const { sessionDuration } = useSettingsStore.getState();
 
         try {
+          // Wait for database to be initialized before querying
+          await waitForDb();
+
           const routine = await db.query.routines.findFirst({
             where: eq(routines.id, routineId),
           });
@@ -225,6 +231,9 @@ export const useSessionStore = create<SessionStore>()(
         const now = getNowString();
 
         try {
+          // Wait for database to be initialized before querying
+          await waitForDb();
+
           // Save any sets that might exist
           for (const exercise of currentExercises) {
             for (const setData of exercise.sets) {
@@ -378,6 +387,9 @@ export const useSessionStore = create<SessionStore>()(
         const newCompletedAt = exercise.completedAt ? null : now;
 
         try {
+          // Wait for database to be initialized before querying
+          await waitForDb();
+
           // Update DB first
           await db
             .update(exercises)
@@ -431,6 +443,9 @@ export const useSessionStore = create<SessionStore>()(
         const now = getNowString();
 
         try {
+          // Wait for database to be initialized before querying
+          await waitForDb();
+
           // Update all exercises in DB first (atomically)
           const updatePromises = reorderedExercises.map((exercise) =>
             db

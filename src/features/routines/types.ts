@@ -44,6 +44,7 @@ export type RoutineActions = {
     plannedDate: string | null,
   ) => Promise<void>;
   deleteRoutine: (id: string) => Promise<void>;
+  createRoutineFromSession: (sessionId: string, targetDate: string) => Promise<string>;
   // Draft management
   startDraft: (routineId?: string, plannedDate?: string) => Promise<void>;
   updateDraftTitle: (title: string) => void;

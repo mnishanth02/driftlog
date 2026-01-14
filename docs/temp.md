@@ -1,52 +1,59 @@
-
-**Workout In-Progress Screen — Redesign Brief**
-
-I want to rethink the primary action on the workout-in-progress screen.
-
-Right now, the most prominent action is **“End Workout”** at the bottom. However, when a user lands on this screen, their instinct is not to end anything—it’s to **start** the workout. Most users naturally look for a “Play” or “Start” action first.
-
-Currently, the start/play control exists in the header (top-left), which creates two problems:
-
-* The primary action is visually split across the screen
-* The most important action is not where the user’s thumb expects it
-
-### Proposed Direction
-
-1. **Move the primary session control to the bottom**
-
-   * Replace the bottom **“End Workout”** button with **“Start Workout”** (or **“Start Session”**).
-   * This button becomes the single, dominant action on the screen.
-
-2. **Unify session state into one button**
-
-   * When the user taps **Start Workout**, the session begins and the timer starts.
-   * Once the session is active, the same button changes to **Pause Workout** (or **Pause Session**).
-   * This removes the need for the play button in the header entirely, which can be removed.
-
-3. **Ending the workout**
-
-   * Ending a workout should be a deliberate action, not the default CTA.
-   * One idea is to allow a **gesture-based confirmation**:
-
-     * For example, swiping the paused button to the right could reveal or trigger **End Workout**.
-   * Alternatively, ending the workout could be exposed only from the paused state, reducing accidental taps.
-
-### Goals of This Redesign
-
-* Make the **start action obvious and thumb-friendly**
-* Reduce cognitive load during the session
-* Avoid accidental workout termination
-* Use **one control** to represent session state (start → pause → end)
-
-### What I Need Help With
-
-* Validate whether this interaction model makes sense from a UX standpoint
-* Propose a cleaner, calmer interaction for ending a workout
-* Suggest a state model (idle → active → paused → ended) that maps cleanly to UI
-* If the direction feels solid, outline how we should implement this change
-
-The intent is not to add complexity, but to make the screen behave the way a tired, distracted user expects it to behave.
+This **Core Implementation Plan** translates the product vision into a technical roadmap for building the History tab.
 
 ---
 
-This version keeps your idea intact, removes verbal noise, and frames it as a clear design problem with constraints. It also aligns tightly with DriftLog’s “low cognitive load under fatigue” philosophy.
+### **1. Feature Module Architecture**
+Create a new feature module: history
+*   **`types.ts`**: Define interfaces for `SessionHistoryItem` (a session with its exercises and reflection data).
+*   **store.ts**: Implement `useHistoryStore` using Zustand.
+    *   **State**: `sessions` (array), `isLoading` (bool), `hasMore` (bool).
+    *   **Actions**: `loadSessions(offset)` for paginated fetching; `refreshHistory()` to reset and fetch the latest.
+*   **index.ts**: Public API for the module.
+
+### **2. Routing & Navigation**
+*   **Tab Replacement**: Replace the existing routines.tsx with `app/(tabs)/history.tsx` (as per the decision to drop the Routine tab).
+*   **Detail Screen**: Create `app/history/[id].tsx` as a stack screen (drilling down from the list).
+*   **Tabs Layout**: Update _layout.tsx to update the icon (e.g., `book-outline` or `time-outline`) and label to **History**.
+
+### **3. Data Layer (Drizzle/SQLite)**
+*   **Query Strategy**: Use Drizzle’s Relational API for clean fetching:
+    ```typescript
+    db.query.sessions.findMany({
+      with: { exercises: true, reflection: true },
+      orderBy: [desc(sessions.date)],
+      limit: 20,
+      offset: X,
+    })
+    ```
+*   **Performance**: Verify that `idx_sessions_date` and `idx_exercises_session_id` are active (already defined in index.ts).
+
+### **4. UI Component Breakdown**
+
+#### **A. History List (`app/(tabs)/history.tsx`)**
+*   **`FlatList`**: Use for performance with pagination.
+*   **`HistoryRow` Component**: 
+    *   Large date (e.g., "Jan 12").
+    *   Subtle intent label (e.g., "Full Body Push").
+    *   Summary string: `"3 exercises • 12 sets"`.
+    *   Small dot/icon if a reflection exists.
+*   **`EmptyHistory`**: A simple `View` with centered, de-emphasized text.
+
+#### **B. Session Detail (`app/history/[id].tsx`)**
+*   **Header Section**: Calm typography showing full date and session duration (calculated from start/end times).
+*   **Exercise List**: 
+    *   Map through `exercises` and their associated `sets`.
+    *   **`HistorySetRow`**: A read-only, compact version of the set log (e.g., "100kg x 10").
+*   **Reflection Card**: A `Card` component displaying the "Feeling" (if any) and "Notes".
+
+### **5. Behavior & Interaction Rules**
+*   **Read-Only by Default**: No inputs, buttons, or checkboxes visible in the history view.
+*   **Lazy Loading**: Use `onEndReached` in the `FlatList` to fetch the next batch of 20 sessions only when the user scrolls to the bottom.
+*   **Instant Navigation**: Ensure the transition from List to Detail feels immediate; since the history is local-only, we skip loading spinners where possible.
+
+### **6. Implementation Steps (Logical Order)**
+1.  **Refactor Navigation**: Rename "Routines" tab to "History" and update icons.
+2.  **Define Types & Store**: Set up the `history` feature folder and state management.
+3.  **Build List UI**: Create the `HistoryRow` and connect the `FlatList` to the database.
+4.  **Build Detail UI**: Create the `SessionDetail` screen to display full exercise/set logs.
+5.  **Integrate Reflections**: Ensure reflections are fetched and displayed at the bottom of the Detail screen.
+6.  **Polish Styling**: Apply the semantic design tokens from global.css (e.g., `text-light-text-secondary`, `bg-light-surface`).

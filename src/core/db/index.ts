@@ -8,14 +8,49 @@ const expoDb = openDatabaseSync("driftlog.db", { enableChangeListener: true });
 // Create drizzle instance
 export const db = drizzle(expoDb, { schema });
 
+// Database initialization state - prevents race conditions
+let dbInitPromise: Promise<boolean> | null = null;
+let isDbReady = false;
+
+/**
+ * Wait for the database to be initialized.
+ * Use this before any database operations to prevent race conditions.
+ * Safe to call multiple times - will only initialize once.
+ */
+export async function waitForDb(): Promise<void> {
+  if (isDbReady) return;
+
+  if (!dbInitPromise) {
+    dbInitPromise = initDatabase();
+  }
+
+  const success = await dbInitPromise;
+  if (!success) {
+    throw new Error("Database initialization failed");
+  }
+}
+
+/**
+ * Check if the database is ready (synchronous check).
+ * Use this for conditional rendering without async.
+ */
+export function isDbInitialized(): boolean {
+  return isDbReady;
+}
+
 // Initialize database (run migrations if needed)
 export async function initDatabase(): Promise<boolean> {
+  // If already initialized, return immediately
+  if (isDbReady) return true;
+
   let retryCount = 0;
   const maxRetries = 3;
 
   while (retryCount < maxRetries) {
     try {
       await runMigrations();
+      isDbReady = true;
+      console.log("✅ Database initialized successfully");
       return true;
     } catch (error) {
       retryCount++;
@@ -177,30 +212,114 @@ async function runMigrations() {
 
     const ensureSessionsColumns = () => {
       try {
+        // First check if sessions table exists
+        if (!tableExists("sessions")) return;
+
         const columns = expoDb.getAllSync<{ name: string }>("PRAGMA table_info(sessions)");
         const columnNames = columns.map((c) => c.name);
 
-        // Ensure is_active column exists
+        // Check if critical columns are missing - if so, table is corrupt and needs recreation
+        const criticalColumns = ["start_time", "date"];
+        const missingCritical = criticalColumns.filter((col) => !columnNames.includes(col));
+
+        if (missingCritical.length > 0) {
+          console.warn(
+            `Sessions table is missing critical columns: ${missingCritical.join(", ")}. Recreating table.`,
+          );
+          // Drop and recreate table (data loss acceptable for corrupt schema)
+          expoDb.execSync("DROP TABLE IF EXISTS sessions;");
+          expoDb.execSync(`
+            CREATE TABLE sessions (
+              id text PRIMARY KEY NOT NULL,
+              date text NOT NULL,
+              start_time text NOT NULL,
+              end_time text,
+              is_active integer DEFAULT 1 NOT NULL,
+              routine_id text,
+              target_duration integer,
+              plan_id text,
+              created_at text NOT NULL,
+              updated_at text NOT NULL
+            );
+          `);
+          return;
+        }
+
+        // Ensure optional columns exist (safe to add with defaults)
+        if (!columnNames.includes("end_time")) {
+          expoDb.execSync("ALTER TABLE sessions ADD COLUMN end_time text;");
+        }
+        if (!columnNames.includes("created_at")) {
+          expoDb.execSync("ALTER TABLE sessions ADD COLUMN created_at text;");
+        }
+        if (!columnNames.includes("updated_at")) {
+          expoDb.execSync("ALTER TABLE sessions ADD COLUMN updated_at text;");
+        }
         if (!columnNames.includes("is_active")) {
           expoDb.execSync("ALTER TABLE sessions ADD COLUMN is_active integer DEFAULT 1 NOT NULL;");
         }
-
-        // Ensure routine_id column exists
         if (!columnNames.includes("routine_id")) {
           expoDb.execSync("ALTER TABLE sessions ADD COLUMN routine_id text;");
         }
-
-        // Ensure target_duration column exists
         if (!columnNames.includes("target_duration")) {
           expoDb.execSync("ALTER TABLE sessions ADD COLUMN target_duration integer;");
+        }
+        if (!columnNames.includes("plan_id")) {
+          expoDb.execSync("ALTER TABLE sessions ADD COLUMN plan_id text;");
         }
       } catch (error) {
         console.warn("Database migration for sessions columns failed (non-fatal):", error);
       }
     };
 
+    const ensureExercisesTable = () => {
+      try {
+        if (tableExists("exercises")) return;
+
+        expoDb.execSync(`
+          CREATE TABLE IF NOT EXISTS exercises (
+            id text PRIMARY KEY NOT NULL,
+            session_id text NOT NULL,
+            name text NOT NULL,
+            "order" integer NOT NULL,
+            completed_at text,
+            created_at text NOT NULL,
+            updated_at text NOT NULL,
+            FOREIGN KEY (session_id) REFERENCES sessions(id) ON UPDATE no action ON DELETE cascade
+          );
+        `);
+      } catch (error) {
+        console.warn("Database migration for exercises table failed (non-fatal):", error);
+      }
+    };
+
+    const ensureSetsTable = () => {
+      try {
+        if (tableExists("sets")) return;
+
+        expoDb.execSync(`
+          CREATE TABLE IF NOT EXISTS sets (
+            id text PRIMARY KEY NOT NULL,
+            exercise_id text NOT NULL,
+            reps integer NOT NULL,
+            weight real,
+            "order" integer NOT NULL,
+            timestamp text NOT NULL,
+            created_at text NOT NULL,
+            updated_at text NOT NULL,
+            FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON UPDATE no action ON DELETE cascade
+          );
+        `);
+      } catch (error) {
+        console.warn("Database migration for sets table failed (non-fatal):", error);
+      }
+    };
+
     const ensureExercisesColumns = () => {
       try {
+        // First check if exercises table exists
+        if (!tableExists("exercises")) return;
+
         const columns = expoDb.getAllSync<{ name: string }>("PRAGMA table_info(exercises)");
         const columnNames = columns.map((c) => c.name);
 
@@ -324,10 +443,16 @@ async function runMigrations() {
       ensureRoutinesPlannedDate();
       ensureReflectionsTable();
       ensureSessionsColumns();
+      ensureExercisesTable();
+      ensureSetsTable();
       ensureExercisesColumns();
     } else {
-      // Sessions table exists - ensure all columns are present FIRST
-      // (critical: must run before createPerformanceIndexes to avoid missing column errors)
+      // Sessions table exists - ensure all core tables exist FIRST
+      // (critical: exercises/sets tables may be missing in partial migration state)
+      ensureExercisesTable();
+      ensureSetsTable();
+
+      // Then ensure all columns are present
       ensureSessionsColumns();
       ensureExercisesColumns();
 
@@ -339,7 +464,7 @@ async function runMigrations() {
       ensureRoutinesPlannedDate();
       ensureReflectionsTable();
 
-      // Add performance indexes AFTER all columns are ensured
+      // Add performance indexes AFTER all tables and columns are ensured
       createPerformanceIndexes();
     }
   } catch (error) {
@@ -386,6 +511,17 @@ function createPerformanceIndexes() {
     // Index for session date lookups
     if (tableExists("sessions") && columnExists("sessions", "date")) {
       expoDb.execSync("CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions(date);");
+    }
+
+    // Compound index for date range queries (optimizes history filtering)
+    if (
+      tableExists("sessions") &&
+      columnExists("sessions", "date") &&
+      columnExists("sessions", "start_time")
+    ) {
+      expoDb.execSync(
+        "CREATE INDEX IF NOT EXISTS idx_sessions_date_range ON sessions(date, start_time);",
+      );
     }
 
     // Index for exercises by session

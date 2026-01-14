@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import { create } from "zustand";
-import { db } from "@/core/db";
-import { routineExercises, routines } from "@/core/db/schema";
-import { generateId, getNowString } from "@/core/utils/helpers";
+import { db, waitForDb } from "@/core/db";
+import { routineExercises, routines, sessions } from "@/core/db/schema";
+import { formatDate, generateId, getNowString } from "@/core/utils/helpers";
 import type { DraftExercise, RoutineStore } from "./types";
 
 export const useRoutineStore = create<RoutineStore>((set, get) => ({
@@ -16,6 +16,9 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
     set({ isLoading: true });
 
     try {
+      // Wait for database to be initialized before querying
+      await waitForDb();
+
       const allRoutines = await db.query.routines.findMany({
         with: {
           exercises: {
@@ -35,6 +38,9 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
 
   loadRoutine: async (id: string) => {
     try {
+      // Wait for database to be initialized before querying
+      await waitForDb();
+
       const routine = await db.query.routines.findFirst({
         where: (routines, { eq }) => eq(routines.id, id),
         with: {
@@ -63,6 +69,9 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
     const normalizedNotes = notes?.trim() ? notes.trim() : null;
 
     try {
+      // Wait for database to be initialized before querying
+      await waitForDb();
+
       await db.insert(routines).values({
         id: routineId,
         // Title is optional in UX; store empty string rather than persisting a placeholder.
@@ -104,6 +113,9 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
     const normalizedNotes = notes?.trim() ? notes.trim() : null;
 
     try {
+      // Wait for database to be initialized before querying
+      await waitForDb();
+
       await db
         .update(routines)
         .set({
@@ -137,6 +149,9 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
 
   deleteRoutine: async (id: string) => {
     try {
+      // Wait for database to be initialized before querying
+      await waitForDb();
+
       await db.delete(routines).where(eq(routines.id, id));
 
       set((state) => ({
@@ -144,6 +159,64 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
       }));
     } catch (error) {
       console.error("Failed to delete routine:", error);
+      throw error;
+    }
+  },
+
+  createRoutineFromSession: async (sessionId: string, targetDate: string) => {
+    const now = getNowString();
+    const routineId = generateId();
+
+    try {
+      // Wait for database to be initialized before querying
+      await waitForDb();
+
+      // Fetch session with exercises
+      const session = await db.query.sessions.findFirst({
+        where: eq(sessions.id, sessionId),
+        with: {
+          exercises: {
+            orderBy: (exercises, { asc }) => [asc(exercises.order)],
+          },
+          routine: true,
+        },
+      });
+
+      if (!session) {
+        throw new Error("Session not found");
+      }
+
+      // Generate title: "Original Title - Jan 6" or "Session - Jan 6"
+      const baseTitle = session.routine?.title || "Session";
+      const formattedDate = formatDate(targetDate, "MMM d");
+      const title = `${baseTitle} - ${formattedDate}`;
+
+      // Create routine
+      await db.insert(routines).values({
+        id: routineId,
+        title,
+        notes: session.routine?.notes || null,
+        plannedDate: targetDate,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      // Copy exercises
+      for (const exercise of session.exercises || []) {
+        await db.insert(routineExercises).values({
+          id: generateId(),
+          routineId,
+          name: exercise.name,
+          order: exercise.order,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+
+      await get().loadRoutines();
+      return routineId;
+    } catch (error) {
+      console.error("Failed to create routine from session:", error);
       throw error;
     }
   },

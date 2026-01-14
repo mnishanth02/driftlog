@@ -40,16 +40,25 @@ export type HistoryState = {
   sessions: HistorySession[];
   currentSession: SessionDetail | null;
   isLoading: boolean;
+  isDeleting: boolean;
+  isLoadingMore: boolean;
+  hasMore: boolean;
+  pageSize: number;
 };
 
 export type HistoryActions = {
-  loadSessions: () => Promise<void>;
+  loadSessions: (options?: { reset?: boolean }) => Promise<void>;
+  refreshSessions: () => Promise<void>;
+  loadMoreSessions: () => Promise<void>;
   loadSessionDetail: (sessionId: string) => Promise<void>;
   saveReflection: (
     sessionId: string,
     feeling: string | null,
     notes: string | null,
   ) => Promise<void>;
+  deleteSession: (sessionId: string) => Promise<void>;
+  searchSessions: (query: string) => Promise<void>;
+  filterByDateRange: (startDate: string, endDate: string) => Promise<void>;
 };
 
 export type HistoryStore = HistoryState & HistoryActions;

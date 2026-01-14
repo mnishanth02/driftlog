@@ -1,10 +1,14 @@
 import { eachDayOfInterval, endOfWeek, format, parseISO, startOfWeek } from "date-fns";
+import { DATE_FORMATS } from "./dateFormats";
+
+// Re-export date formats for convenience
+export { DATE_FORMATS } from "./dateFormats";
 
 /**
  * Get today's date in YYYY-MM-DD format
  */
 export function getTodayString(): string {
-  return format(new Date(), "yyyy-MM-dd");
+  return format(new Date(), DATE_FORMATS.ISO_DATE);
 }
 
 /**
@@ -16,8 +20,13 @@ export function getNowString(): string {
 
 /**
  * Format date string for display
+ * @param dateString ISO date string (YYYY-MM-DD)
+ * @param formatString date-fns format string (defaults to SHORT_DATE)
  */
-export function formatDate(dateString: string, formatString = "MMM d, yyyy"): string {
+export function formatDate(
+  dateString: string,
+  formatString: string = DATE_FORMATS.SHORT_DATE,
+): string {
   return format(parseISO(dateString), formatString);
 }
 
@@ -28,7 +37,9 @@ export function getWeekDates(date: Date = new Date()) {
   const weekStart = startOfWeek(date, { weekStartsOn: 1 }); // Monday
   const weekEnd = endOfWeek(date, { weekStartsOn: 1 }); // Sunday
 
-  return eachDayOfInterval({ start: weekStart, end: weekEnd }).map((d) => format(d, "yyyy-MM-dd"));
+  return eachDayOfInterval({ start: weekStart, end: weekEnd }).map((d) =>
+    format(d, DATE_FORMATS.ISO_DATE),
+  );
 }
 
 /**
@@ -44,7 +55,7 @@ export function generateId(): string {
 export function isSameWeek(date1: Date, date2: Date): boolean {
   const week1Start = startOfWeek(date1, { weekStartsOn: 1 });
   const week2Start = startOfWeek(date2, { weekStartsOn: 1 });
-  return format(week1Start, "yyyy-MM-dd") === format(week2Start, "yyyy-MM-dd");
+  return format(week1Start, DATE_FORMATS.ISO_DATE) === format(week2Start, DATE_FORMATS.ISO_DATE);
 }
 
 /**
