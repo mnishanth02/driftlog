@@ -1,18 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
-import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SessionCard, SessionCardSkeleton } from "@/components/history";
-import { DatePicker, DateRangePicker, SearchBar } from "@/components/ui";
+import { DateRangePicker, SearchBar } from "@/components/ui";
 import { useTheme } from "@/core/contexts/ThemeContext";
 import { DATE_FORMATS, formatDate } from "@/core/utils/helpers";
 import { type HistorySession, useHistoryStore } from "@/features/history";
-import { useRoutineStore } from "@/features/routines";
-import { useSessionStore } from "@/features/session";
 
 const SEARCH_DEBOUNCE_MS = 250;
 
@@ -29,18 +26,12 @@ export default function HistoryScreen() {
   const loadSessions = useHistoryStore((state) => state.loadSessions);
   const refreshSessions = useHistoryStore((state) => state.refreshSessions);
   const loadMoreSessions = useHistoryStore((state) => state.loadMoreSessions);
-  const deleteSession = useHistoryStore((state) => state.deleteSession);
   const searchSessions = useHistoryStore((state) => state.searchSessions);
   const filterByDateRange = useHistoryStore((state) => state.filterByDateRange);
 
-  const { createRoutineFromSession } = useRoutineStore();
-  const { isSessionActive, activeSessionId } = useSessionStore();
-
   // Local state
   const [searchQuery, setSearchQuery] = useState("");
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [showDateRangePicker, setShowDateRangePicker] = useState(false);
-  const [sessionToAssign, setSessionToAssign] = useState<string | null>(null);
   const [isFiltering, setIsFiltering] = useState(false);
   const [activeDateRange, setActiveDateRange] = useState<{ start: string; end: string } | null>(
     null,
@@ -95,68 +86,6 @@ export default function HistoryScreen() {
     }
   }, [loadSessions, searchQuery]);
 
-  const handleDelete = useCallback(
-    (sessionId: string) => {
-      if (isSessionActive && sessionId === activeSessionId) {
-        Alert.alert(
-          "Cannot Delete Active Session",
-          "Please end the current session before deleting it.",
-          [{ text: "OK" }],
-        );
-        return;
-      }
-
-      Alert.alert(
-        "Delete Session",
-        "Are you sure you want to delete this workout session? This cannot be undone.",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: async () => {
-              try {
-                await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                await deleteSession(sessionId);
-              } catch {
-                await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-                Alert.alert("Error", "Failed to delete session. Please try again.");
-              }
-            },
-          },
-        ],
-      );
-    },
-    [deleteSession, isSessionActive, activeSessionId],
-  );
-
-  const handleAssignToDate = useCallback((sessionId: string) => {
-    setSessionToAssign(sessionId);
-    setShowDatePicker(true);
-  }, []);
-
-  const handleDateSelected = useCallback(
-    async (date: string) => {
-      if (!sessionToAssign) return;
-
-      try {
-        const routineId = await createRoutineFromSession(sessionToAssign, date);
-        Alert.alert("Routine Created", `A new routine has been assigned to ${date}`, [
-          { text: "OK" },
-          {
-            text: "View Routine",
-            onPress: () => router.push(`/routines/${routineId}` as never),
-          },
-        ]);
-      } catch {
-        Alert.alert("Error", "Failed to create routine. Please try again.");
-      } finally {
-        setSessionToAssign(null);
-      }
-    },
-    [sessionToAssign, createRoutineFromSession, router],
-  );
-
   const handleDateRangeSelected = useCallback(
     async (startDate: string, endDate: string) => {
       // Date-range filter is its own mode; clear any active search.
@@ -195,14 +124,9 @@ export default function HistoryScreen() {
 
   const renderSessionItem = useCallback(
     ({ item }: { item: HistorySession }) => (
-      <SessionCard
-        session={item}
-        onPress={() => handleViewSession(item.id)}
-        onDelete={() => handleDelete(item.id)}
-        onAssignToDate={() => handleAssignToDate(item.id)}
-      />
+      <SessionCard session={item} onPress={() => handleViewSession(item.id)} />
     ),
-    [handleAssignToDate, handleDelete, handleViewSession],
+    [handleViewSession],
   );
 
   const handleEndReached = useCallback(() => {
@@ -417,15 +341,6 @@ export default function HistoryScreen() {
         onEndReachedThreshold={0.3}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
-      />
-
-      <DatePicker
-        visible={showDatePicker}
-        onClose={() => {
-          setShowDatePicker(false);
-          setSessionToAssign(null);
-        }}
-        onSelect={handleDateSelected}
       />
 
       <DateRangePicker

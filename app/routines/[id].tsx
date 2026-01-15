@@ -6,6 +6,7 @@ import {
   Alert,
   Keyboard,
   KeyboardAvoidingView,
+  type KeyboardEvent,
   Platform,
   Pressable,
   Text,
@@ -49,6 +50,43 @@ export default function RoutineEditScreen() {
   const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
   const [editingExerciseName, setEditingExerciseName] = useState("");
   const exerciseInputRef = useRef<TextInput>(null);
+  const titleInputRef = useRef<TextInput>(null);
+
+  // Footer positioning: on Android, the keyboard often overlays fixed footers.
+  // We explicitly lift the footer above the keyboard.
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [footerHeight, setFooterHeight] = useState(0);
+
+  const focusExerciseInput = () => {
+    // On some devices, focusing immediately during submit can be flaky.
+    // Keep this tiny delay to reliably move focus without dismissing the keyboard.
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        exerciseInputRef.current?.focus();
+      }, 50);
+    });
+  };
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+
+    const onShow = (e: KeyboardEvent) => {
+      const h = e.endCoordinates?.height ?? 0;
+      setKeyboardHeight(h);
+    };
+
+    const onHide = () => {
+      setKeyboardHeight(0);
+    };
+
+    const showSub = Keyboard.addListener("keyboardDidShow", onShow);
+    const hideSub = Keyboard.addListener("keyboardDidHide", onHide);
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (!isCreateMode && routineId) {
@@ -267,9 +305,13 @@ export default function RoutineEditScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      // IMPORTANT:
+      // - iOS: padding keeps the fixed footer above the keyboard.
+      // - Android: height is needed; otherwise the keyboard can cover the footer.
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={0}
       className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary"
+      style={{ flex: 1 }}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
@@ -325,34 +367,36 @@ export default function RoutineEditScreen() {
           {/* Routine Title Input - Fixed padding and height */}
           <View className="mx-5 my-4 rounded-xl bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium overflow-hidden">
             <TextInput
+              ref={titleInputRef}
               value={draftRoutine.title}
               onChangeText={updateDraftTitle}
               placeholder="Routine name (e.g., Upper Body)"
               className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary px-4 py-4"
               placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
               autoCapitalize="words"
-              returnKeyType="done"
-              blurOnSubmit
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={focusExerciseInput}
             />
           </View>
 
           {/* Exercise List - Scrollable with proper centering for empty state */}
-          <View className="flex-1">
+          <View className="flex-1" style={{ paddingBottom: footerHeight + 12 }}>
             {draftRoutine.exercises.length === 0 ? (
-              <View className="flex-1 items-center justify-center px-5">
-                <View className="bg-light-surface dark:bg-dark-surface rounded-3xl p-12 items-center shadow-sm dark:shadow-dark-sm border border-light-border-light dark:border-dark-border-medium max-w-xs">
-                  <View className="w-20 h-20 rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated items-center justify-center mb-4">
+              <View className="flex items-center justify-center mt-20 ">
+                <View className="bg-light-surface dark:bg-dark-surface rounded-3xl px-8 py-10 items-center shadow-md dark:shadow-dark-md border border-light-border-light dark:border-dark-border-medium w-full max-w-sm">
+                  <View className="w-24 h-24 rounded-full bg-primary-50 dark:bg-dark-bg-elevated items-center justify-center mb-5">
                     <Ionicons
                       name="barbell-outline"
-                      size={40}
+                      size={48}
                       color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
                     />
                   </View>
-                  <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary mb-2 text-center">
+                  <Text className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary mb-2.5 text-center">
                     Start Building
                   </Text>
-                  <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary text-center">
-                    Add exercises below to create your routine
+                  <Text className="text-[15px] text-light-text-secondary dark:text-dark-text-secondary text-center leading-5">
+                    Add exercises below to create{"\n"}your routine
                   </Text>
                 </View>
               </View>
@@ -362,7 +406,11 @@ export default function RoutineEditScreen() {
                 onDragEnd={({ data }) => reorderDraftExercises(data)}
                 keyExtractor={(item) => item.id}
                 renderItem={renderExerciseItem}
-                contentContainerStyle={{ paddingHorizontal: 12, paddingTop: 8, paddingBottom: 8 }}
+                contentContainerStyle={{
+                  paddingHorizontal: 12,
+                  paddingTop: 8,
+                  paddingBottom: footerHeight + 12,
+                }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode="on-drag"
@@ -373,7 +421,21 @@ export default function RoutineEditScreen() {
           {/* Footer - Add Exercise Input (Fixed at bottom with safe area) */}
           <View
             className="bg-light-surface dark:bg-dark-surface border-t border-light-border-light dark:border-dark-border-medium px-4 pt-3"
-            style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+            onLayout={(e) => {
+              const h = Math.ceil(e.nativeEvent.layout.height);
+              if (h !== footerHeight) {
+                setFooterHeight(h);
+              }
+            }}
+            style={{
+              paddingBottom: Math.max(insets.bottom, 16),
+              // Absolute footer + keyboard lift on Android to avoid being covered.
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: Platform.OS === "android" ? keyboardHeight : 0,
+              zIndex: 20,
+            }}
           >
             {/* Add Exercise Input */}
             <View className="flex-row items-center gap-2 px-4 mb-2">
@@ -388,6 +450,13 @@ export default function RoutineEditScreen() {
                 placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
                 autoCapitalize="words"
                 blurOnSubmit={false}
+                onFocus={() => {
+                  // Defensive: if user taps directly into this input, make sure it comes above the keyboard.
+                  // (Especially important on Android OEM keyboards.)
+                  requestAnimationFrame(() => {
+                    // no-op; keeping a frame lets KeyboardAvoidingView recalc before layout settles
+                  });
+                }}
               />
               <Pressable
                 onPress={handleAddExercise}
@@ -401,14 +470,16 @@ export default function RoutineEditScreen() {
 
             {/* Delete Routine Button (Edit Mode Only) */}
             {draftRoutine.id && (
-              <Pressable
-                onPress={handleDeleteRoutine}
-                className="w-full rounded-2xl py-4 mb-2 items-center justify-center active:opacity-80 border-2 border-red-300 dark:border-red-300"
-              >
-                <Text className="text-base font-bold text-red-500 dark:text-red-400">
-                  Delete Routine
-                </Text>
-              </Pressable>
+              <View className="flex px-4">
+                <Pressable
+                  onPress={handleDeleteRoutine}
+                  className="w-full rounded-2xl py-4 mb-2 items-center justify-center active:opacity-80 border-2 border-red-300 dark:border-red-300"
+                >
+                  <Text className="text-base font-bold text-red-500 dark:text-red-400">
+                    Delete Routine
+                  </Text>
+                </Pressable>
+              </View>
             )}
           </View>
         </View>
