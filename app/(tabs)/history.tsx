@@ -5,11 +5,12 @@ import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SessionCard, SessionCardSkeleton } from "@/components/history";
+import { InProgressSessionCard, SessionCard, SessionCardSkeleton } from "@/components/history";
 import { DateRangePicker, SearchBar } from "@/components/ui";
 import { useTheme } from "@/core/contexts/ThemeContext";
 import { DATE_FORMATS, formatDate } from "@/core/utils/helpers";
 import { type HistorySession, useHistoryStore } from "@/features/history";
+import { useSessionStore } from "@/features/session";
 
 const SEARCH_DEBOUNCE_MS = 250;
 
@@ -20,14 +21,20 @@ export default function HistoryScreen() {
 
   // Store hooks - use shallow selectors to prevent unnecessary re-renders
   const sessions = useHistoryStore((state) => state.sessions);
+  const inProgressSessions = useHistoryStore((state) => state.inProgressSessions);
   const isLoading = useHistoryStore((state) => state.isLoading);
   const isLoadingMore = useHistoryStore((state) => state.isLoadingMore);
   const hasMore = useHistoryStore((state) => state.hasMore);
   const loadSessions = useHistoryStore((state) => state.loadSessions);
+  const loadInProgressSessions = useHistoryStore((state) => state.loadInProgressSessions);
   const refreshSessions = useHistoryStore((state) => state.refreshSessions);
   const loadMoreSessions = useHistoryStore((state) => state.loadMoreSessions);
   const searchSessions = useHistoryStore((state) => state.searchSessions);
   const filterByDateRange = useHistoryStore((state) => state.filterByDateRange);
+  const discardSession = useHistoryStore((state) => state.discardSession);
+
+  // Session store for resuming workouts
+  const activeSessionId = useSessionStore((state) => state.activeSessionId);
 
   // Local state
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,7 +54,8 @@ export default function HistoryScreen() {
   // Load sessions on mount
   useEffect(() => {
     loadSessions({ reset: true });
-  }, [loadSessions]);
+    loadInProgressSessions();
+  }, [loadSessions, loadInProgressSessions]);
 
   const handleSearch = useCallback((text: string) => {
     setSearchQuery(text);
@@ -110,7 +118,36 @@ export default function HistoryScreen() {
     }
 
     await refreshSessions();
-  }, [activeDateRange, filterByDateRange, refreshSessions, searchQuery, searchSessions]);
+    // Also refresh in-progress sessions
+    await loadInProgressSessions();
+  }, [
+    activeDateRange,
+    filterByDateRange,
+    refreshSessions,
+    searchQuery,
+    searchSessions,
+    loadInProgressSessions,
+  ]);
+
+  const handleResumeSession = useCallback(
+    (sessionId: string) => {
+      // Navigate to the session screen
+      // The session orchestrator will handle resuming the session
+      router.push(`/session/${sessionId}` as never);
+    },
+    [router],
+  );
+
+  const handleDiscardSession = useCallback(
+    async (sessionId: string) => {
+      try {
+        await discardSession(sessionId);
+      } catch (error) {
+        console.error("Failed to discard session:", error);
+      }
+    },
+    [discardSession],
+  );
 
   const handleViewSession = useCallback(
     (sessionId: string) => {
@@ -190,6 +227,49 @@ export default function HistoryScreen() {
     );
   };
 
+  // Render In-Progress section as list header (only when not searching/filtering)
+  const renderInProgressSection = useCallback(() => {
+    // Don't show in-progress section when searching or filtering
+    if (isSearching || isFiltering) return null;
+
+    // Don't show if no in-progress sessions (except the active one in Zustand)
+    // Filter out the session that's currently active in Zustand (it's being worked on)
+    const orphanedInProgress = inProgressSessions.filter((s) => s.id !== activeSessionId);
+
+    if (orphanedInProgress.length === 0) return null;
+
+    return (
+      <View className="mb-4">
+        <Text className="text-xs font-semibold text-light-text-tertiary dark:text-dark-text-tertiary uppercase tracking-wide mb-3">
+          In Progress
+        </Text>
+        {orphanedInProgress.map((session) => (
+          <InProgressSessionCard
+            key={session.id}
+            session={session}
+            onResume={() => handleResumeSession(session.id)}
+            onDiscard={() => handleDiscardSession(session.id)}
+          />
+        ))}
+
+        {/* Completed section header */}
+        {sessions.length > 0 && (
+          <Text className="text-xs font-semibold text-light-text-tertiary dark:text-dark-text-tertiary uppercase tracking-wide mt-4 mb-3">
+            Completed
+          </Text>
+        )}
+      </View>
+    );
+  }, [
+    isSearching,
+    isFiltering,
+    inProgressSessions,
+    activeSessionId,
+    sessions.length,
+    handleResumeSession,
+    handleDiscardSession,
+  ]);
+
   return (
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
@@ -245,9 +325,9 @@ export default function HistoryScreen() {
         </View>
 
         {(isFiltering || isSearching) && (
-          <View className="flex-row flex-wrap gap-2 mt-3">
+          <View className="flex-row flex-wrap gap-2 mt-3 ml-5">
             {isSearching && (
-              <View className="flex-row items-center bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-full px-3 py-1.5">
+              <View className="flex-row items-center bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-full p-2">
                 <Ionicons
                   name="search"
                   size={14}
@@ -313,6 +393,7 @@ export default function HistoryScreen() {
         renderItem={renderSessionItem}
         keyExtractor={keyExtractor}
         drawDistance={300}
+        ListHeaderComponent={renderInProgressSection}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={
           !isFiltering && !searchQuery.trim() && hasMore ? (

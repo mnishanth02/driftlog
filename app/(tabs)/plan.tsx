@@ -8,6 +8,7 @@ import { WeekNavigationRail } from "@/components/planning";
 import { RoutineCard } from "@/components/routines";
 import { useTheme } from "@/core/contexts/ThemeContext";
 import { formatDate, getTodayString, getWeekDates } from "@/core/utils/helpers";
+import { useHistoryStore } from "@/features/history";
 import { useRoutineStore } from "@/features/routines";
 
 export default function PlanScreen() {
@@ -19,9 +20,11 @@ export default function PlanScreen() {
   const [selectedDate, setSelectedDate] = useState<string>(getTodayString());
   const [currentWeekDates, setCurrentWeekDates] = useState<string[]>([]);
   const [isLoadingRoutines, setIsLoadingRoutines] = useState(true);
+  const [completedRoutineIds, setCompletedRoutineIds] = useState<Set<string>>(new Set());
 
   // Routines store
   const { routines, loadRoutines } = useRoutineStore();
+  const { getCompletedRoutineIdsForDate } = useHistoryStore();
 
   // Load routines on mount
   useEffect(() => {
@@ -32,6 +35,12 @@ export default function PlanScreen() {
       await loadRoutines();
       if (isMounted) {
         setCurrentWeekDates(getWeekDates(new Date()));
+
+        // Load completion status for today
+        const today = getTodayString();
+        const completed = await getCompletedRoutineIdsForDate(today);
+        setCompletedRoutineIds(completed);
+
         setIsLoadingRoutines(false);
       }
     };
@@ -40,7 +49,19 @@ export default function PlanScreen() {
     return () => {
       isMounted = false;
     };
-  }, [loadRoutines]);
+  }, [loadRoutines, getCompletedRoutineIdsForDate]);
+
+  // Load completion status when selected date changes
+  useEffect(() => {
+    const loadCompletionStatus = async () => {
+      const completed = await getCompletedRoutineIdsForDate(selectedDate);
+      setCompletedRoutineIds(completed);
+    };
+
+    if (!isLoadingRoutines) {
+      loadCompletionStatus();
+    }
+  }, [selectedDate, getCompletedRoutineIdsForDate, isLoadingRoutines]);
 
   // Week navigation handlers (memoized for performance)
   const handlePreviousWeek = useCallback(() => {
@@ -89,6 +110,11 @@ export default function PlanScreen() {
     () => routines.filter((r) => r.plannedDate === selectedDate),
     [routines, selectedDate],
   );
+
+  // Count completed routines for selected date (memoized)
+  const completedCount = useMemo(() => {
+    return filteredRoutines.filter((r) => completedRoutineIds.has(r.id)).length;
+  }, [filteredRoutines, completedRoutineIds]);
 
   const isToday = selectedDate === getTodayString();
 
@@ -177,7 +203,9 @@ export default function PlanScreen() {
               <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
                 {filteredRoutines.length === 0
                   ? "No routines planned"
-                  : `${filteredRoutines.length} ${filteredRoutines.length === 1 ? "routine" : "routines"}`}
+                  : completedCount > 0
+                    ? `${filteredRoutines.length} ${filteredRoutines.length === 1 ? "routine" : "routines"} • ${completedCount} completed`
+                    : `${filteredRoutines.length} ${filteredRoutines.length === 1 ? "routine" : "routines"}`}
               </Text>
             </View>
             {filteredRoutines.length > 0 && (
@@ -231,6 +259,8 @@ export default function PlanScreen() {
                   onStartRoutine={() => {
                     router.push(`/session/${routine.id}` as never);
                   }}
+                  isCompleted={completedRoutineIds.has(routine.id)}
+                  completedDate={selectedDate}
                   onDelete={() => {
                     Alert.alert(
                       "Delete Routine",

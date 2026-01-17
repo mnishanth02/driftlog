@@ -1,4 +1,4 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull } from "drizzle-orm";
 import { create } from "zustand";
 import { db, waitForDb } from "../../core/db";
 import { exercises, reflections, sessions, sets } from "../../core/db/schema";
@@ -7,11 +7,41 @@ import type { HistoryStore } from "./types";
 
 const DEFAULT_PAGE_SIZE = 20;
 
+/**
+ * Transform a raw session row (with relations) to a HistorySession.
+ * Computes completedExercisesCount from exercises with completedAt set.
+ */
+function toHistorySession(session: {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string | null;
+  isActive: boolean;
+  routine?: { title: string } | null;
+  exercises?: Array<{ completedAt: string | null }> | null;
+  reflection?: unknown | null;
+}) {
+  const exercisesList = session.exercises ?? [];
+  return {
+    id: session.id,
+    date: session.date,
+    startTime: session.startTime,
+    endTime: session.endTime,
+    isActive: session.isActive,
+    planTitle: session.routine?.title ?? null,
+    exerciseCount: exercisesList.length,
+    completedExercisesCount: exercisesList.filter((e) => e.completedAt !== null).length,
+    hasReflection: !!session.reflection,
+  };
+}
+
 export const useHistoryStore = create<HistoryStore>((set, get) => ({
   // State
   sessions: [],
+  inProgressSessions: [],
   currentSession: null,
   isLoading: false,
+  isLoadingInProgress: false,
   isDeleting: false,
   isLoadingMore: false,
   hasMore: true,
@@ -43,7 +73,10 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
 
       const offset = reset ? 0 : get().sessions.length;
 
+      // Two-Tier History: Only fetch COMPLETED sessions
+      // Criteria: isActive=false AND endTime IS NOT NULL
       const page = await db.query.sessions.findMany({
+        where: and(eq(sessions.isActive, false), isNotNull(sessions.endTime)),
         orderBy: [desc(sessions.date), desc(sessions.startTime)],
         limit: pageSize,
         offset,
@@ -54,15 +87,16 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         },
       });
 
-      const historySessions = page.map((session) => ({
-        id: session.id,
-        date: session.date,
-        startTime: session.startTime,
-        endTime: session.endTime,
-        planTitle: session.routine?.title ?? null,
-        exerciseCount: session.exercises?.length ?? 0,
-        hasReflection: !!session.reflection,
-      }));
+      // Filter to only sessions with at least one completed exercise
+      // This prevents "empty ended" sessions from appearing in history
+      const completedSessions = page.filter((session) => {
+        const completedCount = (session.exercises ?? []).filter(
+          (e) => e.completedAt !== null,
+        ).length;
+        return completedCount > 0;
+      });
+
+      const historySessions = completedSessions.map(toHistorySession);
 
       set((state) => {
         if (reset) {
@@ -70,7 +104,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
           return {
             sessions: historySessions,
             isLoading: false,
-            hasMore: historySessions.length === pageSize,
+            hasMore: page.length === pageSize, // Use original page length for pagination
           };
         }
 
@@ -84,7 +118,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         return {
           sessions: merged,
           isLoading: false,
-          hasMore: historySessions.length === pageSize,
+          hasMore: page.length === pageSize,
         };
       });
     } catch (error) {
@@ -95,6 +129,33 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
 
   refreshSessions: async () => {
     await get().loadSessions({ reset: true });
+    await get().loadInProgressSessions();
+  },
+
+  loadInProgressSessions: async () => {
+    set({ isLoadingInProgress: true });
+
+    try {
+      await waitForDb();
+
+      // Fetch all in-progress sessions (isActive=true)
+      const inProgress = await db.query.sessions.findMany({
+        where: eq(sessions.isActive, true),
+        orderBy: [desc(sessions.date), desc(sessions.startTime)],
+        with: {
+          routine: true,
+          exercises: true,
+          reflection: true,
+        },
+      });
+
+      const inProgressSessions = inProgress.map(toHistorySession);
+
+      set({ inProgressSessions, isLoadingInProgress: false });
+    } catch (error) {
+      console.error("Failed to load in-progress sessions:", error);
+      set({ isLoadingInProgress: false });
+    }
   },
 
   loadMoreSessions: async () => {
@@ -247,6 +308,37 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
     }
   },
 
+  discardSession: async (sessionId: string) => {
+    set({ isDeleting: true });
+
+    try {
+      await waitForDb();
+
+      // Verify the session exists and is in-progress
+      const session = await db.query.sessions.findFirst({
+        where: eq(sessions.id, sessionId),
+      });
+
+      if (!session) {
+        set({ isDeleting: false });
+        throw new Error("Session not found");
+      }
+
+      // Hard delete the in-progress session (cascades to exercises, sets, reflection)
+      await db.delete(sessions).where(eq(sessions.id, sessionId));
+
+      // Remove from local in-progress state
+      set((state) => ({
+        inProgressSessions: state.inProgressSessions.filter((s) => s.id !== sessionId),
+        isDeleting: false,
+      }));
+    } catch (error) {
+      console.error("Failed to discard session:", error);
+      set({ isDeleting: false });
+      throw error;
+    }
+  },
+
   searchSessions: async (query: string) => {
     set({ isLoading: true });
 
@@ -261,10 +353,11 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         return;
       }
 
-      // Search matches: routine title OR exercise names
-      // Note: We fetch all with relations and filter in-memory for exercise names
+      // Search only completed sessions (same criteria as loadSessions)
+      // Note: We fetch all completed with relations and filter in-memory for exercise names
       // since Drizzle doesn't support nested relation filtering easily
       const allSessions = await db.query.sessions.findMany({
+        where: and(eq(sessions.isActive, false), isNotNull(sessions.endTime)),
         orderBy: [desc(sessions.date), desc(sessions.startTime)],
         with: {
           exercises: true,
@@ -273,25 +366,22 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         },
       });
 
-      // Filter in-memory (acceptable tradeoff: search is less frequent than browsing)
+      // Filter in-memory for search query AND completedExercisesCount > 0
       const filtered = allSessions.filter((session) => {
-        // Match routine title
+        // First: require at least one completed exercise
+        const completedCount = (session.exercises ?? []).filter(
+          (e) => e.completedAt !== null,
+        ).length;
+        if (completedCount === 0) return false;
+
+        // Then: match routine title OR exercise names
         if (session.routine?.title?.toLowerCase().includes(trimmedQuery)) {
           return true;
         }
-        // Match any exercise name
         return session.exercises?.some((ex) => ex.name.toLowerCase().includes(trimmedQuery));
       });
 
-      const historySessions = filtered.map((session) => ({
-        id: session.id,
-        date: session.date,
-        startTime: session.startTime,
-        endTime: session.endTime,
-        planTitle: session.routine?.title ?? null,
-        exerciseCount: session.exercises?.length ?? 0,
-        hasReflection: !!session.reflection,
-      }));
+      const historySessions = filtered.map(toHistorySession);
 
       set({ sessions: historySessions, isLoading: false });
       set({ hasMore: false });
@@ -308,10 +398,15 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
       // Wait for database to be initialized before querying
       await waitForDb();
 
-      // Use database-level filtering for better performance
-      const filtered = await db.query.sessions.findMany({
-        where: (sessions, { and, gte, lte }) =>
-          and(gte(sessions.date, startDate), lte(sessions.date, endDate)),
+      // Filter completed sessions by date range
+      const allInRange = await db.query.sessions.findMany({
+        where: (s, { and: andOp, gte, lte }) =>
+          andOp(
+            eq(s.isActive, false),
+            isNotNull(s.endTime),
+            gte(s.date, startDate),
+            lte(s.date, endDate),
+          ),
         orderBy: [desc(sessions.date), desc(sessions.startTime)],
         with: {
           routine: true,
@@ -320,21 +415,97 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         },
       });
 
-      const historySessions = filtered.map((session) => ({
-        id: session.id,
-        date: session.date,
-        startTime: session.startTime,
-        endTime: session.endTime,
-        planTitle: session.routine?.title ?? null,
-        exerciseCount: session.exercises?.length ?? 0,
-        hasReflection: !!session.reflection,
-      }));
+      // Filter to only sessions with at least one completed exercise
+      const filtered = allInRange.filter((session) => {
+        const completedCount = (session.exercises ?? []).filter(
+          (e) => e.completedAt !== null,
+        ).length;
+        return completedCount > 0;
+      });
+
+      const historySessions = filtered.map(toHistorySession);
 
       set({ sessions: historySessions, isLoading: false });
       set({ hasMore: false });
     } catch (error) {
       console.error("Failed to filter sessions:", error);
       set({ isLoading: false });
+    }
+  },
+
+  /**
+   * Check if a routine has a completed session for a specific date
+   *
+   * @param routineId - Routine ID to check
+   * @param date - ISO date string (YYYY-MM-DD)
+   * @returns true if routine has completed session with completed exercises
+   */
+  checkRoutineCompletedForDate: async (routineId: string, date: string): Promise<boolean> => {
+    try {
+      await waitForDb();
+
+      const session = await db.query.sessions.findFirst({
+        where: and(
+          eq(sessions.routineId, routineId),
+          eq(sessions.date, date),
+          eq(sessions.isActive, false),
+          isNotNull(sessions.endTime),
+        ),
+        with: {
+          exercises: true,
+        },
+      });
+
+      if (!session) return false;
+
+      // Require at least one completed exercise
+      const completedCount = (session.exercises ?? []).filter((e) => e.completedAt !== null).length;
+
+      return completedCount > 0;
+    } catch (error) {
+      console.error("Failed to check routine completion:", error);
+      return false;
+    }
+  },
+
+  /**
+   * Get set of completed routine IDs for a specific date (batch query)
+   *
+   * @param date - ISO date string (YYYY-MM-DD)
+   * @returns Set of routine IDs that have completed sessions
+   */
+  getCompletedRoutineIdsForDate: async (date: string): Promise<Set<string>> => {
+    try {
+      await waitForDb();
+
+      const completedSessions = await db.query.sessions.findMany({
+        where: and(
+          eq(sessions.date, date),
+          eq(sessions.isActive, false),
+          isNotNull(sessions.endTime),
+          isNotNull(sessions.routineId), // Only sessions with routines
+        ),
+        with: {
+          exercises: true,
+        },
+      });
+
+      const completedRoutineIds = new Set<string>();
+
+      for (const session of completedSessions) {
+        if (!session.routineId) continue;
+
+        const hasCompletedExercises = (session.exercises ?? []).some((e) => e.completedAt !== null);
+
+        if (hasCompletedExercises) {
+          completedRoutineIds.add(session.routineId);
+        }
+      }
+
+      return completedRoutineIds;
+    } catch (error) {
+      console.error("Failed to get completed routine IDs:", error);
+      return new Set();
     }
   },
 }));

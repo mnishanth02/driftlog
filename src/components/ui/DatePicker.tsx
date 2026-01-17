@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import { Calendar, type DateData } from "react-native-calendars";
 import { useTheme } from "@/core/contexts/ThemeContext";
 import { getTodayString } from "@/core/utils/helpers";
@@ -9,9 +9,18 @@ interface DatePickerProps {
   onClose: () => void;
   onSelect: (date: string) => void;
   selectedDate?: string;
+  title?: string;
+  description?: string;
 }
 
-export function DatePicker({ visible, onClose, onSelect, selectedDate }: DatePickerProps) {
+export function DatePicker({
+  visible,
+  onClose,
+  onSelect,
+  selectedDate,
+  title = "Select Date",
+  description,
+}: DatePickerProps) {
   const { colorScheme } = useTheme();
 
   const handleDayPress = (day: DateData) => {
@@ -20,22 +29,27 @@ export function DatePicker({ visible, onClose, onSelect, selectedDate }: DatePic
   };
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} title="Select Date">
+    <BottomSheet visible={ visible } onClose={ onClose } title={ title }>
       <View className="pb-6">
+        { description && (
+          <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary text-center mb-4 px-2">
+            { description }
+          </Text>
+        ) }
         <Calendar
-          current={selectedDate || getTodayString()}
-          onDayPress={handleDayPress}
+          current={ selectedDate || getTodayString() }
+          onDayPress={ handleDayPress }
           markedDates={
             selectedDate
               ? {
-                  [selectedDate]: {
-                    selected: true,
-                    selectedColor: colorScheme === "dark" ? "#ff9f6c" : "#f4a261",
-                  },
-                }
+                [selectedDate]: {
+                  selected: true,
+                  selectedColor: colorScheme === "dark" ? "#ff9f6c" : "#f4a261",
+                },
+              }
               : undefined
           }
-          theme={{
+          theme={ {
             backgroundColor: colorScheme === "dark" ? "#252525" : "#ffffff",
             calendarBackground: colorScheme === "dark" ? "#252525" : "#ffffff",
             textSectionTitleColor: colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b",
@@ -46,7 +60,7 @@ export function DatePicker({ visible, onClose, onSelect, selectedDate }: DatePic
             textDisabledColor: colorScheme === "dark" ? "#3a3a3a" : "#d1cbc4",
             monthTextColor: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
             arrowColor: colorScheme === "dark" ? "#ff9f6c" : "#f4a261",
-          }}
+          } }
         />
       </View>
     </BottomSheet>

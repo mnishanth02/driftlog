@@ -27,7 +27,9 @@ export function Button({
   const textClasses = {
     primary: "text-white dark:text-dark-bg-primary",
     secondary: "text-light-text-primary dark:text-dark-text-primary",
-    ghost: "text-primary-500 dark:text-dark-primary",
+    ghost: disabled
+      ? "text-light-text-tertiary dark:text-dark-text-tertiary" // Muted when disabled
+      : "text-primary-500 dark:text-dark-primary",
   };
 
   return (

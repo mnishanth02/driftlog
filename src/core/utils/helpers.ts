@@ -100,6 +100,37 @@ export function calculateElapsedSeconds(
 }
 
 /**
+ * Calculate session duration intelligently
+ * Handles cases where endTime might be null (session not properly ended)
+ * @param startTime ISO datetime when session started
+ * @param endTime ISO datetime when session ended (or null)
+ * @returns Duration in seconds, or null if invalid
+ */
+export function calculateSessionDuration(startTime: string, endTime: string | null): number | null {
+  if (!startTime) return null;
+
+  const start = new Date(startTime);
+
+  // Validate start time
+  if (Number.isNaN(start.getTime())) return null;
+
+  // Use endTime if provided, otherwise use current time (for incomplete/in-progress sessions)
+  const end = endTime ? new Date(endTime) : new Date();
+
+  // Validate end time if provided
+  if (endTime && Number.isNaN(end.getTime())) return null;
+
+  const durationSeconds = Math.floor((end.getTime() - start.getTime()) / 1000);
+
+  // Sanity checks:
+  // - Duration should be positive
+  // - Duration should be less than 24 hours (86400 seconds)
+  if (durationSeconds < 0 || durationSeconds > 86400) return null;
+
+  return durationSeconds;
+}
+
+/**
  * Format elapsed seconds into human-readable duration (e.g., "30 min", "1h 15m")
  */
 export function formatElapsedTime(seconds: number): string {
@@ -109,5 +140,11 @@ export function formatElapsedTime(seconds: number): string {
   if (hours > 0) {
     return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
   }
+
+  // Handle sessions shorter than 1 minute
+  if (seconds > 0 && minutes === 0) {
+    return "1 min";
+  }
+
   return `${minutes} min`;
 }

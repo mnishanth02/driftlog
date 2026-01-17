@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RoutineCard } from "@/components/routines";
@@ -9,12 +10,14 @@ import { FreestyleCard } from "@/components/ui";
 import { useTheme } from "@/core/contexts/ThemeContext";
 import { getTodayString } from "@/core/utils/helpers";
 import { Navigation } from "@/core/utils/navigation";
+import { useHistoryStore } from "@/features/history";
 import { useRoutineStore } from "@/features/routines";
 import { useSessionStore } from "@/features/session";
 
 export default function TodayScreen() {
   const { colorScheme } = useTheme();
   const { routines, loadRoutines } = useRoutineStore();
+  const { getCompletedRoutineIdsForDate } = useHistoryStore();
   const insets = useSafeAreaInsets();
 
   // Subscribe to session store with individual selectors
@@ -27,23 +30,38 @@ export default function TodayScreen() {
 
   // Loading state
   const [isLoadingRoutines, setIsLoadingRoutines] = useState(true);
+  const [completedRoutineIds, setCompletedRoutineIds] = useState<Set<string>>(new Set());
 
-  // Load routines on mount
+  // Load routines and check completion status on mount and when screen is focused
+  const loadData = useCallback(async () => {
+    setIsLoadingRoutines(true);
+    await loadRoutines();
+
+    // Check which routines are completed for today
+    const today = getTodayString();
+    const completed = await getCompletedRoutineIdsForDate(today);
+    setCompletedRoutineIds(completed);
+
+    setIsLoadingRoutines(false);
+  }, [loadRoutines, getCompletedRoutineIdsForDate]);
+
+  // Load on mount
   useEffect(() => {
-    let isMounted = true;
-    const load = async () => {
-      setIsLoadingRoutines(true);
-      await loadRoutines();
-      if (isMounted) {
-        setIsLoadingRoutines(false);
-      }
-    };
+    loadData();
+  }, [loadData]);
 
-    load();
-    return () => {
-      isMounted = false;
-    };
-  }, [loadRoutines]);
+  // Refresh completion status when returning to this screen (e.g., after completing a session)
+  useFocusEffect(
+    useCallback(() => {
+      const refreshCompletionStatus = async () => {
+        const today = getTodayString();
+        const completed = await getCompletedRoutineIdsForDate(today);
+        setCompletedRoutineIds(completed);
+      };
+
+      refreshCompletionStatus();
+    }, [getCompletedRoutineIdsForDate]),
+  );
 
   // Safeguard: If isSessionActive but no activeSessionId, clear session
   // This prevents showing "Workout In Progress" banner after manual end
@@ -138,6 +156,8 @@ export default function TodayScreen() {
                   routine={routine}
                   onPress={() => Navigation.goToRoutine(routine.id)}
                   onStartRoutine={() => handleStartRoutine(routine.id)}
+                  isCompleted={completedRoutineIds.has(routine.id)}
+                  completedDate={getTodayString()}
                 />
               ))}
             </View>

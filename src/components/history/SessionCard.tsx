@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useTheme } from "@/core/contexts/ThemeContext";
-import { formatDate, formatElapsedTime } from "@/core/utils/helpers";
+import { calculateSessionDuration, formatDate, formatElapsedTime } from "@/core/utils/helpers";
 import type { HistorySession } from "@/features/history";
 
 interface SessionCardProps {
@@ -13,12 +13,8 @@ interface SessionCardProps {
 function SessionCardComponent({ session, onPress }: SessionCardProps) {
   const { colorScheme } = useTheme();
 
-  // Calculate duration if session has ended
-  const duration = session.endTime
-    ? Math.floor(
-        (new Date(session.endTime).getTime() - new Date(session.startTime).getTime()) / 1000,
-      )
-    : null;
+  // Calculate duration intelligently (handles null endTime)
+  const duration = calculateSessionDuration(session.startTime, session.endTime);
 
   return (
     <Pressable

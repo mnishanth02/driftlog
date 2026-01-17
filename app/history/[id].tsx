@@ -34,7 +34,7 @@ export default function SessionDetailScreen() {
   const { createRoutineFromSession } = useRoutineStore();
 
   // TODO: Add weightUnit to settings store in future phase
-  const weightUnit = "lbs"; // Hardcoded for now
+  const _weightUnit = "lbs"; // Hardcoded for now
 
   // Local state for reflection editor
   const [isReflectionSheetOpen, setIsReflectionSheetOpen] = useState(false);
@@ -129,21 +129,21 @@ export default function SessionDetailScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
-        <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+        <StatusBar style={ colorScheme === "dark" ? "light" : "dark" } />
 
-        {/* Header */}
-        <View style={{ paddingTop: insets.top }}>
+        {/* Header */ }
+        <View style={ { paddingTop: insets.top } }>
           <View className="shadow-sm dark:shadow-dark-sm will-change-variable">
             <View className="h-13 px-4 flex-row items-center justify-between">
               <Pressable
-                onPress={handleBack}
-                hitSlop={16}
+                onPress={ handleBack }
+                hitSlop={ 16 }
                 className="min-w-17.5 h-full justify-center items-start active:opacity-60"
               >
                 <Ionicons
                   name="chevron-back"
-                  size={28}
-                  color={colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b"}
+                  size={ 28 }
+                  color={ colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b" }
                 />
               </Pressable>
 
@@ -156,11 +156,11 @@ export default function SessionDetailScreen() {
           </View>
         </View>
 
-        {/* Skeleton content */}
+        {/* Skeleton content */ }
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 20 }}
-          showsVerticalScrollIndicator={false}
+          contentContainerStyle={ { padding: 20, paddingBottom: insets.bottom + 20 } }
+          showsVerticalScrollIndicator={ false }
         >
           <Card className="mb-6">
             <View className="gap-3">
@@ -199,7 +199,7 @@ export default function SessionDetailScreen() {
           <View className="items-center mt-6">
             <ActivityIndicator
               size="small"
-              color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+              color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
             />
             <Text className="text-light-text-secondary dark:text-dark-text-secondary mt-3">
               Loading session...
@@ -214,21 +214,21 @@ export default function SessionDetailScreen() {
   if (!sessionId) {
     return (
       <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
-        <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+        <StatusBar style={ colorScheme === "dark" ? "light" : "dark" } />
 
-        {/* Header */}
-        <View style={{ paddingTop: insets.top }}>
+        {/* Header */ }
+        <View style={ { paddingTop: insets.top } }>
           <View className="shadow-sm dark:shadow-dark-sm will-change-variable">
             <View className="h-13 px-4 flex-row items-center justify-between">
               <Pressable
-                onPress={handleBack}
-                hitSlop={16}
+                onPress={ handleBack }
+                hitSlop={ 16 }
                 className="min-w-17.5 h-full justify-center items-start active:opacity-60"
               >
                 <Ionicons
                   name="chevron-back"
-                  size={28}
-                  color={colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b"}
+                  size={ 28 }
+                  color={ colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b" }
                 />
               </Pressable>
 
@@ -241,17 +241,17 @@ export default function SessionDetailScreen() {
           </View>
         </View>
 
-        {/* Error message */}
+        {/* Error message */ }
         <View className="flex-1 items-center justify-center px-5">
           <View className="items-center">
-            <Ionicons name="alert-circle-outline" size={64} color="#ef4444" />
+            <Ionicons name="alert-circle-outline" size={ 64 } color="#ef4444" />
             <Text className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary mt-4">
               Session Not Found
             </Text>
             <Text className="text-base text-light-text-secondary dark:text-dark-text-secondary text-center mt-2">
               This session may have been deleted or doesn't exist.
             </Text>
-            <Button title="Go Back" onPress={handleBack} variant="primary" className="mt-6" />
+            <Button title="Go Back" onPress={ handleBack } variant="primary" className="mt-6" />
           </View>
         </View>
       </View>
@@ -262,21 +262,21 @@ export default function SessionDetailScreen() {
   if (!currentSession) {
     return (
       <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
-        <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+        <StatusBar style={ colorScheme === "dark" ? "light" : "dark" } />
 
-        {/* Header */}
-        <View style={{ paddingTop: insets.top }}>
+        {/* Header */ }
+        <View style={ { paddingTop: insets.top } }>
           <View className="shadow-sm dark:shadow-dark-sm will-change-variable">
             <View className="h-13 px-4 flex-row items-center justify-between">
               <Pressable
-                onPress={handleBack}
-                hitSlop={16}
+                onPress={ handleBack }
+                hitSlop={ 16 }
                 className="min-w-17.5 h-full justify-center items-start active:opacity-60"
               >
                 <Ionicons
                   name="chevron-back"
-                  size={28}
-                  color={colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b"}
+                  size={ 28 }
+                  color={ colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b" }
                 />
               </Pressable>
 
@@ -289,17 +289,17 @@ export default function SessionDetailScreen() {
           </View>
         </View>
 
-        {/* Error message */}
+        {/* Error message */ }
         <View className="flex-1 items-center justify-center px-5">
           <View className="items-center">
-            <Ionicons name="alert-circle-outline" size={64} color="#ef4444" />
+            <Ionicons name="alert-circle-outline" size={ 64 } color="#ef4444" />
             <Text className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary mt-4">
               Session Not Found
             </Text>
             <Text className="text-base text-light-text-secondary dark:text-dark-text-secondary text-center mt-2">
               This session may have been deleted or doesn't exist.
             </Text>
-            <Button title="Go Back" onPress={handleBack} variant="primary" className="mt-6" />
+            <Button title="Go Back" onPress={ handleBack } variant="primary" className="mt-6" />
           </View>
         </View>
       </View>
@@ -312,34 +312,34 @@ export default function SessionDetailScreen() {
 
   return (
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+      <StatusBar style={ colorScheme === "dark" ? "light" : "dark" } />
 
-      {/* Header */}
-      <View style={{ paddingTop: insets.top }}>
+      {/* Header */ }
+      <View style={ { paddingTop: insets.top } }>
         <View className="shadow-sm dark:shadow-dark-sm will-change-variable">
           <View className="h-13 px-4 flex-row items-center justify-between">
-            {/* Back Button */}
+            {/* Back Button */ }
             <Pressable
-              onPress={handleBack}
-              hitSlop={16}
+              onPress={ handleBack }
+              hitSlop={ 16 }
               className="min-w-17.5 h-full justify-center items-start active:opacity-60"
             >
               <Ionicons
                 name="chevron-back"
-                size={28}
-                color={colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b"}
+                size={ 28 }
+                color={ colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b" }
               />
             </Pressable>
 
-            {/* Title */}
+            {/* Title */ }
             <Text className="text-[17px] font-bold text-light-text-primary dark:text-dark-text-primary">
               Session Details
             </Text>
 
-            {/* Assign to Date Button */}
+            {/* Assign to Date Button */ }
             <Pressable
-              onPress={handleAssignToDate}
-              hitSlop={16}
+              onPress={ handleAssignToDate }
+              hitSlop={ 16 }
               accessibilityRole="button"
               accessibilityLabel="Create routine from session"
               accessibilityHint="Opens calendar to assign this workout as a routine"
@@ -347,125 +347,141 @@ export default function SessionDetailScreen() {
             >
               <Ionicons
                 name="calendar-outline"
-                size={24}
-                color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                size={ 24 }
+                color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
               />
             </Pressable>
           </View>
         </View>
       </View>
 
-      {/* Content */}
+      {/* Content */ }
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 20 }}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={ { padding: 16, paddingBottom: insets.bottom + 16 } }
+        showsVerticalScrollIndicator={ false }
       >
-        {/* Session Metadata Card */}
+        {/* Session Metadata Card */ }
         <SessionMetadata
-          date={currentSession.date}
-          startTime={currentSession.startTime}
-          endTime={currentSession.endTime}
-          planTitle={currentSession.planTitle}
+          date={ currentSession.date }
+          startTime={ currentSession.startTime }
+          endTime={ currentSession.endTime }
+          planTitle={ currentSession.planTitle }
         />
 
-        {/* Exercises Section */}
-        <View className="mb-6">
-          <Text className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary mb-4">
-            Exercises
-          </Text>
+        {/* Exercises Section */ }
+        <View className="mb-4">
+          {/* Compact Section Header */ }
+          <View className="flex-row items-center justify-between mb-2 px-1">
+            <View>
+              <Text className="text-base font-bold text-light-text-primary dark:text-dark-text-primary">
+                Exercises
+              </Text>
+              <Text className="text-[10px] text-light-text-tertiary dark:text-dark-text-tertiary">
+                { currentSession.exercises.length } items logged
+              </Text>
+            </View>
+          </View>
 
-          {currentSession.exercises.length === 0 ? (
-            <Card>
-              <Text className="text-sm text-light-text-tertiary dark:text-dark-text-tertiary italic text-center">
-                No exercises logged in this session
+          { currentSession.exercises.length === 0 ? (
+            <Card className="py-6 items-center justify-center">
+              <Ionicons
+                name="fitness-outline"
+                size={ 24 }
+                color={ colorScheme === "dark" ? "#6b6b6b" : "#b5b5b5" }
+                style={ { marginBottom: 8 } }
+              />
+              <Text className="text-xs text-light-text-tertiary dark:text-dark-text-tertiary italic text-center">
+                No exercises logged
               </Text>
             </Card>
           ) : (
             currentSession.exercises.map((exercise) => (
-              <ExerciseDetailCard key={exercise.id} exercise={exercise} weightUnit={weightUnit} />
+              <ExerciseDetailCard key={ exercise.id } exercise={ exercise } />
             ))
-          )}
+          ) }
         </View>
 
-        {/* Reflection Section */}
+        {/* Reflection Section */ }
         <ReflectionSection
-          feeling={currentSession.reflection?.feeling || null}
-          notes={currentSession.reflection?.notes || null}
-          onEdit={handleOpenReflectionEditor}
+          feeling={ currentSession.reflection?.feeling || null }
+          notes={ currentSession.reflection?.notes || null }
+          onEdit={ handleOpenReflectionEditor }
         />
       </ScrollView>
 
-      {/* Date Picker Modal (for assign to date) */}
+      {/* Date Picker Modal (for assign to date) */ }
       <DatePicker
-        visible={showDatePicker}
-        onClose={() => setShowDatePicker(false)}
-        onSelect={handleDateSelected}
+        visible={ showDatePicker }
+        onClose={ () => setShowDatePicker(false) }
+        onSelect={ handleDateSelected }
+        title="Assign to Routine"
+        description="Select a date to create a routine from this workout"
       />
 
-      {/* Reflection Editor Bottom Sheet */}
+      {/* Reflection Editor Bottom Sheet */ }
       <BottomSheet
-        visible={isReflectionSheetOpen}
-        onClose={handleCloseReflectionEditor}
+        visible={ isReflectionSheetOpen }
+        onClose={ handleCloseReflectionEditor }
         title="Reflection"
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={ Platform.OS === "ios" ? "padding" : undefined }
           className="flex-1"
         >
           <ScrollView
             className="flex-1"
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={ false }
             keyboardShouldPersistTaps="handled"
           >
             <View className="gap-5 pb-5">
-              {/* Feeling Input */}
+              {/* Feeling Input */ }
               <View>
                 <Text className="text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary mb-2">
                   How did this feel?
                 </Text>
                 <TextInput
-                  value={reflectionFeeling}
-                  onChangeText={setReflectionFeeling}
+                  value={ reflectionFeeling }
+                  onChangeText={ setReflectionFeeling }
                   placeholder="Great, tough, easy, etc."
                   className="bg-light-bg-cream dark:bg-dark-bg-elevated rounded-xl px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
-                  placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+                  placeholderTextColor={ colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5" }
                   autoCapitalize="sentences"
                 />
               </View>
 
-              {/* Notes Input */}
+              {/* Notes Input */ }
               <View>
                 <Text className="text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary mb-2">
                   Anything to note?
                 </Text>
                 <TextInput
-                  value={reflectionNotes}
-                  onChangeText={setReflectionNotes}
+                  value={ reflectionNotes }
+                  onChangeText={ setReflectionNotes }
                   placeholder="Any observations, adjustments, or thoughts..."
                   className="bg-light-bg-cream dark:bg-dark-bg-elevated rounded-xl px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
-                  placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+                  placeholderTextColor={ colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5" }
                   multiline
-                  numberOfLines={6}
+                  numberOfLines={ 6 }
                   textAlignVertical="top"
-                  style={{ minHeight: 120 }}
+                  style={ { minHeight: 120 } }
                   autoCapitalize="sentences"
                 />
               </View>
 
-              {/* Action Buttons */}
+              {/* Action Buttons */ }
               <View className="gap-3">
                 <Button
-                  title={isSavingReflection ? "Saving..." : "Save Reflection"}
-                  onPress={handleSaveReflection}
+                  title={ isSavingReflection ? "Saving..." : "Save Reflection" }
+                  onPress={ handleSaveReflection }
                   variant="primary"
-                  disabled={isSavingReflection}
+                  disabled={ isSavingReflection }
                 />
                 <Button
                   title="Cancel"
-                  onPress={handleCloseReflectionEditor}
+                  onPress={ handleCloseReflectionEditor }
                   variant="secondary"
-                  disabled={isSavingReflection}
+                  disabled={ isSavingReflection }
                 />
               </View>
             </View>
