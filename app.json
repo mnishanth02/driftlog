@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "driftlog",
+    "name": "DriftLog",
     "slug": "driftlog",
     "version": "1.0.0",
     "scheme": "driftlog",
@@ -24,14 +24,32 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#faf4f0"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.driftlog.app",
       "buildNumber": "1",
-      "infoPlist": {}
+      "infoPlist": {
+        "CFBundleDisplayName": "DriftLog",
+        "NSHumanReadableCopyright": "© 2026 The Techlete. All rights reserved.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyCollectedDataTypes": [],
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {

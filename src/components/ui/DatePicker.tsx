@@ -29,27 +29,27 @@ export function DatePicker({
   };
 
   return (
-    <BottomSheet visible={ visible } onClose={ onClose } title={ title }>
+    <BottomSheet visible={visible} onClose={onClose} title={title}>
       <View className="pb-6">
-        { description && (
+        {description && (
           <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary text-center mb-4 px-2">
-            { description }
+            {description}
           </Text>
-        ) }
+        )}
         <Calendar
-          current={ selectedDate || getTodayString() }
-          onDayPress={ handleDayPress }
+          current={selectedDate || getTodayString()}
+          onDayPress={handleDayPress}
           markedDates={
             selectedDate
               ? {
-                [selectedDate]: {
-                  selected: true,
-                  selectedColor: colorScheme === "dark" ? "#ff9f6c" : "#f4a261",
-                },
-              }
+                  [selectedDate]: {
+                    selected: true,
+                    selectedColor: colorScheme === "dark" ? "#ff9f6c" : "#f4a261",
+                  },
+                }
               : undefined
           }
-          theme={ {
+          theme={{
             backgroundColor: colorScheme === "dark" ? "#252525" : "#ffffff",
             calendarBackground: colorScheme === "dark" ? "#252525" : "#ffffff",
             textSectionTitleColor: colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b",
@@ -60,7 +60,7 @@ export function DatePicker({
             textDisabledColor: colorScheme === "dark" ? "#3a3a3a" : "#d1cbc4",
             monthTextColor: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
             arrowColor: colorScheme === "dark" ? "#ff9f6c" : "#f4a261",
-          } }
+          }}
         />
       </View>
     </BottomSheet>

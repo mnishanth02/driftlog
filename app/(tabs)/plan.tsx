@@ -57,10 +57,7 @@ export default function PlanScreen() {
     const loadSessionsForWeek = async () => {
       if (currentWeekDates.length === 0) return;
 
-      const sessionsCount = await getSessionsCountByDate(
-        currentWeekDates[0],
-        currentWeekDates[6],
-      );
+      const sessionsCount = await getSessionsCountByDate(currentWeekDates[0], currentWeekDates[6]);
 
       setSessionsMap(sessionsCount);
     };
@@ -156,20 +153,20 @@ export default function PlanScreen() {
 
   return (
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
-      <StatusBar style={ colorScheme === "dark" ? "light" : "dark" } />
+      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
 
-      {/* Header */ }
-      <View className="" style={ { paddingTop: insets.top + 12 } }>
+      {/* Header */}
+      <View className="" style={{ paddingTop: insets.top + 12 }}>
         <Text className="text-3xl px-5 pb-3 font-bold text-light-text-primary dark:text-dark-text-primary">
           Plan
         </Text>
       </View>
 
-      {/* Week Range & Navigation */ }
+      {/* Week Range & Navigation */}
       <View className="px-5 pb-4">
         <View className="flex-row items-center justify-between">
           <Pressable
-            onPress={ handlePreviousWeek }
+            onPress={handlePreviousWeek}
             className="min-w-11 min-h-11 w-11 h-11 rounded-full bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium items-center justify-center active:opacity-70"
             accessibilityRole="button"
             accessibilityLabel="Previous week"
@@ -177,17 +174,17 @@ export default function PlanScreen() {
           >
             <Ionicons
               name="chevron-back"
-              size={ 20 }
-              color={ colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
+              size={20}
+              color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
             />
           </Pressable>
 
           <Text className="text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary">
-            { weekRangeText }
+            {weekRangeText}
           </Text>
 
           <Pressable
-            onPress={ handleNextWeek }
+            onPress={handleNextWeek}
             className="min-w-11 min-h-11 w-11 h-11 rounded-full bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium items-center justify-center active:opacity-70"
             accessibilityRole="button"
             accessibilityLabel="Next week"
@@ -195,48 +192,48 @@ export default function PlanScreen() {
           >
             <Ionicons
               name="chevron-forward"
-              size={ 20 }
-              color={ colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
+              size={20}
+              color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
             />
           </Pressable>
         </View>
       </View>
 
-      {/* Week Navigation Rail */ }
+      {/* Week Navigation Rail */}
       <View className="mb-6">
         <WeekNavigationRail
-          currentWeekDates={ currentWeekDates }
-          selectedDate={ selectedDate }
-          onDaySelect={ handleDaySelect }
-          routinesMap={ routinesMap }
-          sessionsMap={ sessionsMap }
+          currentWeekDates={currentWeekDates}
+          selectedDate={selectedDate}
+          onDaySelect={handleDaySelect}
+          routinesMap={routinesMap}
+          sessionsMap={sessionsMap}
         />
       </View>
 
-      {/* Main Content - Routines */ }
+      {/* Main Content - Routines */}
       <ScrollView
         className="flex-1"
-        showsVerticalScrollIndicator={ false }
-        contentContainerStyle={ { paddingHorizontal: 20, paddingBottom: 100 } }
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
       >
         <View>
-          {/* Section Header */ }
+          {/* Section Header */}
           <View className="mb-6 flex-row items-center justify-between">
             <View className="flex-1 mr-4">
               <Text className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary">
-                { isToday ? "Planned for today" : formatDate(selectedDate, "EEEE, MMMM d") }
+                {isToday ? "Planned for today" : formatDate(selectedDate, "EEEE, MMMM d")}
               </Text>
               <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
-                { filteredRoutines.length === 0
+                {filteredRoutines.length === 0
                   ? "No routines planned"
                   : completedCount > 0
                     ? `${filteredRoutines.length} ${filteredRoutines.length === 1 ? "routine" : "routines"} • ${completedCount} completed`
-                    : `${filteredRoutines.length} ${filteredRoutines.length === 1 ? "routine" : "routines"}` }
+                    : `${filteredRoutines.length} ${filteredRoutines.length === 1 ? "routine" : "routines"}`}
               </Text>
             </View>
-            { filteredRoutines.length > 0 && (
+            {filteredRoutines.length > 0 && (
               <Pressable
-                onPress={ () => router.push(`/routines/new?date=${selectedDate}` as never) }
+                onPress={() => router.push(`/routines/new?date=${selectedDate}` as never)}
                 className="bg-primary-500 dark:bg-dark-primary rounded-xl py-2.5 px-5 active:opacity-70"
                 accessibilityRole="button"
                 accessibilityLabel="Create routine"
@@ -245,16 +242,16 @@ export default function PlanScreen() {
                   Create
                 </Text>
               </Pressable>
-            ) }
+            )}
           </View>
 
-          { filteredRoutines.length === 0 ? (
+          {filteredRoutines.length === 0 ? (
             <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-light rounded-2xl p-8 items-center">
               <Ionicons
                 name="calendar-outline"
-                size={ 48 }
-                color={ colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5" }
-                style={ { marginBottom: 16 } }
+                size={48}
+                color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+                style={{ marginBottom: 16 }}
               />
               <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary mb-2 text-center">
                 No routine planned
@@ -263,7 +260,7 @@ export default function PlanScreen() {
                 Create a routine to plan your workout for this day.
               </Text>
               <Pressable
-                onPress={ () => router.push(`/routines/new?date=${selectedDate}` as never) }
+                onPress={() => router.push(`/routines/new?date=${selectedDate}` as never)}
                 className="min-h-11 bg-primary-500 dark:bg-dark-primary rounded-xl py-3 px-6 active:opacity-70"
                 accessibilityRole="button"
                 accessibilityLabel="Create routine"
@@ -275,19 +272,19 @@ export default function PlanScreen() {
             </View>
           ) : (
             <View className="gap-4">
-              { filteredRoutines.map((routine) => (
+              {filteredRoutines.map((routine) => (
                 <RoutineCard
-                  key={ routine.id }
-                  routine={ routine }
-                  onPress={ () =>
+                  key={routine.id}
+                  routine={routine}
+                  onPress={() =>
                     router.push(`/routines/${routine.id}?date=${selectedDate}` as never)
                   }
-                  onStartRoutine={ () => {
+                  onStartRoutine={() => {
                     router.push(`/session/${routine.id}` as never);
-                  } }
-                  isCompleted={ completedRoutineIds.has(routine.id) }
-                  completedDate={ selectedDate }
-                  onDelete={ () => {
+                  }}
+                  isCompleted={completedRoutineIds.has(routine.id)}
+                  completedDate={selectedDate}
+                  onDelete={() => {
                     Alert.alert(
                       "Delete Routine",
                       `Are you sure you want to delete "${routine.title}"?`,
@@ -302,11 +299,11 @@ export default function PlanScreen() {
                         },
                       ],
                     );
-                  } }
+                  }}
                 />
-              )) }
+              ))}
             </View>
-          ) }
+          )}
         </View>
       </ScrollView>
     </View>
