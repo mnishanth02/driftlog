@@ -142,7 +142,7 @@ Both Apple and Google **REQUIRE** a privacy policy URL, even for apps that colle
 
 ## Overview
 
-DriftLog ("the App") is a workout logging application that operates 
+DriftLog ("the App") is a workout logging application that operates
 entirely offline. We are committed to protecting your privacy.
 
 ## Data Collection
@@ -158,7 +158,7 @@ The App:
 
 ## Data Storage
 
-All workout data is stored locally on your device using SQLite 
+All workout data is stored locally on your device using SQLite
 database. This data:
 - Never leaves your device
 - Is not accessible to us or any third party
@@ -166,17 +166,17 @@ database. This data:
 
 ## Third-Party Services
 
-The App does not integrate with any third-party services, 
+The App does not integrate with any third-party services,
 analytics platforms, or advertising networks.
 
 ## Children's Privacy
 
-The App does not knowingly collect information from children 
+The App does not knowingly collect information from children
 under 13. As we collect no data, this is not applicable.
 
 ## Changes to This Policy
 
-We may update this Privacy Policy. Any changes will be posted 
+We may update this Privacy Policy. Any changes will be posted
 within the App.
 
 ## Contact Us
@@ -186,7 +186,7 @@ Email: privacy@driftlog.app
 
 ## Your Rights
 
-Since we collect no data, there is no personal data to access, 
+Since we collect no data, there is no personal data to access,
 modify, or delete. Uninstalling the App removes all local data.
 ```
 
@@ -223,7 +223,7 @@ Privacy Information:
 - No analytics or tracking is used
 - Uninstalling the app removes all data
 
-The app uses UserDefaults (AsyncStorage) for session 
+The app uses UserDefaults (AsyncStorage) for session
 state persistence, as declared in our privacy manifest.
 ```
 

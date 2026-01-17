@@ -23,8 +23,8 @@ DriftLog v1.0.0 is an **offline-first workout logging application** built with E
 
 ### 1.1 Missing Babel Plugin for Reanimated
 
-**Status**: 🔴 CRITICAL  
-**Impact**: Build will fail or animations won't work in production  
+**Status**: 🔴 CRITICAL
+**Impact**: Build will fail or animations won't work in production
 **Effort**: 5 minutes
 
 **Current `babel.config.js`:**
@@ -56,8 +56,8 @@ module.exports = (api) => {
 
 ### 1.2 iOS Privacy Manifest (iOS 17+ Requirement)
 
-**Status**: 🔴 CRITICAL  
-**Impact**: App Store rejection  
+**Status**: 🔴 CRITICAL
+**Impact**: App Store rejection
 **Effort**: 10 minutes
 
 Add to `app.json` under `expo.ios`:
@@ -77,8 +77,8 @@ Add to `app.json` under `expo.ios`:
 
 ### 1.3 iOS Encryption Declaration
 
-**Status**: 🔴 CRITICAL  
-**Impact**: App Store review delays  
+**Status**: 🔴 CRITICAL
+**Impact**: App Store review delays
 **Effort**: 5 minutes
 
 Add to `app.json` under `expo.ios`:
@@ -95,8 +95,8 @@ Add to `app.json` under `expo.ios`:
 
 ### 1.4 Privacy Policy URL
 
-**Status**: 🔴 CRITICAL  
-**Impact**: Both stores require this  
+**Status**: 🔴 CRITICAL
+**Impact**: Both stores require this
 **Effort**: 2 hours
 
 - Create privacy policy page (template provided in `.context/06-privacy-requirements.md`)
@@ -109,16 +109,16 @@ Add to `app.json` under `expo.ios`:
 
 ### 2.1 Create eas.json Configuration
 
-**Status**: 🟡 HIGH  
-**Impact**: Cannot build without this  
+**Status**: 🟡 HIGH
+**Impact**: Cannot build without this
 **Effort**: 30 minutes
 
 Create `eas.json` at project root (see `.context/05-eas-build-guide.md` for full configuration).
 
 ### 2.2 Pin Unstable Dependencies
 
-**Status**: 🟡 HIGH  
-**Impact**: Potential build failures  
+**Status**: 🟡 HIGH
+**Impact**: Potential build failures
 **Effort**: 10 minutes
 
 Update `package.json`:
@@ -133,8 +133,8 @@ Update `package.json`:
 
 ### 2.3 App Store Screenshots
 
-**Status**: 🟡 HIGH  
-**Impact**: Cannot submit without screenshots  
+**Status**: 🟡 HIGH
+**Impact**: Cannot submit without screenshots
 **Effort**: 4 hours
 
 **Required iOS Screenshots:**
@@ -147,8 +147,8 @@ Update `package.json`:
 
 ### 2.4 App Store Descriptions
 
-**Status**: 🟡 HIGH  
-**Impact**: Store listing quality  
+**Status**: 🟡 HIGH
+**Impact**: Store listing quality
 **Effort**: 2 hours
 
 Prepare:
@@ -163,8 +163,8 @@ Prepare:
 
 ### 3.1 Dark Mode Splash Screen
 
-**Status**: 🟠 MEDIUM  
-**Impact**: User experience  
+**Status**: 🟠 MEDIUM
+**Impact**: User experience
 **Effort**: 1 hour
 
 Create `assets/splash-dark.png` and update `app.json`:
@@ -184,8 +184,8 @@ Create `assets/splash-dark.png` and update `app.json`:
 
 ### 3.2 Android Monochrome Icon
 
-**Status**: 🟠 MEDIUM  
-**Impact**: Android 13+ themed icons  
+**Status**: 🟠 MEDIUM
+**Impact**: Android 13+ themed icons
 **Effort**: 30 minutes
 
 Create `assets/adaptive-icon-monochrome.png` (1024×1024, single color) and update:
@@ -201,8 +201,8 @@ Create `assets/adaptive-icon-monochrome.png` (1024×1024, single color) and upda
 
 ### 3.3 App Name Capitalization
 
-**Status**: 🟠 MEDIUM  
-**Impact**: Brand consistency  
+**Status**: 🟠 MEDIUM
+**Impact**: Brand consistency
 **Effort**: 5 minutes
 
 Update `app.json`:
@@ -220,8 +220,8 @@ Update `app.json`:
 
 ### 4.1 Add Package.json Build Scripts
 
-**Status**: 🟢 LOW  
-**Impact**: Developer convenience  
+**Status**: 🟢 LOW
+**Impact**: Developer convenience
 **Effort**: 10 minutes
 
 Add to `package.json`:
@@ -239,8 +239,8 @@ Add to `package.json`:
 
 ### 4.2 Add .gitignore Entries
 
-**Status**: 🟢 LOW  
-**Impact**: Security  
+**Status**: 🟢 LOW
+**Impact**: Security
 **Effort**: 5 minutes
 
 Add to `.gitignore`:
@@ -449,6 +449,6 @@ eas build --platform all --profile production --auto-submit
 
 ---
 
-*Document generated: January 17, 2026*  
-*DriftLog Version: 1.0.0*  
+*Document generated: January 17, 2026*
+*DriftLog Version: 1.0.0*
 *Expo SDK: 54*

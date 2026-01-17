@@ -1,7 +1,7 @@
 # DriftLog App Store Privacy Requirements Guide
 
-> **Last Updated:** January 2026  
-> **App Type:** Offline-First, No Network, No Accounts  
+> **Last Updated:** January 2026
+> **App Type:** Offline-First, No Network, No Accounts
 > **Status:** Pre-Submission Checklist
 
 This document covers all privacy-related requirements for submitting DriftLog to the iOS App Store and Google Play Store.
@@ -81,15 +81,15 @@ Create `PrivacyInfo.xcprivacy` in your Xcode project's root:
     <!-- Privacy Tracking -->
     <key>NSPrivacyTracking</key>
     <false/>
-    
+
     <!-- No tracking domains since we don't make network calls -->
     <key>NSPrivacyTrackingDomains</key>
     <array/>
-    
+
     <!-- No data collection since everything stays on device -->
     <key>NSPrivacyCollectedDataTypes</key>
     <array/>
-    
+
     <!-- Required Reason APIs -->
     <key>NSPrivacyAccessedAPITypes</key>
     <array>
@@ -283,7 +283,7 @@ Ensure `AndroidManifest.xml` does not request unnecessary permissions:
 <manifest>
     <!-- NO INTERNET permission needed! -->
     <!-- NO STORAGE permissions needed! -->
-    
+
     <!-- Optional: for haptic feedback -->
     <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>
@@ -598,5 +598,5 @@ If you have any questions about our privacy practices, please contact us.
 
 ---
 
-**Document Owner:** DriftLog Development Team  
+**Document Owner:** DriftLog Development Team
 **Review Frequency:** Before each app submission

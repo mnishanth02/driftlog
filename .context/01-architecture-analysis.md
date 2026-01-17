@@ -114,7 +114,7 @@ export const useSessionStore = create<SessionStore>()((set, get) => ({
   // State
   isSessionActive: false,
   currentExercises: [],
-  
+
   // Actions
   startSession: async () => { /* ... */ },
   addExercise: (name: string) => { /* ... */ },
