@@ -87,7 +87,7 @@ export default function PlanScreen() {
     if (currentWeekDates.length === 0) return;
     // Parse ISO date safely using date-fns parseISO to avoid timezone issues
     const firstDayStr = currentWeekDates[0];
-    const firstDay = new Date(firstDayStr + 'T12:00:00'); // Add time to ensure local parsing
+    const firstDay = new Date(`${firstDayStr}T12:00:00`); // Add time to ensure local parsing
     firstDay.setDate(firstDay.getDate() - 7);
     const newWeekDates = getWeekDates(firstDay);
     setCurrentWeekDates(newWeekDates);
@@ -98,7 +98,7 @@ export default function PlanScreen() {
     if (currentWeekDates.length === 0) return;
     // Parse ISO date safely using date-fns parseISO to avoid timezone issues
     const firstDayStr = currentWeekDates[0];
-    const firstDay = new Date(firstDayStr + 'T12:00:00'); // Add time to ensure local parsing
+    const firstDay = new Date(`${firstDayStr}T12:00:00`); // Add time to ensure local parsing
     firstDay.setDate(firstDay.getDate() + 7);
     const newWeekDates = getWeekDates(firstDay);
     setCurrentWeekDates(newWeekDates);
