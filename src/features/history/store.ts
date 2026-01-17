@@ -508,4 +508,43 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
       return new Set();
     }
   },
+
+  /**
+   * Get session count per date for a date range (for weekly calendar indicators)
+   *
+   * @param startDate - Start date (inclusive, YYYY-MM-DD)
+   * @param endDate - End date (inclusive, YYYY-MM-DD)
+   * @returns Map of date -> count of completed sessions (sessions with endTime set)
+   */
+  getSessionsCountByDate: async (
+    startDate: string,
+    endDate: string,
+  ): Promise<Map<string, number>> => {
+    try {
+      await waitForDb();
+
+      const sessionsInRange = await db.query.sessions.findMany({
+        where: (s, { and: andOp, gte, lte }) =>
+          andOp(
+            eq(s.isActive, false),
+            isNotNull(s.endTime),
+            gte(s.date, startDate),
+            lte(s.date, endDate),
+          ),
+      });
+
+      const countMap = new Map<string, number>();
+
+      for (const session of sessionsInRange) {
+        // Count all sessions with endTime set (completed sessions)
+        const currentCount = countMap.get(session.date) || 0;
+        countMap.set(session.date, currentCount + 1);
+      }
+
+      return countMap;
+    } catch (error) {
+      console.error("Failed to get sessions count by date:", error);
+      return new Map();
+    }
+  },
 }));

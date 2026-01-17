@@ -72,6 +72,8 @@ export type HistoryActions = {
   checkRoutineCompletedForDate: (routineId: string, date: string) => Promise<boolean>;
   /** Get set of completed routine IDs for a specific date (batch query) */
   getCompletedRoutineIdsForDate: (date: string) => Promise<Set<string>>;
+  /** Get map of date -> session count for a date range (for weekly indicators) */
+  getSessionsCountByDate: (startDate: string, endDate: string) => Promise<Map<string, number>>;
 };
 
 export type HistoryStore = HistoryState & HistoryActions;
