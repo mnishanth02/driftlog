@@ -104,20 +104,60 @@ This is what you’ll use when you want a file you can distribute.
 
 ### Android: signed APK/AAB (for sharing or store upload)
 
-Expo’s official local production guide (SDK 54 compatible) recommends:
+Expo's official local production guide (SDK 54 compatible) recommends:
 
 1) Ensure you have `android/` generated
    - Run `pnpm local:prebuild` (or `pnpm local:prebuild:clean` if you want a fresh regen)
 
 2) Create an upload key with `keytool` and move it into `android/app/`
+   ```bash
+   keytool -genkeypair -v -storetype PKCS12 \
+     -keystore android/app/driftlog-release.keystore \
+     -alias driftlog-release \
+     -keyalg RSA -keysize 2048 -validity 10000 \
+     -storepass YOUR_PASSWORD -keypass YOUR_PASSWORD \
+     -dname "CN=DriftLog, OU=Development, O=DriftLog, L=Unknown, S=Unknown, C=US"
+   ```
+   Replace `YOUR_PASSWORD` with a strong password.
 
 3) Add signing variables to `android/gradle.properties`
    - **Do not commit secrets**. Prefer `~/.gradle/gradle.properties` on your machine.
 
 4) Add a release signing config to `android/app/build.gradle`
+   ```gradle
+   signingConfigs {
+       debug {
+           storeFile file('debug.keystore')
+           storePassword 'android'
+           keyAlias 'androiddebugkey'
+           keyPassword 'android'
+       }
+       release {
+           storeFile file('driftlog-release.keystore')
+           storePassword 'YOUR_PASSWORD'
+           keyAlias 'driftlog-release'
+           keyPassword 'YOUR_PASSWORD'
+       }
+   }
+   buildTypes {
+       release {
+           signingConfig signingConfigs.release
+           // ... other release config
+       }
+   }
+   ```
 
-5) Build an `.aab` via Gradle
-   - `pnpm local:build:android:aab`
+5) Build the artifacts via Gradle
+   - For APK: `pnpm local:build:android:apk`
+   - For AAB: `pnpm local:build:android:aab`
+   
+   **Note**: First build will take 5-10 minutes due to native module compilation (Reanimated, Worklets, etc.). Subsequent builds are much faster.
+   
+   **Performance tip**: Use `--no-daemon --max-workers=2` for more stable builds:
+   ```bash
+   cd android && ./gradlew app:assembleRelease --no-daemon --max-workers=2
+   cd android && ./gradlew app:bundleRelease --no-daemon --max-workers=2
+   ```
 
 References:
 - Expo “Create a release build locally”: https://docs.expo.dev/guides/local-app-production/
