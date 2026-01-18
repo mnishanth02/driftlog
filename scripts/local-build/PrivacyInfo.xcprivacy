@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  DriftLog Privacy Manifest
+
+  This file declares DriftLog's privacy practices for iOS 17+ compliance.
+  DriftLog is an offline-first app that does NOT:
+  - Track users
+  - Collect data
+  - Make network calls
+  - Use advertising
+  - Share data with third parties
+
+  Required Reason APIs declared:
+  - NSUserDefaults (CA92.1): Used by AsyncStorage for app settings
+-->
+<plist version="1.0">
+<dict>
+    <!--
+      NSPrivacyTracking
+      Indicates whether the app or third-party SDK uses data for tracking.
+      DriftLog: false - We do not track users
+    -->
+    <key>NSPrivacyTracking</key>
+    <false/>
+
+    <!--
+      NSPrivacyTrackingDomains
+      List of internet domains that the app connects to for tracking.
+      DriftLog: Empty - We make no network calls
+    -->
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+
+    <!--
+      NSPrivacyCollectedDataTypes
+      Types of data collected by the app.
+      DriftLog: Empty - All data stays on device, nothing is "collected"
+      by Apple's definition (transmitted off-device)
+    -->
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array/>
+
+    <!--
+      NSPrivacyAccessedAPITypes
+      APIs that require a reason for access (iOS 17+)
+      DriftLog uses:
+      - NSUserDefaults via AsyncStorage for settings persistence
+    -->
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+        <!--
+          NSUserDefaults API
+          Used by: @react-native-async-storage/async-storage
+          Purpose: Storing user preferences (theme, session duration, etc.)
+        -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <!--
+                  CA92.1: Access info written by app itself
+                  "Declare this reason to access user defaults to read
+                  and write information that is only accessible to the
+                  app itself."
+                -->
+                <string>CA92.1</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

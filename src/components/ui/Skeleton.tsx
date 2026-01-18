@@ -51,17 +51,17 @@ export function Skeleton({ className = "", disableAnimation = false, ...props }:
   if (disableAnimation) {
     return (
       <View
-        className={ `bg-light-border-light dark:bg-dark-border-light opacity-60 ${className}` }
-        { ...props }
+        className={`bg-light-border-light dark:bg-dark-border-light opacity-60 ${className}`}
+        {...props}
       />
     );
   }
 
   return (
     <Animated.View
-      className={ `rounded-lg overflow-hidden ${className}` }
-      style={ [animatedStyle, props.style] }
-      { ...props }
+      className={`rounded-lg overflow-hidden ${className}`}
+      style={[animatedStyle, props.style]}
+      {...props}
     />
   );
 }

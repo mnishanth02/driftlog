@@ -161,7 +161,7 @@ export default function HistoryScreen() {
 
   const renderSessionItem = useCallback(
     ({ item }: { item: HistorySession }) => (
-      <SessionCard session={ item } onPress={ () => handleViewSession(item.id) } />
+      <SessionCard session={item} onPress={() => handleViewSession(item.id)} />
     ),
     [handleViewSession],
   );
@@ -176,10 +176,10 @@ export default function HistoryScreen() {
     if (isLoading) {
       return (
         <View className="pt-2">
-          { Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: 6 }).map((_, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: skeleton placeholders
-            <SessionCardSkeleton key={ i } showRoutine={ i % 2 === 0 } showReflection={ i % 3 === 0 } />
-          )) }
+            <SessionCardSkeleton key={i} showRoutine={i % 2 === 0} showReflection={i % 3 === 0} />
+          ))}
         </View>
       );
     }
@@ -212,17 +212,17 @@ export default function HistoryScreen() {
     return (
       <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-light rounded-2xl p-8 items-center mx-5 mt-6">
         <Ionicons
-          name={ emptyMessage.icon }
-          size={ 48 }
-          color={ colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5" }
-          style={ { marginBottom: 16 } }
-          accessible={ false }
+          name={emptyMessage.icon}
+          size={48}
+          color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+          style={{ marginBottom: 16 }}
+          accessible={false}
         />
         <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary mb-2 text-center">
-          { emptyMessage.title }
+          {emptyMessage.title}
         </Text>
         <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary text-center">
-          { emptyMessage.subtitle }
+          {emptyMessage.subtitle}
         </Text>
       </View>
     );
@@ -244,21 +244,21 @@ export default function HistoryScreen() {
         <Text className="text-xs font-semibold text-light-text-tertiary dark:text-dark-text-tertiary uppercase tracking-wide mb-3">
           In Progress
         </Text>
-        { orphanedInProgress.map((session) => (
+        {orphanedInProgress.map((session) => (
           <InProgressSessionCard
-            key={ session.id }
-            session={ session }
-            onResume={ () => handleResumeSession(session.id) }
-            onDiscard={ () => handleDiscardSession(session.id) }
+            key={session.id}
+            session={session}
+            onResume={() => handleResumeSession(session.id)}
+            onDiscard={() => handleDiscardSession(session.id)}
           />
-        )) }
+        ))}
 
-        {/* Completed section header */ }
-        { sessions.length > 0 && (
+        {/* Completed section header */}
+        {sessions.length > 0 && (
           <Text className="text-xs font-semibold text-light-text-tertiary dark:text-dark-text-tertiary uppercase tracking-wide mt-4 mb-3">
             Completed
           </Text>
-        ) }
+        )}
       </View>
     );
   }, [
@@ -273,9 +273,9 @@ export default function HistoryScreen() {
 
   return (
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
-      <StatusBar style={ colorScheme === "dark" ? "light" : "dark" } />
+      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
 
-      <View style={ { paddingTop: insets.top + 12 } } className="">
+      <View style={{ paddingTop: insets.top + 12 }} className="">
         <Text className="text-3xl px-5 pb-3 font-bold text-light-text-primary dark:text-dark-text-primary">
           History
         </Text>
@@ -283,74 +283,75 @@ export default function HistoryScreen() {
         <View className="flex-row items-center gap-3 px-5">
           <View className="flex-1">
             <SearchBar
-              value={ searchQuery }
-              onChangeText={ handleSearch }
-              onClear={ handleClearSearch }
+              value={searchQuery}
+              onChangeText={handleSearch}
+              onClear={handleClearSearch}
               placeholder="Search sessions..."
             />
           </View>
 
           <Pressable
-            onPress={ () => setShowDateRangePicker(true) }
-            android_ripple={ {
+            onPress={() => setShowDateRangePicker(true)}
+            android_ripple={{
               color: isFiltering ? "rgba(255, 255, 255, 0.3)" : "rgba(244, 162, 97, 0.3)",
-            } }
+            }}
             accessibilityRole="button"
-            accessibilityLabel={ isFiltering ? "Change date filter" : "Filter by date range" }
+            accessibilityLabel={isFiltering ? "Change date filter" : "Filter by date range"}
             accessibilityHint="Opens date range picker to filter sessions"
-            accessibilityState={ { selected: isFiltering } }
-            hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
-            className={ `min-w-11 min-h-11 w-12 h-12 rounded-xl items-center justify-center active:opacity-70 ${isFiltering
+            accessibilityState={{ selected: isFiltering }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            className={`min-w-11 min-h-11 w-12 h-12 rounded-xl items-center justify-center active:opacity-70 ${
+              isFiltering
                 ? "bg-primary-500 dark:bg-dark-primary"
                 : "bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium"
-              }` }
+            }`}
           >
             <Ionicons
               name="filter-outline"
-              size={ 22 }
-              color={ isFiltering ? "#ffffff" : colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
-              accessible={ false }
+              size={22}
+              color={isFiltering ? "#ffffff" : colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
+              accessible={false}
             />
           </Pressable>
 
-          { isFiltering && (
+          {isFiltering && (
             <Pressable
-              onPress={ handleClearDateRange }
-              android_ripple={ { color: "rgba(0, 0, 0, 0.1)" } }
+              onPress={handleClearDateRange}
+              android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
               accessibilityRole="button"
               accessibilityLabel="Clear date filter"
               accessibilityHint="Removes date range filter"
-              hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               className="min-w-11 min-h-11 w-11 h-11 rounded-xl bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium items-center justify-center active:opacity-70"
             >
               <Ionicons
                 name="close"
-                size={ 22 }
-                color={ colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
-                accessible={ false }
+                size={22}
+                color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
+                accessible={false}
               />
             </Pressable>
-          ) }
+          )}
         </View>
 
-        { (isFiltering || isSearching) && (
+        {(isFiltering || isSearching) && (
           <View className="flex-row flex-wrap gap-2 mt-3 ml-5">
-            { isSearching && (
+            {isSearching && (
               <View className="flex-row items-center bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-full p-2">
                 <Ionicons
                   name="search"
-                  size={ 14 }
-                  color={ colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
-                  style={ { marginRight: 6 } }
-                  accessible={ false }
+                  size={14}
+                  color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
+                  style={{ marginRight: 6 }}
+                  accessible={false}
                 />
                 <Text className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
-                  { searchQuery.trim() }
+                  {searchQuery.trim()}
                 </Text>
                 <Pressable
-                  onPress={ handleClearSearch }
-                  android_ripple={ { color: "rgba(0, 0, 0, 0.1)", radius: 14 } }
-                  hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
+                  onPress={handleClearSearch}
+                  android_ripple={{ color: "rgba(0, 0, 0, 0.1)", radius: 14 }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   className="ml-2 active:opacity-70"
                   accessibilityRole="button"
                   accessibilityLabel="Clear search"
@@ -358,100 +359,100 @@ export default function HistoryScreen() {
                 >
                   <Ionicons
                     name="close"
-                    size={ 14 }
-                    color={ colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5" }
-                    accessible={ false }
+                    size={14}
+                    color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+                    accessible={false}
                   />
                 </Pressable>
               </View>
-            ) }
+            )}
 
-            { isFiltering && activeDateRangeLabel && (
+            {isFiltering && activeDateRangeLabel && (
               <View className="flex-row items-center bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-full px-3 py-1.5">
                 <Ionicons
                   name="calendar"
-                  size={ 14 }
-                  color={ colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
-                  style={ { marginRight: 6 } }
+                  size={14}
+                  color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
+                  style={{ marginRight: 6 }}
                 />
                 <Text className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
-                  { activeDateRangeLabel }
+                  {activeDateRangeLabel}
                 </Text>
                 <Pressable
-                  onPress={ handleClearDateRange }
-                  android_ripple={ { color: "rgba(0, 0, 0, 0.1)", radius: 14 } }
-                  hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
+                  onPress={handleClearDateRange}
+                  android_ripple={{ color: "rgba(0, 0, 0, 0.1)", radius: 14 }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   className="ml-2 active:opacity-70"
                 >
                   <Ionicons
                     name="close"
-                    size={ 14 }
-                    color={ colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5" }
+                    size={14}
+                    color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
                   />
                 </Pressable>
               </View>
-            ) }
+            )}
           </View>
-        ) }
+        )}
 
-        { !isLoading && sessions.length > 0 && (
+        {!isLoading && sessions.length > 0 && (
           <View className="py-3 px-5 bg-light-surface/50 dark:bg-dark-surface/30 border-light-border-light dark:border-dark-border-light">
             <Text className="text-xs font-medium text-light-text-tertiary dark:text-dark-text-tertiary uppercase tracking-wide">
-              { sessions.length } { sessions.length === 1 ? "session" : "sessions" }
-              { !isFiltering && !isSearching && hasMore ? " • Scroll for more" : "" }
+              {sessions.length} {sessions.length === 1 ? "session" : "sessions"}
+              {!isFiltering && !isSearching && hasMore ? " • Scroll for more" : ""}
             </Text>
           </View>
-        ) }
+        )}
       </View>
 
       <FlashList
-        data={ sessions }
-        renderItem={ renderSessionItem }
-        keyExtractor={ keyExtractor }
-        drawDistance={ 300 }
-        ListHeaderComponent={ renderInProgressSection }
-        ListEmptyComponent={ renderEmpty }
+        data={sessions}
+        renderItem={renderSessionItem}
+        keyExtractor={keyExtractor}
+        drawDistance={300}
+        ListHeaderComponent={renderInProgressSection}
+        ListEmptyComponent={renderEmpty}
         ListFooterComponent={
           !isFiltering && !searchQuery.trim() && hasMore ? (
             <View className="py-4 items-center">
-              { isLoadingMore ? (
+              {isLoadingMore ? (
                 <View className="flex-row items-center gap-2">
                   <ActivityIndicator
                     size="small"
-                    color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
+                    color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
                   />
                   <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
                     Loading more…
                   </Text>
                 </View>
-              ) : null }
+              ) : null}
             </View>
           ) : (
             <View className="py-2" />
           )
         }
-        contentContainerStyle={ { paddingHorizontal: 20, paddingBottom: 100 } }
-        showsVerticalScrollIndicator={ false }
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={ isLoading && sessions.length > 0 }
-            onRefresh={ handleRefresh }
-            tintColor={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
-            colors={ ["#f4a261", "#ff9f6c"] }
-            progressBackgroundColor={ colorScheme === "dark" ? "#252525" : "#ffffff" }
+            refreshing={isLoading && sessions.length > 0}
+            onRefresh={handleRefresh}
+            tintColor={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+            colors={["#f4a261", "#ff9f6c"]}
+            progressBackgroundColor={colorScheme === "dark" ? "#252525" : "#ffffff"}
           />
         }
-        onEndReached={ handleEndReached }
-        onEndReachedThreshold={ 0.3 }
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.3}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
       />
 
       <DateRangePicker
-        visible={ showDateRangePicker }
-        onClose={ () => setShowDateRangePicker(false) }
-        onApply={ handleDateRangeSelected }
-        onClear={ handleClearDateRange }
+        visible={showDateRangePicker}
+        onClose={() => setShowDateRangePicker(false)}
+        onApply={handleDateRangeSelected}
+        onClear={handleClearDateRange}
       />
     </View>
   );
