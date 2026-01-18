@@ -38,83 +38,85 @@ function RoutineCardComponent({
 
   return (
     <View
-      className={ `rounded-2xl overflow-hidden border ${isCompleted
+      className={`rounded-2xl overflow-hidden border ${
+        isCompleted
           ? "bg-success/10 dark:bg-success/15 border-success/30"
           : "bg-light-bg-cream/50 dark:bg-dark-bg-accent/50 border-light-border-light dark:border-dark-border-light"
-        }` }
+      }`}
     >
-      {/* Card Header with Completion Badge */ }
+      {/* Card Header with Completion Badge */}
       <View className="flex-row items-start justify-between px-4 pt-4 pb-2">
         <Pressable
-          onPress={ onPress }
-          android_ripple={ { color: "rgba(244, 162, 97, 0.3)" } }
+          onPress={onPress}
+          android_ripple={{ color: "rgba(244, 162, 97, 0.3)" }}
           className="flex-1 pr-3"
           accessibilityRole="button"
-          accessibilityLabel={ `Edit routine: ${displayTitle}${isCompleted ? ", completed" : ""}` }
+          accessibilityLabel={`Edit routine: ${displayTitle}${isCompleted ? ", completed" : ""}`}
           accessibilityHint="Opens routine editor"
         >
-          {/* Title Row with Checkmark */ }
+          {/* Title Row with Checkmark */}
           <View className="flex-row items-center gap-2 mb-2">
             <Text className="flex-1 text-lg font-bold text-light-text-primary dark:text-dark-text-primary">
-              { displayTitle }
+              {displayTitle}
             </Text>
 
-            {/* Success Checkmark */ }
-            { isCompleted && (
+            {/* Success Checkmark */}
+            {isCompleted && (
               <View
                 className="w-6 h-6 rounded-full bg-success items-center justify-center shadow-sm"
                 accessibilityLabel="Completed"
               >
-                <Ionicons name="checkmark" size={ 16 } color="#ffffff" accessible={ false } />
+                <Ionicons name="checkmark" size={16} color="#ffffff" accessible={false} />
               </View>
-            ) }
+            )}
           </View>
 
-          {/* Exercise overview */ }
-          { exercises.length > 0 ? (
+          {/* Exercise overview */}
+          {exercises.length > 0 ? (
             <Text
-              numberOfLines={ 2 }
-              className={ `text-sm leading-5 ${isCompleted
+              numberOfLines={2}
+              className={`text-sm leading-5 ${
+                isCompleted
                   ? "text-light-text-secondary dark:text-dark-text-secondary font-medium"
                   : "text-light-text-secondary dark:text-dark-text-secondary"
-                }` }
+              }`}
             >
-              { fullExerciseText }
+              {fullExerciseText}
             </Text>
           ) : (
             <Text className="text-sm italic text-light-text-tertiary dark:text-dark-text-tertiary">
               No exercises added
             </Text>
-          ) }
+          )}
         </Pressable>
 
-        {/* Delete Button */ }
-        { onDelete && (
+        {/* Delete Button */}
+        {onDelete && (
           <Pressable
-            onPress={ onDelete }
-            android_ripple={ { color: "rgba(0, 0, 0, 0.1)", radius: 20 } }
+            onPress={onDelete}
+            android_ripple={{ color: "rgba(0, 0, 0, 0.1)", radius: 20 }}
             className="w-9 h-9 items-center justify-center rounded-lg bg-light-bg-cream dark:bg-dark-bg-accent"
             accessibilityRole="button"
             accessibilityLabel="Delete routine"
             accessibilityHint="Removes this routine from your plan"
-            hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Ionicons
               name="trash-outline"
-              size={ 18 }
-              color={ colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
-              accessible={ false }
+              size={18}
+              color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
+              accessible={false}
             />
           </Pressable>
-        ) }
+        )}
       </View>
 
-      {/* Divider */ }
+      {/* Divider */}
       <View className="h-[1px] bg-light-border-light dark:bg-dark-border-light mx-4" />
 
-      {/* Footer - Action Button */ }
+      {/* Footer - Action Button */}
       <View className="p-4">
-        { isCompleted ? (
+        {isCompleted ? (
           // Completed State - Placeholder for informative badge
           <View className="flex-row items-center justify-center min-h-11 rounded-xl bg-success/10 border border-success/20">
             <Text className="text-success font-semibold">Completed Today</Text>
@@ -123,11 +125,11 @@ function RoutineCardComponent({
           // Original: Start Session Button
           <Button
             title="Start Session"
-            onPress={ onStartRoutine }
+            onPress={onStartRoutine}
             variant="primary"
             className="min-h-11"
           />
-        ) }
+        )}
       </View>
     </View>
   );

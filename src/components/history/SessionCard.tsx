@@ -17,64 +17,64 @@ function SessionCardComponent({ session, onPress }: SessionCardProps) {
 
   return (
     <Pressable
-      onPress={ onPress }
-      android_ripple={ { color: "rgba(244, 162, 97, 0.3)" } }
+      onPress={onPress}
+      android_ripple={{ color: "rgba(244, 162, 97, 0.3)" }}
       className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-5 mb-4 shadow-sm dark:shadow-dark-sm"
       accessibilityRole="button"
-      accessibilityLabel={ `Workout session from ${formatDate(session.date, "EEEE, MMMM d")}` }
+      accessibilityLabel={`Workout session from ${formatDate(session.date, "EEEE, MMMM d")}`}
       accessibilityHint="Double tap to view session details"
     >
-      {/* Header: Date & Duration */ }
+      {/* Header: Date & Duration */}
       <View className="flex-row items-center justify-between mb-3">
         <Text className="text-base font-bold text-light-text-primary dark:text-dark-text-primary">
-          { formatDate(session.date, "EEEE, MMMM d") }
+          {formatDate(session.date, "EEEE, MMMM d")}
         </Text>
-        { duration && (
+        {duration && (
           <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
-            { formatElapsedTime(duration) }
+            {formatElapsedTime(duration)}
           </Text>
-        ) }
+        )}
       </View>
 
-      {/* Routine Title (if exists) */ }
-      { session.planTitle ? (
+      {/* Routine Title (if exists) */}
+      {session.planTitle ? (
         <View className="flex-row items-center mb-2 gap-2">
           <Ionicons
             name="barbell-outline"
-            size={ 16 }
-            color={ colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
+            size={16}
+            color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
           />
           <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
-            { session.planTitle }
+            {session.planTitle}
           </Text>
         </View>
-      ) : null }
+      ) : null}
 
-      {/* Stats Row */ }
+      {/* Stats Row */}
       <View className="flex-row items-center gap-4">
         <View className="flex-row items-center gap-2">
           <Ionicons
             name="fitness-outline"
-            size={ 16 }
-            color={ colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5" }
+            size={16}
+            color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
           />
           <Text className="text-sm text-light-text-tertiary dark:text-dark-text-tertiary">
-            { session.exerciseCount } { session.exerciseCount === 1 ? "exercise" : "exercises" }
+            {session.exerciseCount} {session.exerciseCount === 1 ? "exercise" : "exercises"}
           </Text>
         </View>
 
-        { session.hasReflection ? (
+        {session.hasReflection ? (
           <View className="flex-row items-center gap-2">
             <Ionicons
               name="chatbox-outline"
-              size={ 16 }
-              color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
+              size={16}
+              color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
             />
             <Text className="text-sm text-primary-500 dark:text-dark-primary font-medium">
               Reflection
             </Text>
           </View>
-        ) : null }
+        ) : null}
       </View>
     </Pressable>
   );

@@ -7,7 +7,7 @@ export function ThemeToggle() {
 
   const options: Array<{
     value: "light" | "dark" | "system";
-    icon: string;
+    icon: keyof typeof Ionicons.glyphMap;
     label: string;
   }> = [
       { value: "light", icon: "sunny-outline", label: "Light" },
@@ -37,14 +37,14 @@ export function ThemeToggle() {
             hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
           >
             <Ionicons
-              name={ option.icon as any }
+              name={ option.icon }
               size={ 18 }
-              color={
-                isSelected ? "#ffffff" : colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"
-              }
+              color={ isSelected ? "#ffffff" : colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
             />
             <Text
-              className={ `text-sm font-medium ${isSelected ? "text-white" : "text-light-text-secondary dark:text-dark-text-secondary"
+              className={ `text-sm font-medium ${isSelected
+                  ? "text-white"
+                  : "text-light-text-secondary dark:text-dark-text-secondary"
                 }` }
             >
               { option.label }

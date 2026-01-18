@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { memo } from "react";
+import * as Haptics from "expo-haptics";
+import { memo, useCallback } from "react";
 import { Pressable, Text, View } from "react-native";
 import type { ExerciseLog } from "@/features/session/types";
 
@@ -9,6 +10,8 @@ interface ExerciseRowProps {
   onPress: () => void;
   onLongPress?: () => void;
   isDragging?: boolean;
+  /** Called when drag starts - trigger haptic feedback */
+  onDragStart?: () => void;
 }
 
 function ExerciseRowComponent({
@@ -17,8 +20,16 @@ function ExerciseRowComponent({
   onPress,
   onLongPress,
   isDragging = false,
+  onDragStart,
 }: ExerciseRowProps) {
   const isCompleted = !!exercise.completedAt;
+
+  // Haptic feedback for drag operations
+  const handleLongPress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onLongPress?.();
+    onDragStart?.();
+  }, [onLongPress, onDragStart]);
 
   // Visual state classes based on status
   const getContainerClasses = () => {
@@ -41,26 +52,26 @@ function ExerciseRowComponent({
 
   return (
     <Pressable
-      onPress={onPress}
-      onLongPress={onLongPress}
-      android_ripple={{ color: "rgba(244, 162, 97, 0.3)" }}
-      className={getContainerClasses()}
+      onPress={ onPress }
+      onLongPress={ handleLongPress }
+      android_ripple={ { color: "rgba(244, 162, 97, 0.3)" } }
+      className={ getContainerClasses() }
       style={
         isDragging ? { elevation: 5, shadowOpacity: 0.3, transform: [{ scale: 1.02 }] } : undefined
       }
       accessibilityRole="button"
-      accessibilityLabel={`${exercise.name}${isCompleted ? " - completed" : isActive ? " - active" : ""}`}
-      accessibilityHint={isCompleted ? "Tap to mark as incomplete" : "Tap to mark as complete"}
-      accessibilityState={{ selected: isActive, disabled: isCompleted }}
+      accessibilityLabel={ `${exercise.name}${isCompleted ? " - completed" : isActive ? " - active" : ""}` }
+      accessibilityHint={ isCompleted ? "Tap to mark as incomplete" : "Tap to mark as complete" }
+      accessibilityState={ { selected: isActive, disabled: isCompleted } }
     >
       <View className="flex-row items-center">
-        {/* Drag handle - hamburger icon on left */}
+        {/* Drag handle - hamburger icon on left */ }
         <Pressable
-          onLongPress={onLongPress}
-          android_ripple={{ color: "rgba(0, 0, 0, 0.1)", radius: 20 }}
+          onLongPress={ handleLongPress }
+          android_ripple={ { color: "rgba(0, 0, 0, 0.1)", radius: 20 } }
           className="px-4 py-5 active:opacity-70"
           accessibilityLabel="Long press to reorder"
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
         >
           <View className="gap-1">
             <View className="w-4 h-0.5 rounded-full bg-light-text-tertiary dark:bg-dark-text-tertiary" />
@@ -69,30 +80,29 @@ function ExerciseRowComponent({
           </View>
         </Pressable>
 
-        {/* Exercise name - flex-1 to take remaining space */}
+        {/* Exercise name - flex-1 to take remaining space */ }
         <Text
-          className={`flex-1 py-5 pr-4 ${
-            isCompleted
+          className={ `flex-1 py-5 pr-4 ${isCompleted
               ? "text-base text-light-text-tertiary dark:text-dark-text-tertiary line-through"
               : isActive
                 ? "text-lg font-bold text-light-text-primary dark:text-dark-text-primary"
                 : "text-base font-medium text-light-text-primary dark:text-dark-text-primary"
-          }`}
-          numberOfLines={2}
+            }` }
+          numberOfLines={ 2 }
         >
-          {exercise.name}
+          { exercise.name }
         </Text>
 
-        {/* Completion indicator */}
-        {isCompleted ? (
+        {/* Completion indicator */ }
+        { isCompleted ? (
           <View className="w-10 h-10 rounded-full items-center justify-center bg-success mr-4">
-            <Ionicons name="checkmark" size={22} color="#ffffff" accessible={false} />
+            <Ionicons name="checkmark" size={ 22 } color="#ffffff" accessible={ false } />
           </View>
         ) : (
           <View className="w-10 h-10 rounded-full items-center justify-center border-2 border-light-border-medium dark:border-dark-border-medium mr-4">
             <View className="w-3 h-3 rounded-full bg-light-border-light dark:bg-dark-border-light" />
           </View>
-        )}
+        ) }
       </View>
     </Pressable>
   );

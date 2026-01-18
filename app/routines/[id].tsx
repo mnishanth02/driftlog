@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
@@ -320,7 +322,7 @@ export default function RoutineEditScreen() {
   if (!draftRoutine) {
     return (
       <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary items-center justify-center">
-        <Text className="text-light-text-secondary dark:text-dark-text-secondary">Loading...</Text>
+        <ActivityIndicator size="large" color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" } />
       </View>
     );
   }
@@ -433,7 +435,13 @@ export default function RoutineEditScreen() {
             ) : (
               <DraggableFlatList
                 data={ draftRoutine.exercises }
-                onDragEnd={ ({ data }) => reorderDraftExercises(data) }
+                onDragBegin={ () => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                } }
+                onDragEnd={ ({ data }) => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  reorderDraftExercises(data);
+                } }
                 keyExtractor={ (item) => item.id }
                 renderItem={ renderExerciseItem }
                 contentContainerStyle={ {

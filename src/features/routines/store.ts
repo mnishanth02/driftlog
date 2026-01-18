@@ -72,6 +72,7 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
       // Wait for database to be initialized before querying
       await waitForDb();
 
+      // Insert routine
       await db.insert(routines).values({
         id: routineId,
         // Title is optional in UX; store empty string rather than persisting a placeholder.
@@ -82,15 +83,18 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
         updatedAt: now,
       });
 
-      for (const exercise of exercises) {
-        await db.insert(routineExercises).values({
-          id: exercise.id,
-          routineId,
-          name: exercise.name.trim(),
-          order: exercise.order,
-          createdAt: now,
-          updatedAt: now,
-        });
+      // Batch insert exercises if any exist
+      if (exercises.length > 0) {
+        await db.insert(routineExercises).values(
+          exercises.map((exercise) => ({
+            id: exercise.id,
+            routineId,
+            name: exercise.name.trim(),
+            order: exercise.order,
+            createdAt: now,
+            updatedAt: now,
+          })),
+        );
       }
 
       await get().loadRoutines();
@@ -116,6 +120,7 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
       // Wait for database to be initialized before querying
       await waitForDb();
 
+      // Update routine metadata
       await db
         .update(routines)
         .set({
@@ -129,15 +134,18 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
       // Simplest v1 approach: rewrite children.
       await db.delete(routineExercises).where(eq(routineExercises.routineId, id));
 
-      for (const exercise of exercises) {
-        await db.insert(routineExercises).values({
-          id: exercise.id,
-          routineId: id,
-          name: exercise.name.trim(),
-          order: exercise.order,
-          createdAt: now,
-          updatedAt: now,
-        });
+      // Batch insert all exercises at once
+      if (exercises.length > 0) {
+        await db.insert(routineExercises).values(
+          exercises.map((exercise) => ({
+            id: exercise.id,
+            routineId: id,
+            name: exercise.name.trim(),
+            order: exercise.order,
+            createdAt: now,
+            updatedAt: now,
+          })),
+        );
       }
 
       await get().loadRoutines();
@@ -201,16 +209,19 @@ export const useRoutineStore = create<RoutineStore>((set, get) => ({
         updatedAt: now,
       });
 
-      // Copy exercises
-      for (const exercise of session.exercises || []) {
-        await db.insert(routineExercises).values({
-          id: generateId(),
-          routineId,
-          name: exercise.name,
-          order: exercise.order,
-          createdAt: now,
-          updatedAt: now,
-        });
+      // Batch insert all exercises at once
+      const sessionExercises = session.exercises || [];
+      if (sessionExercises.length > 0) {
+        await db.insert(routineExercises).values(
+          sessionExercises.map((exercise) => ({
+            id: generateId(),
+            routineId,
+            name: exercise.name,
+            order: exercise.order,
+            createdAt: now,
+            updatedAt: now,
+          })),
+        );
       }
 
       await get().loadRoutines();

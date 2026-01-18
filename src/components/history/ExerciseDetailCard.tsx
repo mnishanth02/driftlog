@@ -16,12 +16,12 @@ export function ExerciseDetailCard({ exercise }: ExerciseDetailCardProps) {
         <View className="w-6 h-6 rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated items-center justify-center">
           <Ionicons
             name="fitness-outline"
-            size={ 14 }
-            color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
+            size={14}
+            color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
           />
         </View>
         <Text className="text-sm font-semibold text-light-text-primary dark:text-dark-text-primary">
-          { exercise.name }
+          {exercise.name}
         </Text>
       </View>
 

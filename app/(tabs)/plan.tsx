@@ -146,7 +146,7 @@ export default function PlanScreen() {
       try {
         // Navigate to session start with routine ID
         router.push(`/session/${routineId}` as never);
-      } catch (error) {
+      } catch (_error) {
         Alert.alert("Error", "Failed to start routine. Please try again.");
       }
     },
@@ -172,7 +172,7 @@ export default function PlanScreen() {
                 await useRoutineStore.getState().deleteRoutine(routineId);
                 // Reload routines to update UI
                 await loadRoutines();
-              } catch (error) {
+              } catch (_error) {
                 Alert.alert("Error", "Failed to delete routine. Please try again.");
               }
             },

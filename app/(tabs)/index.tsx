@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RoutineCard } from "@/components/routines";
 import { ActiveSessionBanner } from "@/components/session";
@@ -113,7 +113,7 @@ export default function TodayScreen() {
   if (isLoadingRoutines) {
     return (
       <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary items-center justify-center">
-        <Text className="text-light-text-secondary dark:text-dark-text-secondary">Loading...</Text>
+        <ActivityIndicator size="large" color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" } />
       </View>
     );
   }

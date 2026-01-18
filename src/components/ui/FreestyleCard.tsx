@@ -11,23 +11,24 @@ export function FreestyleCard({ onPress }: FreestyleCardProps) {
 
   return (
     <Pressable
-      onPress={ onPress }
-      android_ripple={ { color: "rgba(244, 162, 97, 0.3)" } }
+      onPress={onPress}
+      android_ripple={{ color: "rgba(244, 162, 97, 0.3)" }}
       className="flex-row items-center bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-5 shadow-sm dark:shadow-dark-sm"
       accessibilityRole="button"
       accessibilityLabel="Start freestyle session"
       accessibilityHint="Begin a workout without a planned routine"
-      hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
       <View
-        className={ `w-12 h-12 rounded-full items-center justify-center mr-4 ${colorScheme === "dark" ? "bg-dark-primary/10" : "bg-primary-500/10"
-          }` }
+        className={`w-12 h-12 rounded-full items-center justify-center mr-4 ${
+          colorScheme === "dark" ? "bg-dark-primary/10" : "bg-primary-500/10"
+        }`}
       >
         <Ionicons
           name="flash"
-          size={ 24 }
-          color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
-          accessible={ false }
+          size={24}
+          color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+          accessible={false}
         />
       </View>
       <View className="flex-1">
@@ -40,9 +41,9 @@ export function FreestyleCard({ onPress }: FreestyleCardProps) {
       </View>
       <Ionicons
         name="chevron-forward"
-        size={ 22 }
-        color={ colorScheme === "dark" ? "#6b6b6b" : "#b5b5b5" }
-        accessible={ false }
+        size={22}
+        color={colorScheme === "dark" ? "#6b6b6b" : "#b5b5b5"}
+        accessible={false}
       />
     </Pressable>
   );

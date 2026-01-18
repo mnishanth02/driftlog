@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import { useTheme } from "@/core/contexts/ThemeContext";
 
@@ -8,6 +8,8 @@ interface SearchBarProps {
   onChangeText: (text: string) => void;
   placeholder?: string;
   onClear?: () => void;
+  /** Debounce delay in ms. Set to 0 to disable debouncing. Default: 0 (no debounce) */
+  debounceMs?: number;
 }
 
 export function SearchBar({
@@ -15,11 +17,56 @@ export function SearchBar({
   onChangeText,
   placeholder = "Search...",
   onClear,
+  debounceMs = 0,
 }: SearchBarProps) {
   const { colorScheme } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
+  const [localValue, setLocalValue] = useState(value);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync local value when external value changes
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const handleChangeText = useCallback(
+    (text: string) => {
+      setLocalValue(text);
+
+      if (debounceMs <= 0) {
+        // No debounce - call immediately
+        onChangeText(text);
+        return;
+      }
+
+      // Clear existing timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Set new debounce timer
+      debounceTimerRef.current = setTimeout(() => {
+        onChangeText(text);
+      }, debounceMs);
+    },
+    [onChangeText, debounceMs],
+  );
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleClear = () => {
+    // Clear any pending debounce
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    setLocalValue("");
     onChangeText("");
     onClear?.();
   };
@@ -38,8 +85,8 @@ export function SearchBar({
         accessible={ false }
       />
       <TextInput
-        value={ value }
-        onChangeText={ onChangeText }
+        value={ localValue }
+        onChangeText={ handleChangeText }
         placeholder={ placeholder }
         placeholderTextColor={ colorScheme === "dark" ? "#6b6b6b" : "#b5b5b5" }
         selectionColor={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
@@ -51,7 +98,7 @@ export function SearchBar({
         autoCorrect={ false }
         accessibilityLabel={ placeholder }
       />
-      { value.length > 0 && (
+      { localValue.length > 0 && (
         <Pressable
           onPress={ handleClear }
           hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
