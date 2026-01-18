@@ -314,7 +314,7 @@ export default function ActiveSessionScreen() {
           {/* Add Exercise - Only show when timer not running (idle or paused) */}
           {!timerStartTime || isTimerPaused ? (
             showAddInput ? (
-              <View className="flex-row items-center gap-3 mb-4">
+              <View className="flex flex-row items-center gap-3 mb-4 px-4">
                 <TextInput
                   ref={exerciseInputRef}
                   value={exerciseInputValue}
@@ -329,28 +329,28 @@ export default function ActiveSessionScreen() {
                   returnKeyType="done"
                   selectionColor={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
                   underlineColorAndroid="transparent"
-                  className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-lg px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
+                  className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-2xl px-5 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
                   placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
                 />
                 <Pressable
                   onPress={handleAddExercise}
                   android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
                   disabled={!exerciseInputValue.trim()}
-                  className="w-14 h-14 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-40"
+                  className="w-12 h-12 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-50"
                   accessibilityRole="button"
                   accessibilityLabel="Add exercise"
                   accessibilityHint="Add the exercise to your workout"
                   accessibilityState={{ disabled: !exerciseInputValue.trim() }}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Ionicons name="add" size={28} color="#ffffff" accessible={false} />
+                  <Ionicons name="add" size={32} color="#ffffff" accessible={false} />
                 </Pressable>
               </View>
             ) : (
               <Pressable
                 onPress={handleShowAddInput}
                 android_ripple={{ color: "rgba(244, 162, 97, 0.3)" }}
-                className="flex-row items-center justify-center gap-2 py-3 mb-3 rounded-xl border border-dashed border-light-border-medium dark:border-dark-border-medium active:opacity-70"
+                className="flex-row items-center justify-center gap-2 py-3 mb-3 mx-4 rounded-xl border border-dashed border-light-border-medium dark:border-dark-border-medium active:opacity-70"
                 accessibilityRole="button"
                 accessibilityLabel="Add exercise"
                 accessibilityHint="Opens input to add a new exercise"

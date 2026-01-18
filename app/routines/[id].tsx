@@ -396,7 +396,7 @@ export default function RoutineEditScreen() {
           </View>
 
           {/* Routine Title Input - Fixed padding and height */}
-          <View className="mx-5 my-4 rounded-xl bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium overflow-hidden">
+          <View className="mx-4 my-4 rounded-2xl bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium overflow-hidden">
             <TextInput
               ref={titleInputRef}
               value={draftRoutine.title}
@@ -404,7 +404,7 @@ export default function RoutineEditScreen() {
               placeholder="Routine name (e.g., Upper Body)"
               selectionColor={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
               underlineColorAndroid="transparent"
-              className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary px-4 py-4"
+              className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary px-5 py-4"
               placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
               autoCapitalize="words"
               returnKeyType="next"
@@ -477,7 +477,7 @@ export default function RoutineEditScreen() {
             }}
           >
             {/* Add Exercise Input */}
-            <View className="flex-row items-center gap-2 px-4 mb-2">
+            <View className="flex-row items-center gap-3 px-4 mb-2">
               <TextInput
                 ref={exerciseInputRef}
                 value={exerciseInputValue}
@@ -487,27 +487,25 @@ export default function RoutineEditScreen() {
                 returnKeyType="done"
                 selectionColor={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
                 underlineColorAndroid="transparent"
-                className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-xl px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
+                className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-2xl px-5 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
                 placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
                 autoCapitalize="words"
                 blurOnSubmit={false}
                 onFocus={() => {
                   // Defensive: if user taps directly into this input, make sure it comes above the keyboard.
-                  // (Especially important on Android OEM keyboards.)
-                  requestAnimationFrame(() => {
-                    // no-op; keeping a frame lets KeyboardAvoidingView recalc before layout settles
-                  });
+                  requestAnimationFrame(() => {});
                 }}
               />
               <Pressable
                 onPress={handleAddExercise}
                 android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
                 disabled={!exerciseInputValue.trim()}
-                className="w-14 h-14 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-40 shadow-md dark:shadow-dark-md"
-                style={{ elevation: 4 }}
+                className="w-12 h-12 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-50"
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel="Add exercise"
               >
-                <Ionicons name="add" size={28} color="#ffffff" />
+                <Ionicons name="add" size={32} color="#ffffff" />
               </Pressable>
             </View>
 
