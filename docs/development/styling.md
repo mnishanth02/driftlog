@@ -178,7 +178,7 @@ Based on the DriftLog design, here's the final implementation plan with both lig
 
 ### Step 3: Create Theme Context & Hook
 
-**`lib/contexts/ThemeContext.tsx`:**
+**`src/core/contexts/ThemeContext.tsx`:**
 
 ```tsx
 import React, { createContext, useContext, useEffect } from 'react';
@@ -272,7 +272,7 @@ export const useTheme = () => {
 ```tsx
 import '../global.css';
 import { Stack } from 'expo-router';
-import { ThemeProvider } from '@/lib/contexts/ThemeContext';
+import { ThemeProvider } from '@/core/contexts/ThemeContext';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
 
@@ -456,7 +456,7 @@ export function MetricCard({ label, value, unit, icon }: MetricCardProps) {
 
 ```tsx
 import { View, Pressable, Text } from 'react-native';
-import { useTheme } from '@/lib/contexts/ThemeContext';
+import { useTheme } from '@/core/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export function ThemeToggle() {
@@ -518,7 +518,7 @@ import { Button } from '@/components/ui/Button';
 import { TabBar } from '@/components/ui/TabBar';
 import { MetricCard } from '@/components/ui/MetricCard';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { useTheme } from '@/lib/contexts/ThemeContext';
+import { useTheme } from '@/core/contexts/ThemeContext';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -641,20 +641,26 @@ pnpx expo start --android
 ## Complete File Structure
 
 ```
-your-app/
+driftlog/
 ├── app/
 │   ├── _layout.tsx              ✅ Theme provider & StatusBar
-│   └── index.tsx                ✅ Home screen with dark mode
-├── components/
-│   └── ui/
-│       ├── Card.tsx             ✅ Dark mode support
-│       ├── Button.tsx           ✅ Dark mode support
-│       ├── TabBar.tsx           ✅ Dark mode support
-│       ├── MetricCard.tsx       ✅ Dark mode support
-│       └── ThemeToggle.tsx      ✅ Theme switcher
-├── lib/
-│   └── contexts/
-│       └── ThemeContext.tsx     ✅ Theme management
+│   ├── (tabs)/
+│   │   ├── _layout.tsx          ✅ Tab bar configuration
+│   │   ├── index.tsx            ✅ Today screen
+│   │   ├── plan.tsx             ✅ Planning screen
+│   │   ├── history.tsx          ✅ History screen
+│   │   └── settings.tsx         ✅ Settings with ThemeToggle
+├── src/
+│   ├── components/
+│   │   └── ui/
+│   │       ├── Card.tsx             ✅ Dark mode support
+│   │       ├── Button.tsx           ✅ Dark mode support
+│   │       ├── BottomSheet.tsx      ✅ Dark mode support
+│   │       ├── SearchBar.tsx        ✅ Dark mode support
+│   │       └── ThemeToggle.tsx      ✅ Theme switcher
+│   └── core/
+│       └── contexts/
+│           └── ThemeContext.tsx     ✅ Theme management
 ├── global.css                   ✅ Complete design system
 ├── metro.config.js              ✅ NativeWind setup
 ├── postcss.config.mjs           ✅ Tailwind v4

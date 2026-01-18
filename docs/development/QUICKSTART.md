@@ -1,13 +1,14 @@
 # Quick Start Guide - DriftLog Development
 
-## ✅ Migration Complete!
+## ✅ Production Ready!
 
-Your app has been successfully migrated to a production-ready structure with:
-- ✅ Expo Router (file-based routing)
-- ✅ Modular architecture (4 feature modules)
+DriftLog is a fully functional offline-first workout logging app with:
+- ✅ Expo Router v6 (file-based routing)
+- ✅ Feature-based architecture (4 modules)
 - ✅ Offline-first database (SQLite + Drizzle ORM)
-- ✅ State management (Zustand)
+- ✅ State management (Zustand with persistence)
 - ✅ Type safety (TypeScript with path aliases)
+- ✅ NativeWind v5 (TailwindCSS v4 styling)
 
 ---
 
@@ -21,7 +22,6 @@ pnpm start
 Then press:
 - `i` - Open iOS Simulator
 - `a` - Open Android Emulator
-- `w` - Open in web browser
 - `r` - Reload app
 - `m` - Toggle menu
 
@@ -29,135 +29,193 @@ Then press:
 ```bash
 pnpm ios        # iOS only
 pnpm android    # Android only
-pnpm web        # Web only
 ```
 
 ---
 
-## 📱 Current App Structure
-
+## 📱 App Structure
 
 ### Navigation (4 Tabs)
-1. **Today** - Active session logging (placeholder ready)
-2. **Plan** - Routines management (working)
-3. **History** - Past sessions (placeholder ready)
-4. **Settings** - Theme toggle (working) + future settings
+1. **Today** - Planned routines and freestyle session start
+2. **Plan** - Weekly planning with routines
+3. **History** - Past sessions with search and filtering
+4. **Settings** - Theme, auto-end, session duration
 
-
-### What Works Now
+### All Features Working
 - ✅ Tab navigation between screens
 - ✅ Theme switching (light/dark/system)
-- ✅ NativeWind styling
-- ✅ Database schema defined
-- ✅ State stores configured
-- ✅ Routines CRUD (create, edit, delete)
-- ✅ Week navigation with routine filtering
-
-
-### What's Next (UI Implementation)
-- [ ] Session logging interface (Today screen)
-- [ ] Routines assignment and quick start (Plan screen)
-- [ ] History list and detail views (History screen)
-- [ ] Complete settings (units, auto-end, etc.)
+- ✅ Session logging with pause/resume timer
+- ✅ Exercise management (add, complete, reorder via drag)
+- ✅ Routines CRUD (create, edit, delete, plan for dates)
+- ✅ Start sessions from routines or freestyle
+- ✅ Create routines from past sessions
+- ✅ History with pagination, search, and date filtering
+- ✅ Session detail view with exercises and sets
+- ✅ Reflections (feeling + notes) with encryption
+- ✅ In-progress sessions management (resume/discard)
+- ✅ Week navigation with completion indicators
+- ✅ Session persistence across app kills
 
 ---
 
-## 🗄️ Database Setup
+## 🗄️ Database
 
-### Initialize Database
-The database will auto-initialize on first app launch. Tables are defined in `src/core/db/schema.ts`.
+### Auto-Initialize
+Database auto-initializes on first app launch. Schema in `src/core/db/schema.ts`.
 
-### Generate Migrations (when schema changes)
+### Generate Migrations (after schema changes)
 ```bash
 pnpm db:generate
 ```
 
-### View Database (Drizzle Studio)
+### View Database
 ```bash
 pnpm db:studio
 ```
 
 ---
 
-## 🏗️ Building Features
+## 🏗️ Code Examples
 
-### Example: Using the Session Store
+### Using the Session Store
 
 ```typescript
-// In a component
 import { useSessionStore } from "@/features/session";
 
-function TodayScreen() {
+function SessionScreen() {
   const { 
     isSessionActive, 
     currentExercises, 
-    startSession, 
+    startSession,
+    startSessionFromRoutine,
     addExercise, 
-    addSet 
+    toggleExerciseComplete,
+    reorderExercises,
+    endSession,
+    pauseTimer,
+    resumeTimer,
   } = useSessionStore();
 
+  // Start freestyle session
   const handleStart = async () => {
     await startSession();
   };
 
+  // Start from routine
+  const handleStartFromRoutine = async (routineId: string) => {
+    await startSessionFromRoutine(routineId);
+  };
+
+  // Add exercise
   const handleAddExercise = () => {
     addExercise("Squats");
   };
 
-  const handleAddSet = (exerciseId: string) => {
-    addSet(exerciseId, 10, 100); // 10 reps, 100kg
+  // Toggle completion
+  const handleToggle = async (exerciseId: string) => {
+    await toggleExerciseComplete(exerciseId);
   };
 
-  return (
-    // Your UI here
-  );
+  return (/* Your UI */);
 }
 ```
 
-
-### Example: Using the Routines Store
+### Using the Routines Store
 
 ```typescript
-import { useRoutinesStore } from "@/features/routines";
+import { useRoutineStore } from "@/features/routines";
 
-function PlanScreen() {
-  const { routines, addRoutine, deleteRoutine } = useRoutinesStore();
+function RoutinesScreen() {
+  const { 
+    routines,
+    loadRoutines,
+    createRoutine,
+    updateRoutine,
+    deleteRoutine,
+    planRoutineForDate,
+  } = useRoutineStore();
 
-  const handleAddRoutine = () => {
-    addRoutine("Push Day");
+  // Load routines
+  useEffect(() => {
+    loadRoutines();
+  }, []);
+
+  // Create routine
+  const handleCreate = async () => {
+    await createRoutine("Push Day", ["Bench Press", "Shoulder Press"]);
   };
 
-  const handleDeleteRoutine = (id: string) => {
-    deleteRoutine(id);
+  // Plan for date
+  const handlePlan = async (routineId: string, date: string) => {
+    await planRoutineForDate(routineId, date);
   };
 
-  return (
-    // Your UI here
-  );
+  return (/* Your UI */);
+}
+```
+
+### Using the History Store
+
+```typescript
+import { useHistoryStore } from "@/features/history";
+
+function HistoryScreen() {
+  const {
+    sessions,
+    isLoading,
+    hasMore,
+    loadSessions,
+    loadMoreSessions,
+    searchSessions,
+    setDateRange,
+  } = useHistoryStore();
+
+  // Load initial sessions
+  useEffect(() => {
+    loadSessions();
+  }, []);
+
+  // Load more (pagination)
+  const handleLoadMore = () => {
+    if (hasMore && !isLoading) {
+      loadMoreSessions();
+    }
+  };
+
+  // Search
+  const handleSearch = (query: string) => {
+    searchSessions(query);
+  };
+
+  return (/* Your UI */);
 }
 ```
 
 ---
 
-## 📂 Where to Add Code
+## 📂 Project Structure
 
 ### UI Components
 - Base components → `src/components/ui/`
-- Feature components → within feature folders or `src/components/`
+- Session components → `src/components/session/`
+- History components → `src/components/history/`
+- Routines components → `src/components/routines/`
+- Planning components → `src/components/planning/`
 
-### Business Logic
-- Session logic → `src/features/session/store.ts`
-- Planning logic → `src/features/planning/store.ts`
-- History logic → `src/features/history/store.ts`
-- Settings logic → `src/features/settings/store.ts`
+### Feature Modules
+- Session → `src/features/session/` (store, types, persistence)
+- Routines → `src/features/routines/` (store, types)
+- History → `src/features/history/` (store, types)
+- Settings → `src/features/settings/` (store, types)
 
-### Database Changes
-- Schema → `src/core/db/schema.ts`
-- Types → `src/core/types/database.ts`
+### Core Infrastructure
+- Database → `src/core/db/` (schema, initialization)
+- Types → `src/core/types/` (database types)
+- Contexts → `src/core/contexts/` (ThemeContext)
+- Utils → `src/core/utils/` (helpers, validation, encryption, etc.)
 
-### Utilities
-- Helpers → `src/core/utils/helpers.ts`
-- New utils → `src/core/utils/<name>.ts`
+### Custom Hooks
+- Timer hook → `src/hooks/useSessionTimer.ts`
 
 ---
 
@@ -165,19 +223,28 @@ function PlanScreen() {
 
 ### Theme-Aware Colors
 ```tsx
-<View className="bg-white dark:bg-black">
-  <Text className="text-black dark:text-white">
+<View className="bg-light-surface dark:bg-dark-surface">
+  <Text className="text-light-text-primary dark:text-dark-text-primary">
     Hello DriftLog
   </Text>
 </View>
 ```
 
-### Custom Theme Colors (from global.css)
+### Primary Brand Color
 ```tsx
-<Text className="text-primary-500 dark:text-dark-primary">
-  Primary Text
-</Text>
+<Pressable className="bg-primary-500 dark:bg-dark-primary">
+  <Text className="text-white dark:text-dark-bg-primary">
+    Start Session
+  </Text>
+</Pressable>
 ```
+
+### Design Tokens (from global.css)
+- Backgrounds: `light-bg-primary`, `dark-bg-primary`
+- Surfaces: `light-surface`, `dark-surface`
+- Text: `light-text-primary`, `dark-text-primary`
+- Borders: `light-border-light`, `dark-border-medium`
+- Primary: `primary-500` (light), `dark-primary` (dark)
 
 ---
 
@@ -209,9 +276,9 @@ Reload app with `r` in Expo CLI
 ## 📖 Documentation
 
 - **Architecture**: `docs/development/ARCHITECTURE.md`
-- **Migration Summary**: `docs/development/MIGRATION_SUMMARY.md`
-- **Product Spec**: `docs/plan/driftlog-plan.md`
 - **Styling Guide**: `docs/development/styling.md`
+- **Local Builds**: `docs/development/LOCAL_BUILDS.md`
+- **Product Spec**: `docs/plan/driftlog-plan.md`
 
 ---
 
@@ -222,7 +289,7 @@ Reload app with `r` in Expo CLI
 pnpm start --clear
 ```
 
-### TypeScript errors after changes
+### TypeScript errors
 ```bash
 pnpm typecheck
 ```
@@ -232,10 +299,10 @@ pnpm typecheck
 pnpm lint:fix
 ```
 
-### Database schema out of sync
+### Database issues
 ```bash
-pnpm db:generate
-pnpm db:migrate
+pnpm db:studio   # Inspect data
+pnpm db:generate # Generate new migration
 ```
 
 ### App won't start
@@ -245,35 +312,14 @@ pnpm db:migrate
 
 ---
 
-## 🎯 Feature Implementation Order (Recommended)
+## 🎯 Future Enhancements
 
-### Phase 1: Core Session Logging
-1. ✅ Database schema (done)
-2. ✅ Session store (done)
-3. ⏳ Today screen UI - Session start/end
-4. ⏳ Exercise input component
-5. ⏳ One-tap set logging
-6. ⏳ Session reflection prompt
-
-
-### Phase 2: Routines
-1. ✅ Routines store (done)
-2. ⏳ Routines CRUD UI
-3. ⏳ Routine assignment to week days
-4. ⏳ Routine quick start from Plan screen
-
-### Phase 3: History
-1. ✅ History store (done)
-2. ⏳ Session list view
-3. ⏳ Session detail screen
-4. ⏳ Reflection display
-
-### Phase 4: Polish
-1. ⏳ Settings: Units selector
-2. ⏳ Settings: Auto-end session
-3. ⏳ Large tap targets (accessibility)
-4. ⏳ Offline testing
-5. ⏳ Performance optimization
+### Potential Additions
+1. Set logging UI (reps/weight per exercise)
+2. Exercise library with history
+3. Progress tracking and statistics
+4. Data export (JSON/CSV)
+5. Widgets for quick session start
 
 ---
 
@@ -284,6 +330,7 @@ pnpm db:migrate
 3. **Test offline**: Core feature, test in airplane mode
 4. **Keep it simple**: Follow the "no forced behavior" principle
 5. **Large tap targets**: Remember users are fatigued during workouts
+6. **Run typecheck**: Always run before commits
 
 ---
 
@@ -292,18 +339,16 @@ pnpm db:migrate
 Run these to verify everything is working:
 
 ```bash
-# ✅ Should pass
+# Should pass
 pnpm typecheck
 
-# ✅ Should pass
+# Should pass
 pnpm lint
 
-# ✅ Should start
+# Should start
 pnpm start
 ```
 
 ---
 
-**Ready to build!** Start with the Today screen session logging interface. 💪
-
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed structure docs.
+**Ready to extend!** See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed structure docs. 💪

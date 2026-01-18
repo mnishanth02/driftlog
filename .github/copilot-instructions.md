@@ -1,7 +1,7 @@
 # DriftLog - AI Coding Agent Instructions
 
 ## Project Overview
-DriftLog is an **offline-first workout logging app** for endurance athletes built with Expo (SDK 54) + React Native 0.81.5. The app emphasizes minimal interaction, one-tap logging, and local-only data with no accounts or tracking.
+DriftLog is a **production-ready, offline-first workout logging app** for endurance athletes built with Expo (SDK 54) + React Native 0.81.5. The app emphasizes minimal interaction, one-tap logging, and local-only data with no accounts or tracking.
 
 ## Tech Stack & Configuration
 
@@ -10,33 +10,47 @@ DriftLog is an **offline-first workout logging app** for endurance athletes buil
 - **Styling**: NativeWind v5 Preview (5.0.0-preview.2) with Tailwind CSS v4 and custom design tokens in `global.css`
 - **State**: Zustand v5 stores with persist middleware (AsyncStorage)
 - **Database**: Expo SQLite + Drizzle ORM with full type safety
+- **Lists**: FlashList for performant virtualized lists
+- **Drag & Drop**: react-native-draggable-flatlist for reorderable exercises
+- **Haptics**: expo-haptics for tactile feedback
 - **Tooling**: Biome for linting/formatting, TypeScript with strict mode
 
 ### Path Aliases (tsconfig.json)
 Always use path aliases for imports:
 ```typescript
 import { useSessionStore } from "@/features/session";
-import { db } from "@/core/db";
-import { Button } from "@/components/ui/Button";
+import { useHistoryStore } from "@/features/history";
+import { useRoutineStore } from "@/features/routines";
+import { useSettingsStore } from "@/features/settings";
+import { db, waitForDb } from "@/core/db";
+import { Button, Card, BottomSheet } from "@/components/ui";
+import { SessionCard, ReflectionSection } from "@/components/history";
+import { ActiveSessionBanner, TimerPicker } from "@/components/session";
+import { useTheme } from "@/core/contexts/ThemeContext";
+import { Navigation } from "@/core/utils/navigation";
 ```
 
 ## Architecture Patterns
 
 ### Feature-Based Modules
 Each feature (`src/features/`) is self-contained with `store.ts`, `types.ts`, `index.ts`:
-- **Session** - Active workout state (in-memory until session ends, then persist)
-- **Planning** - Weekly intent (loads current week from DB, caches in memory)
-- **History** - Past sessions (queries on demand, no caching)
-- **Settings** - App preferences (persisted via Zustand middleware)
+- **Session** - Active workout state (in-memory during session, persisted on end + AsyncStorage for crash recovery)
+- **Routines** - Reusable workout templates (full CRUD, planned dates, create from session)
+- **History** - Past sessions (paginated queries, search, date filtering, reflections)
+- **Settings** - App preferences (theme, auto-end, session duration - persisted via Zustand middleware)
 
-**Critical**: Session store keeps exercises/sets in memory during active session. Only writes to DB on `endSession()`. See [src/features/session/store.ts](../src/features/session/store.ts).
+**Critical**: Session store keeps exercises/sets in memory during active session. Only writes to DB on `endSession()`. Session state is also persisted to AsyncStorage for crash recovery. See [src/features/session/store.ts](../src/features/session/store.ts) and [src/features/session/persistence.ts](../src/features/session/persistence.ts).
 
 ### Database Schema (Drizzle)
 Schema defined in [src/core/db/schema.ts](../src/core/db/schema.ts) with relations:
 - `sessions` → `exercises` (one-to-many)
 - `exercises` → `sets` (one-to-many)
-- `sessions` → `plans` (optional link)
+- `sessions` → `routines` (optional link via `routineId`)
 - `sessions` → `reflections` (one-to-one)
+- `routines` → `routine_exercises` (one-to-many)
+- `plans` → `planned_exercises` (one-to-many)
+
+**Tables**: sessions, exercises, sets, reflections, routines, routine_exercises, plans, planned_exercises
 
 **When modifying schema**: Run `pnpm db:generate` to create migration, then restart app.
 
@@ -144,15 +158,15 @@ Common patterns in [src/core/utils/helpers.ts](../src/core/utils/helpers.ts):
 4. Restart app to apply migration
 
 ### Creating a New Screen
-1. Add route file in `app/(tabs)/` for tab screens
-2. Use Expo Router conventions (file = route)
-3. Wrap in `ScrollView` with bottom padding for tab bar clearance
+1. Add route file in `app/(tabs)/` for tab screens or `app/<name>/` for stack screens
+2. Use Expo Router conventions (file = route, `[param]` for dynamic routes)
+3. Use `useSafeAreaInsets()` for proper layout
 4. Use `useTheme()` for StatusBar style
 
 ## Key Design Decisions
 
 ### Why In-Memory Session State?
-During workouts, users log sets rapidly. Writing to DB on every set would be slow. Session store batches all writes to `endSession()` for performance.
+During workouts, users log sets rapidly. Writing to DB on every set would be slow. Session store batches all writes to `endSession()` for performance. Session state also persists to AsyncStorage for crash recovery.
 
 ### Why Zustand Over React Context?
 Zustand provides simpler state management with built-in persistence middleware and better TypeScript inference than Context API.
@@ -162,6 +176,9 @@ Type-safe queries prevent runtime errors, and relations auto-join without manual
 
 ### Why NativeWind Over StyleSheet?
 Consistent styling language with web (Tailwind), built-in dark mode support, and smaller bundle size vs. component libraries.
+
+### Why FlashList Over FlatList?
+FlashList provides significantly better performance for long lists with recycling and optimized rendering.
 
 ## Known Constraints
 
@@ -187,13 +204,29 @@ Clear cache: `pnpm start --clear`
 2. Verify schema matches types in [src/core/types/database.ts](../src/core/types/database.ts)
 3. Use `pnpm db:studio` to inspect data
 
-## Next Implementation Phase
+## Current App State
 
-Current state: Core architecture complete, placeholder UIs in place.
+### Fully Implemented Features
+- ✅ Session logging with timer (pause/resume, configurable duration)
+- ✅ Exercise management (add, complete, reorder via drag)
+- ✅ Routines CRUD (create, edit, delete, plan for dates)
+- ✅ Start sessions from routines or freestyle
+- ✅ Create routines from past sessions
+- ✅ History with pagination, search, and date filtering
+- ✅ Session detail view with exercises and sets
+- ✅ Reflections (feeling + notes) with encryption
+- ✅ In-progress sessions management (resume/discard)
+- ✅ Settings (theme, auto-end session, session duration)
+- ✅ Week navigation with completion indicators
+- ✅ Session persistence across app kill
 
-**Priority tasks** (see [docs/development/QUICKSTART.md](../docs/development/QUICKSTART.md)):
-1. Today screen - Session logging UI with exercise input + one-tap set logging
-2. Plan screen - Weekly calendar view with day plan editor
-3. History screen - Session list and detail views with reflections
+### Screens
+- `app/(tabs)/index.tsx` - Today screen (planned routines, freestyle start)
+- `app/(tabs)/plan.tsx` - Weekly planning with routines
+- `app/(tabs)/history.tsx` - Session history list
+- `app/(tabs)/settings.tsx` - App settings
+- `app/session/[routineId].tsx` - Active workout session
+- `app/history/[id].tsx` - Session detail view
+- `app/routines/[id].tsx` - Routine editor
 
 **Principle**: Keep interactions minimal - large tap targets, auto-carry forward values, no forced fields.

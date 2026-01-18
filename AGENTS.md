@@ -1,7 +1,7 @@
 # DriftLog - AI Coding Agent Instructions
 
 ## Project Overview
-DriftLog is an **offline-first workout logging app** for endurance athletes built with Expo (SDK 54) + React Native 0.81.5. The app emphasizes minimal interaction, one-tap logging, and local-only data with no accounts or tracking.
+DriftLog is a **production-ready, offline-first workout logging app** for endurance athletes built with Expo (SDK 54) + React Native 0.81.5. The app emphasizes minimal interaction, one-tap logging, and local-only data with no accounts or tracking.
 
 ## Build/Lint/Test Commands
 
@@ -47,8 +47,13 @@ pnpm db:studio      # Open Drizzle Studio (DB browser)
 - Example imports:
   ```typescript
   import { useSessionStore } from "@/features/session";
-  import { db } from "@/core/db";
-  import { Button } from "@/components/ui/Button";
+  import { useHistoryStore } from "@/features/history";
+  import { useRoutineStore } from "@/features/routines";
+  import { db, waitForDb } from "@/core/db";
+  import { Button, Card, BottomSheet } from "@/components/ui";
+  import { SessionCard, ReflectionSection } from "@/components/history";
+  import { useTheme } from "@/core/contexts/ThemeContext";
+  import { Navigation } from "@/core/utils/navigation";
   ```
 
 ### Formatting Rules (Biome)
@@ -121,6 +126,7 @@ pnpm db:studio      # Open Drizzle Studio (DB browser)
 - **Feature modules**: Each feature in `src/features/` has `store.ts`, `types.ts`, `index.ts`
 - **Critical**: Session store keeps exercises in memory during active session
 - **Only write to DB on session end** for performance
+- **Session persistence**: Session state persisted to AsyncStorage for crash recovery
 - Example store:
   ```typescript
   export const useSessionStore = create<SessionStore>((set, get) => ({
@@ -136,10 +142,12 @@ pnpm db:studio      # Open Drizzle Studio (DB browser)
 
 ### Database Patterns (Drizzle + SQLite)
 - **Schema defined in**: `src/core/db/schema.ts`
-- **Relations**: `sessions` → `exercises` → `sets` (one-to-many)
+- **Relations**: `sessions` → `exercises` → `sets` (one-to-many), `sessions` → `routines` (optional), `sessions` → `reflections` (one-to-one)
+- **Tables**: sessions, exercises, sets, reflections, routines, routine_exercises, plans, planned_exercises
 - **Type safety**: Always use generated types from Drizzle
 - **Migrations**: Auto-run on startup, generate with `pnpm db:generate`
-- **Helper utilities**: Use `generateId()`, `getTodayString()`, `getNowString()`
+- **Helper utilities**: Use `generateId()`, `getTodayString()`, `getNowString()` from `@/core/utils/helpers`
+- **Wait for DB**: Always use `await waitForDb()` before database operations
 
 ### Error Handling
 - **No network calls** - all data is local SQLite
@@ -151,13 +159,23 @@ pnpm db:studio      # Open Drizzle Studio (DB browser)
 ```
 src/
 ├── components/
-│   └── ui/              # Base UI components (theme-aware)
+│   ├── ui/              # Base UI components (theme-aware): Button, Card, BottomSheet, DatePicker, DateRangePicker, FreestyleCard, SearchBar, Skeleton, ThemeToggle
+│   ├── session/         # Session components: ActiveSessionBanner, ExerciseRow, SessionHeader, TimerPicker
+│   ├── history/         # History components: ExerciseDetailCard, InProgressSessionCard, ReflectionSection, SessionCard, SessionCardSkeleton, SessionMetadata
+│   ├── routines/        # Routine components: RoutineCard
+│   ├── planning/        # Planning components: WeekNavigationRail
+│   └── ErrorBoundary.tsx
 ├── features/            # Feature modules (store, types, index)
+│   ├── session/         # Active workout session management
+│   ├── routines/        # Reusable workout templates
+│   ├── history/         # Past sessions and reflections
+│   └── settings/        # App preferences
 ├── core/
-│   ├── db/             # Database setup and schema
-│   ├── types/          # TypeScript definitions
-│   └── utils/          # Helper functions
-└── hooks/              # Custom React hooks
+│   ├── db/              # Database setup and schema (index.ts, schema.ts)
+│   ├── types/           # TypeScript definitions (database.ts)
+│   ├── contexts/        # React contexts (ThemeContext.tsx)
+│   └── utils/           # Helper functions (helpers.ts, validation.ts, encryption.ts, navigation.ts, logger.ts, etc.)
+└── hooks/               # Custom React hooks (useSessionTimer.ts)
 ```
 
 ## Architecture Principles
@@ -171,7 +189,7 @@ src/
 ### Performance
 - **In-memory session state** during workouts
 - **Batch DB writes** on `endSession()` only
-- **Flash List** for performant long lists
+- **FlashList** for performant long lists with recycling
 - **Zustand** over Context for better TypeScript inference
 
 ### Type Safety
@@ -196,9 +214,9 @@ src/
 4. Restart app to apply migration
 
 ### Creating New Screen
-1. Add route file in `app/(tabs)/` for tab screens
-2. Use Expo Router file-based routing
-3. Wrap in `ScrollView` with bottom padding
+1. Add route file in `app/(tabs)/` for tab screens or `app/<name>/` for stack screens
+2. Use Expo Router file-based routing (`[param]` for dynamic routes)
+3. Use `useSafeAreaInsets()` for proper layout
 4. Use `useTheme()` for StatusBar style
 
 ## Key Constraints
