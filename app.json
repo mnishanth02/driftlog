@@ -58,7 +58,6 @@
     },
     "updates": {
       "fallbackToCacheTimeout": 0
-    },
-    "privacy": "unlisted"
+    }
   }
 }
