@@ -111,34 +111,34 @@ import { db } from "@/core/db";
 ### Running the App
 ```bash
 # Start development server
-ppnpm start
+pnpm start
 
 # Run on iOS
-ppnpm ios
+pnpm ios
 
 # Run on Android
-ppnpm android
+pnpm android
 ```
 
 ### Type Checking
 ```bash
-ppnpm typecheck
+pnpm typecheck
 ```
 
 ### Linting & Formatting
 ```bash
-ppnpm lint          # Check for issues
-ppnpm lint:fix      # Auto-fix issues
-ppnpm format        # Format code
+pnpm lint          # Check for issues
+pnpm lint:fix      # Auto-fix issues
+pnpm format        # Format code
 ```
 
 ### Database Migrations
 ```bash
 # Generate migration
-ppnpm drizzle-kit generate
+pnpm drizzle-kit generate
 
 # Apply migration
-ppnpm drizzle-kit migrate
+pnpm drizzle-kit migrate
 ```
 
 ## Design Principles

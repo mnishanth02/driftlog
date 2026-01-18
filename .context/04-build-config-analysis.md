@@ -194,16 +194,16 @@ module.exports = (api) => {
 
 ```bash
 # 1. Clear caches and rebuild
-ppnpm start --clear
+pnpm start --clear
 
 # 2. Type check
-ppnpm typecheck
+pnpm typecheck
 
 # 3. Lint check
-ppnpm lint
+pnpm lint
 
 # 4. Test prebuild
-ppnpm prebuild
+pnpm prebuild
 
 # 5. Build for production
 eas build --platform all --profile production

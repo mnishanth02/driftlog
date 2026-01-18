@@ -276,8 +276,8 @@ This will guide you through:
 
 - [ ] `app.json` version updated
 - [ ] All code changes committed
-- [ ] `ppnpm typecheck` passes
-- [ ] `ppnpm lint` passes
+- [ ] `pnpm typecheck` passes
+- [ ] `pnpm lint` passes
 - [ ] Tested on physical devices
 
 ### Before Submission

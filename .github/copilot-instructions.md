@@ -38,7 +38,7 @@ Schema defined in [src/core/db/schema.ts](../src/core/db/schema.ts) with relatio
 - `sessions` → `plans` (optional link)
 - `sessions` → `reflections` (one-to-one)
 
-**When modifying schema**: Run `ppnpm db:generate` to create migration, then restart app.
+**When modifying schema**: Run `pnpm db:generate` to create migration, then restart app.
 
 ### Styling with NativeWind v5
 
@@ -67,23 +67,23 @@ See [docs/development/styling.md](../docs/development/styling.md) for complete c
 
 ### Running the App
 ```bash
-ppnpm start         # Expo dev server (use 'i' for iOS, 'a' for Android)
-ppnpm ios           # iOS Simulator directly
-ppnpm android       # Android Emulator directly
+pnpm start         # Expo dev server (use 'i' for iOS, 'a' for Android)
+pnpm ios           # iOS Simulator directly
+pnpm android       # Android Emulator directly
 ```
 
 ### Code Quality
 ```bash
-ppnpm typecheck     # TypeScript (run before commits)
-ppnpm lint          # Biome check
-ppnpm lint:fix      # Auto-fix Biome issues
-ppnpm format        # Format code with Biome
+pnpm typecheck     # TypeScript (run before commits)
+pnpm lint          # Biome check
+pnpm lint:fix      # Auto-fix Biome issues
+pnpm format        # Format code with Biome
 ```
 
 ### Database Operations
 ```bash
-ppnpm db:generate   # Generate migration after schema changes
-ppnpm db:studio     # Open Drizzle Studio (DB browser)
+pnpm db:generate   # Generate migration after schema changes
+pnpm db:studio     # Open Drizzle Studio (DB browser)
 ```
 
 **Important**: App auto-runs migrations on startup. Database file location: device-specific SQLite storage.
@@ -140,7 +140,7 @@ Common patterns in [src/core/utils/helpers.ts](../src/core/utils/helpers.ts):
 ### Adding a DB Table
 1. Define schema in [src/core/db/schema.ts](../src/core/db/schema.ts) with relations
 2. Add types to [src/core/types/database.ts](../src/core/types/database.ts)
-3. Run `ppnpm db:generate`
+3. Run `pnpm db:generate`
 4. Restart app to apply migration
 
 ### Creating a New Screen
@@ -167,25 +167,25 @@ Consistent styling language with web (Tailwind), built-in dark mode support, and
 
 - **React Native 0.81.5**: Pinned for Expo SDK 54 compatibility
 - **NativeWind 5.0.0-preview.2**: Using preview version for v5 features
-- **lightningcss@1.30.1**: Pinned in ppnpm overrides for NativeWind v5 stability
+- **lightningcss@1.30.1**: Pinned in pnpm overrides for NativeWind v5 stability
 - **No Web Support**: App targets iOS/Android only (web compatibility not tested)
 - **SQLite Limits**: Local-only data, no cloud sync (by design)
 
 ## Testing & Debugging
 
 ### Type Errors
-Run `ppnpm typecheck` - common issues:
+Run `pnpm typecheck` - common issues:
 - Missing path alias imports (use `@/` not relative paths)
 - Zustand store actions not properly typed
 - Drizzle schema changes without migration
 
 ### Metro Bundler Issues
-Clear cache: `ppnpm start --clear`
+Clear cache: `pnpm start --clear`
 
 ### Database Issues
 1. Check [src/core/db/index.ts](../src/core/db/index.ts) initialization
 2. Verify schema matches types in [src/core/types/database.ts](../src/core/types/database.ts)
-3. Use `ppnpm db:studio` to inspect data
+3. Use `pnpm db:studio` to inspect data
 
 ## Next Implementation Phase
 

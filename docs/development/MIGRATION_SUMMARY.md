@@ -202,10 +202,10 @@ driftlog/
 ### Database Setup
 ```bash
 # Generate initial migration
-ppnpm db:generate
+pnpm db:generate
 
 # Create tables (first run)
-ppnpm db:migrate
+pnpm db:migrate
 ```
 
 ### Testing Strategy
@@ -245,14 +245,14 @@ ppnpm db:migrate
 
 ```bash
 # All checks pass
-✅ ppnpm typecheck  # No TypeScript errors
-✅ ppnpm lint       # No Biome errors
-✅ ppnpm format     # All files formatted
+✅ pnpm typecheck  # No TypeScript errors
+✅ pnpm lint       # No Biome errors
+✅ pnpm format     # All files formatted
 
 # Ready to run
-✅ ppnpm start      # Development server
-✅ ppnpm ios        # iOS simulator
-✅ ppnpm android    # Android emulator
+✅ pnpm start      # Development server
+✅ pnpm ios        # iOS simulator
+✅ pnpm android    # Android emulator
 ```
 
 ---

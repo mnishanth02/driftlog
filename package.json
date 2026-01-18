@@ -84,7 +84,7 @@
     "typescript": "~5.9.3"
   },
   "main": "expo-router/entry",
-  "ppnpm": {
+  "pnpm": {
     "overrides": {
       "lightningcss": "1.30.1"
     }
