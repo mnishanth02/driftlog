@@ -15,7 +15,7 @@ Your app has been successfully migrated to a production-ready structure with:
 
 ### Start Development Server
 ```bash
-pnpm start
+ppnpm start
 ```
 
 Then press:
@@ -27,9 +27,9 @@ Then press:
 
 ### Platform-Specific
 ```bash
-pnpm ios        # iOS only
-pnpm android    # Android only
-pnpm web        # Web only
+ppnpm ios        # iOS only
+ppnpm android    # Android only
+ppnpm web        # Web only
 ```
 
 ---
@@ -69,12 +69,12 @@ The database will auto-initialize on first app launch. Tables are defined in `sr
 
 ### Generate Migrations (when schema changes)
 ```bash
-pnpm db:generate
+ppnpm db:generate
 ```
 
 ### View Database (Drizzle Studio)
 ```bash
-pnpm db:studio
+ppnpm db:studio
 ```
 
 ---
@@ -188,17 +188,17 @@ Edit files in `src/` or `app/`
 
 ### 2. Check Types
 ```bash
-pnpm typecheck
+ppnpm typecheck
 ```
 
 ### 3. Fix Linting
 ```bash
-pnpm lint:fix
+ppnpm lint:fix
 ```
 
 ### 4. Format Code
 ```bash
-pnpm format
+ppnpm format
 ```
 
 ### 5. Test in Simulator
@@ -219,27 +219,27 @@ Reload app with `r` in Expo CLI
 
 ### Metro bundler issues
 ```bash
-pnpm start --clear
+ppnpm start --clear
 ```
 
 ### TypeScript errors after changes
 ```bash
-pnpm typecheck
+ppnpm typecheck
 ```
 
 ### Biome errors
 ```bash
-pnpm lint:fix
+ppnpm lint:fix
 ```
 
 ### Database schema out of sync
 ```bash
-pnpm db:generate
-pnpm db:migrate
+ppnpm db:generate
+ppnpm db:migrate
 ```
 
 ### App won't start
-1. Clear Metro cache: `pnpm start --clear`
+1. Clear Metro cache: `ppnpm start --clear`
 2. Delete `node_modules/.cache`
 3. Restart dev server
 
@@ -293,13 +293,13 @@ Run these to verify everything is working:
 
 ```bash
 # ✅ Should pass
-pnpm typecheck
+ppnpm typecheck
 
 # ✅ Should pass
-pnpm lint
+ppnpm lint
 
 # ✅ Should start
-pnpm start
+ppnpm start
 ```
 
 ---

@@ -95,7 +95,7 @@ Create this file at the project root:
 ### 1. Install EAS CLI
 
 ```bash
-npm install -g eas-cli
+pnpm install -g eas-cli
 ```
 
 ### 2. Login to Expo
@@ -276,8 +276,8 @@ This will guide you through:
 
 - [ ] `app.json` version updated
 - [ ] All code changes committed
-- [ ] `pnpm typecheck` passes
-- [ ] `pnpm lint` passes
+- [ ] `ppnpm typecheck` passes
+- [ ] `ppnpm lint` passes
 - [ ] Tested on physical devices
 
 ### Before Submission

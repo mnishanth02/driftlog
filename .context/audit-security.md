@@ -444,8 +444,8 @@ Reviewing package.json dependencies:
 
 **Recommendation**: Run regular dependency audits:
 ```bash
-pnpm audit
-npx expo-doctor
+ppnpm audit
+pnpx expo-doctor
 ```
 
 ---

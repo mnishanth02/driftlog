@@ -621,21 +621,21 @@ export default function HomeScreen() {
 
 ```bash
 # AsyncStorage for theme persistence
-npx expo install @react-native-async-storage/async-storage
+pnpx expo install @react-native-async-storage/async-storage
 
 # Vector Icons (if not already installed)
-npx expo install @expo/vector-icons
+pnpx expo install @expo/vector-icons
 ```
 
 ### Step 9: Final Checks & Testing
 
 ```bash
 # Clear cache and restart
-npx expo start --clear
+pnpx expo start --clear
 
 # Test on different devices
-npx expo start --ios
-npx expo start --android
+pnpx expo start --ios
+pnpx expo start --android
 ```
 
 ## Complete File Structure

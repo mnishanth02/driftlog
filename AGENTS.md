@@ -7,26 +7,26 @@ DriftLog is an **offline-first workout logging app** for endurance athletes buil
 
 ### Development Commands
 ```bash
-pnpm start          # Start Expo development server (with --clear)
-pnpm ios            # Launch iOS Simulator
-pnpm android        # Launch Android Emulator
-pnpm web            # Web version (if needed)
-pnpm prebuild       # Generate native files
+ppnpm start          # Start Expo development server (with --clear)
+ppnpm ios            # Launch iOS Simulator
+ppnpm android        # Launch Android Emulator
+ppnpm web            # Web version (if needed)
+ppnpm prebuild       # Generate native files
 ```
 
 ### Code Quality Commands
 ```bash
-pnpm lint           # Run Biome linter (check)
-pnpm lint:fix       # Auto-fix linting issues
-pnpm format         # Format code with Biome
-pnpm check:ci        # CI-ready linting check
-pnpm typecheck      # TypeScript type checking (RUN BEFORE COMMITS)
+ppnpm lint           # Run Biome linter (check)
+ppnpm lint:fix       # Auto-fix linting issues
+ppnpm format         # Format code with Biome
+ppnpm check:ci        # CI-ready linting check
+ppnpm typecheck      # TypeScript type checking (RUN BEFORE COMMITS)
 ```
 
 ### Database Commands
 ```bash
-pnpm db:generate    # Generate Drizzle migrations after schema changes
-pnpm db:studio      # Open Drizzle Studio (DB browser)
+ppnpm db:generate    # Generate Drizzle migrations after schema changes
+ppnpm db:studio      # Open Drizzle Studio (DB browser)
 ```
 
 ### Testing
@@ -61,7 +61,7 @@ pnpm db:studio      # Open Drizzle Studio (DB browser)
 
 ### TypeScript Conventions
 - **Strict mode** enabled
-- **Always run `pnpm typecheck`** before commits
+- **Always run `ppnpm typecheck`** before commits
 - Use interfaces for object shapes
 - Store types in `types.ts` files within feature modules
 - Database types in `src/core/types/database.ts`
@@ -138,7 +138,7 @@ pnpm db:studio      # Open Drizzle Studio (DB browser)
 - **Schema defined in**: `src/core/db/schema.ts`
 - **Relations**: `sessions` → `exercises` → `sets` (one-to-many)
 - **Type safety**: Always use generated types from Drizzle
-- **Migrations**: Auto-run on startup, generate with `pnpm db:generate`
+- **Migrations**: Auto-run on startup, generate with `ppnpm db:generate`
 - **Helper utilities**: Use `generateId()`, `getTodayString()`, `getNowString()`
 
 ### Error Handling
@@ -192,7 +192,7 @@ src/
 ### Modifying Database Schema
 1. Update schema in `src/core/db/schema.ts`
 2. Update types in `src/core/types/database.ts`
-3. Run `pnpm db:generate`
+3. Run `ppnpm db:generate`
 4. Restart app to apply migration
 
 ### Creating New Screen
@@ -209,13 +209,13 @@ src/
 - **SQLite limits**: Local-only data, no cloud sync
 
 ## Debugging Common Issues
-- **Type errors**: Run `pnpm typecheck`, check path aliases
-- **Metro bundler**: Clear cache with `pnpm start --clear`
-- **Database**: Use `pnpm db:studio` to inspect data
+- **Type errors**: Run `ppnpm typecheck`, check path aliases
+- **Metro bundler**: Clear cache with `ppnpm start --clear`
+- **Database**: Use `ppnpm db:studio` to inspect data
 - **Styling**: Verify theme tokens in `global.css`
 
 ## Development Workflow
-1. **Always run `pnpm typecheck`** before commits
+1. **Always run `ppnpm typecheck`** before commits
 2. **Use semantic theme classes** for consistent styling
 3. **Follow established patterns** when adding features
 4. **Generate migrations** after schema changes

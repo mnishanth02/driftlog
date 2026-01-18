@@ -14,12 +14,12 @@
     "noInstall": false,
     "overwrite": false,
     "importAlias": true,
-    "packageManager": "pnpm",
+    "packageManager": "ppnpm",
     "eas": false,
     "publish": false
   },
   "packageManager": {
-    "type": "pnpm",
+    "type": "ppnpm",
     "version": "10.27.0"
   },
   "os": {

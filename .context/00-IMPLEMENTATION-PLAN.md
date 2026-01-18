@@ -264,13 +264,13 @@ google-play-service-account.json
 - [ ] Update `app.json` - Add infoPlist entries
 - [ ] Pin `nativewind` version in `package.json`
 - [ ] Pin `react-native-css` version in `package.json`
-- [ ] Run `pnpm install` to lock versions
-- [ ] Run `pnpm typecheck` to verify no regressions
-- [ ] Run `pnpm lint` to verify code quality
+- [ ] Run `ppnpm install` to lock versions
+- [ ] Run `ppnpm typecheck` to verify no regressions
+- [ ] Run `ppnpm lint` to verify code quality
 
 ### Phase 2: EAS Setup (Day 1-2)
 
-- [ ] Install EAS CLI: `npm install -g eas-cli`
+- [ ] Install EAS CLI: `pnpm install -g eas-cli`
 - [ ] Login: `eas login`
 - [ ] Initialize project: `eas project:init`
 - [ ] Create `eas.json` configuration
@@ -330,21 +330,21 @@ See the complete recommended `app.json` in `.context/03-app-config-analysis.md`.
 
 ```bash
 # Update package.json
-pnpm add nativewind@^4.1.23 react-native-css@^0.0.6
+ppnpm add nativewind@^4.1.23 react-native-css@^0.0.6
 
 # Verify installation
-pnpm install
+ppnpm install
 
 # Check for issues
-pnpm typecheck
-pnpm lint
+ppnpm typecheck
+ppnpm lint
 ```
 
 ### Step 4: Setup EAS
 
 ```bash
 # Install EAS CLI globally
-npm install -g eas-cli
+pnpm install -g eas-cli
 
 # Login to your Expo account
 eas login
@@ -420,9 +420,9 @@ eas build --profile preview --platform all
 
 ```bash
 # Development
-pnpm start                    # Start Expo dev server
-pnpm typecheck                # TypeScript check
-pnpm lint                     # Lint check
+ppnpm start                    # Start Expo dev server
+ppnpm typecheck                # TypeScript check
+ppnpm lint                     # Lint check
 
 # EAS Build
 eas build --profile development-simulator --platform ios

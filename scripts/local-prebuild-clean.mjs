@@ -41,7 +41,7 @@ if (havePrivacySource) {
 
 // Run a clean prebuild to generate fresh native projects.
 const result = spawnSync(
-  process.platform === "win32" ? "npx.cmd" : "npx",
+  process.platform === "win32" ? "pnpx.cmd" : "pnpx",
   ["expo", "prebuild", "--clean"],
   { stdio: "inherit" },
 );

@@ -29,7 +29,7 @@ Complete guide for building and submitting DriftLog to the App Store and Google 
 
 ```bash
 # Install EAS CLI globally
-npm install -g eas-cli
+pnpm install -g eas-cli
 
 # Verify installation
 eas --version
@@ -422,7 +422,7 @@ eas build:version:sync
 
 ---
 
-## Adding npm Scripts
+## Adding pnpm Scripts
 
 Add these to `package.json` for convenience:
 
@@ -490,7 +490,7 @@ Add to `eas.json`:
 eas build --profile production --platform ios --clear-cache
 
 # Or rebuild native directories locally
-npx expo prebuild --clean
+pnpx expo prebuild --clean
 ```
 
 #### "Version code already exists" (Android)
@@ -533,7 +533,7 @@ eas build --help
 
 ### First Time Setup
 ```bash
-npm install -g eas-cli
+pnpm install -g eas-cli
 eas login
 eas project:init
 ```

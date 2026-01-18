@@ -28,13 +28,13 @@
     "submit:ios": "eas submit --platform ios --latest",
     "submit:android": "eas submit --platform android --latest",
     "submit:all": "eas submit --platform all --latest",
-    "local:doctor": "npx expo doctor",
-    "local:prebuild": "npx expo prebuild",
+    "local:doctor": "pnpx expo doctor",
+    "local:prebuild": "pnpx expo prebuild",
     "local:prebuild:clean": "node scripts/local-prebuild-clean.mjs",
-    "local:run:android": "npx expo run:android",
-    "local:run:ios": "npx expo run:ios",
-    "local:run:android:release": "npx expo run:android --variant release",
-    "local:run:ios:release": "npx expo run:ios --configuration Release",
+    "local:run:android": "pnpx expo run:android",
+    "local:run:ios": "pnpx expo run:ios",
+    "local:run:android:release": "pnpx expo run:android --variant release",
+    "local:run:ios:release": "pnpx expo run:ios --configuration Release",
     "local:build:android:apk": "cd android && ./gradlew app:assembleRelease",
     "local:build:android:aab": "cd android && ./gradlew app:bundleRelease",
     "local:build:android:install:release": "cd android && ./gradlew app:installRelease",
@@ -84,7 +84,7 @@
     "typescript": "~5.9.3"
   },
   "main": "expo-router/entry",
-  "pnpm": {
+  "ppnpm": {
     "overrides": {
       "lightningcss": "1.30.1"
     }

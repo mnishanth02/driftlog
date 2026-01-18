@@ -4,7 +4,7 @@ This guide documents how to create **local builds** for DriftLog on macOS withou
 
 DriftLog is an Expo (SDK 54) + React Native 0.81 app. In Expo terminology, you can build locally via:
 
-- **Expo CLI run commands** (`npx expo run:*`) which will generate native projects (via Prebuild) and compile them locally.
+- **Expo CLI run commands** (`pnpx expo run:*`) which will generate native projects (via Prebuild) and compile them locally.
 - **Native toolchains** (Xcode / Gradle) after generating the `ios/` and `android/` directories.
 
 > Important: A “production/release” build is not automatically **store-signed** just because it’s built with `--configuration Release` / `--variant release`. Signing is a separate step.
@@ -32,19 +32,19 @@ We keep your existing scripts (including EAS scripts) untouched.
 
 New scripts are prefixed with `local:`:
 
-- `pnpm local:doctor` — sanity check Expo/RN environment
-- `pnpm local:prebuild` — generate native projects (android + ios)
-- `pnpm local:prebuild:clean` — clean regenerate native projects (see note below)
-- `pnpm local:run:android` / `pnpm local:run:ios` — compile and run debug builds locally
-- `pnpm local:run:android:release` / `pnpm local:run:ios:release` — compile *unsigned* release builds for device testing
-- `pnpm local:build:android:apk` — Gradle assembleRelease (requires `android/` exists)
-- `pnpm local:build:android:aab` — Gradle bundleRelease (requires `android/` exists)
-- `pnpm local:build:android:install:release` — Gradle installRelease to a connected device
-- `pnpm local:ios:open` — open iOS workspace in Xcode (`xed ios`)
+- `ppnpm local:doctor` — sanity check Expo/RN environment
+- `ppnpm local:prebuild` — generate native projects (android + ios)
+- `ppnpm local:prebuild:clean` — clean regenerate native projects (see note below)
+- `ppnpm local:run:android` / `ppnpm local:run:ios` — compile and run debug builds locally
+- `ppnpm local:run:android:release` / `ppnpm local:run:ios:release` — compile *unsigned* release builds for device testing
+- `ppnpm local:build:android:apk` — Gradle assembleRelease (requires `android/` exists)
+- `ppnpm local:build:android:aab` — Gradle bundleRelease (requires `android/` exists)
+- `ppnpm local:build:android:install:release` — Gradle installRelease to a connected device
+- `ppnpm local:ios:open` — open iOS workspace in Xcode (`xed ios`)
 
 ### Why `local:prebuild:clean` is a wrapper
 
-`npx expo prebuild --clean` deletes and recreates `ios/` and `android/`. This repo contains an iOS privacy manifest at `ios/PrivacyInfo.xcprivacy`.
+`pnpx expo prebuild --clean` deletes and recreates `ios/` and `android/`. This repo contains an iOS privacy manifest at `ios/PrivacyInfo.xcprivacy`.
 
 The wrapper script (`scripts/local-prebuild-clean.mjs`) backs up that file before cleaning, then restores it afterwards.
 
@@ -78,8 +78,8 @@ This is the easiest route for local builds and debugging.
 
 ### Debug build (development)
 
-- Android: `pnpm local:run:android`
-- iOS: `pnpm local:run:ios`
+- Android: `ppnpm local:run:android`
+- iOS: `ppnpm local:run:ios`
 
 Expo notes:
 - If `android/` or `ios/` is missing, Expo CLI will run Prebuild once to generate them.
@@ -91,8 +91,8 @@ Reference:
 
 ### Release-mode compile (for testing)
 
-- Android release (unsigned): `pnpm local:run:android:release`
-- iOS Release configuration (not store-signed): `pnpm local:run:ios:release`
+- Android release (unsigned): `ppnpm local:run:android:release`
+- iOS Release configuration (not store-signed): `ppnpm local:run:ios:release`
 
 Reference:
 - Expo CLI `--variant release` / `--configuration Release`: https://docs.expo.dev/more/expo-cli/#compiling
@@ -107,7 +107,7 @@ This is what you’ll use when you want a file you can distribute.
 Expo’s official local production guide (SDK 54 compatible) recommends:
 
 1) Ensure you have `android/` generated
-   - Run `pnpm local:prebuild` (or `pnpm local:prebuild:clean` if you want a fresh regen)
+   - Run `ppnpm local:prebuild` (or `ppnpm local:prebuild:clean` if you want a fresh regen)
 
 2) Create an upload key with `keytool` and move it into `android/app/`
 
@@ -117,7 +117,7 @@ Expo’s official local production guide (SDK 54 compatible) recommends:
 4) Add a release signing config to `android/app/build.gradle`
 
 5) Build an `.aab` via Gradle
-   - `pnpm local:build:android:aab`
+   - `ppnpm local:build:android:aab`
 
 References:
 - Expo “Create a release build locally”: https://docs.expo.dev/guides/local-app-production/
@@ -140,7 +140,7 @@ Expo’s local production guide:
 
 1) Ensure `ios/` exists (Prebuild)
 2) Open the iOS workspace in Xcode
-   - `pnpm local:ios:open`
+   - `ppnpm local:ios:open`
 3) In Xcode: Signing & Capabilities → select your Team
 4) Edit Scheme → Run → Build configuration = Release
 5) Product → Archive
@@ -190,7 +190,7 @@ Tradeoff: upgrades can get more manual.
 
 That’s expected behavior: it deletes and recreates `ios/` and `android/`.
 
-Use `pnpm local:prebuild:clean` which preserves `ios/PrivacyInfo.xcprivacy`.
+Use `ppnpm local:prebuild:clean` which preserves `ios/PrivacyInfo.xcprivacy`.
 
 ### Android: `adb` not found
 

@@ -8,7 +8,7 @@
  * For larger data, this module chunks the data across multiple keys.
  *
  * NOTE: expo-secure-store must be installed:
- * npx expo install expo-secure-store
+ * pnpx expo install expo-secure-store
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage";

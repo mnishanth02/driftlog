@@ -340,8 +340,8 @@ All detailed audit reports have been saved to the `.context` folder:
 - [ ] Test on physical devices (iOS + Android)
 - [ ] Accessibility audit with automated tools
 - [ ] Bundle size analysis
-- [x] Run `pnpm typecheck` ✅ PASSED (Jan 18, 2026)
-- [x] Run `pnpm lint` ✅ PASSED (Jan 18, 2026)
+- [x] Run `ppnpm typecheck` ✅ PASSED (Jan 18, 2026)
+- [x] Run `ppnpm lint` ✅ PASSED (Jan 18, 2026)
 
 ---
 

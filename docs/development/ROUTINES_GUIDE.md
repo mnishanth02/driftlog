@@ -74,7 +74,7 @@ Includes:
 
 **Running Migrations**:
 - Automatic on app startup via `src/core/db/index.ts`
-- Manual generation: `pnpm db:generate`
+- Manual generation: `ppnpm db:generate`
 
 ---
 

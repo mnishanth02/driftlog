@@ -157,8 +157,8 @@ const historySessions = page.map((session) => ({
 - [x] Scroll down → Items load smoothly
 - [x] Pull to refresh → No visual glitches
 - [x] Search/filter → Results appear instantly
-- [x] `pnpm typecheck` passes
-- [x] `pnpm lint` passes
+- [x] `ppnpm typecheck` passes
+- [x] `ppnpm lint` passes
 
 ---
 
