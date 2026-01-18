@@ -4,8 +4,6 @@ export { Card } from "./Card";
 export { DatePicker } from "./DatePicker";
 export { DateRangePicker } from "./DateRangePicker";
 export { FreestyleCard } from "./FreestyleCard";
-export { MetricCard } from "./MetricCard";
 export { SearchBar } from "./SearchBar";
 export { Skeleton } from "./Skeleton";
-export { TabBar } from "./TabBar";
 export { ThemeToggle } from "./ThemeToggle";

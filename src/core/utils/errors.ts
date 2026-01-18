@@ -176,35 +176,6 @@ export function showConfirmDialog(
 }
 
 /**
- * Wrap async function with error handling
- * Useful for event handlers and callbacks
- *
- * @param fn - Async function to wrap
- * @param context - Context for error logging
- * @param onError - Optional custom error handler
- * @returns Wrapped function
- */
-export function withErrorHandling<T extends (...args: never[]) => Promise<unknown>>(
-  fn: T,
-  context: string,
-  onError?: (error: Error) => void,
-): T {
-  return (async (...args: Parameters<T>) => {
-    try {
-      return await fn(...args);
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-
-      if (onError) {
-        onError(err);
-      } else {
-        showErrorAlert(err, context);
-      }
-    }
-  }) as T;
-}
-
-/**
  * Assert condition and throw ValidationError if false
  *
  * @param condition - Condition to assert
