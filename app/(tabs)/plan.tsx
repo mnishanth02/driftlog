@@ -327,7 +327,7 @@ export default function PlanScreen() {
               </Pressable>
             </View>
           ) : (
-            <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-4 shadow-sm dark:shadow-dark-sm">
+            <View className="will-change-variable bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-4 shadow-sm dark:shadow-dark-sm">
               <View className="gap-3">
                 {filteredRoutines.map((routine, index) => (
                   <View key={routine.id}>
@@ -340,7 +340,7 @@ export default function PlanScreen() {
                       completedDate={selectedDate}
                     />
                     {index < filteredRoutines.length - 1 && (
-                      <View className="h-[1px] bg-light-border-light dark:bg-dark-border-light mt-3" />
+                      <View className="h-px bg-light-border-light dark:bg-dark-border-light mt-3" />
                     )}
                   </View>
                 ))}

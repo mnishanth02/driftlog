@@ -158,7 +158,7 @@ export default function TodayScreen() {
               </Text>
             </View>
             {/* Routines wrapped in a card container for visual separation */}
-            <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-4 shadow-sm dark:shadow-dark-sm">
+            <View className="will-change-variable bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-4 shadow-sm dark:shadow-dark-sm">
               <View className="gap-3">
                 {todayRoutines.map((routine, index) => (
                   <View key={routine.id}>
@@ -200,7 +200,7 @@ export default function TodayScreen() {
 
         {/* Empty State when no routines planned and banner is NOT displayed */}
         {!shouldShowBanner && todayRoutines.length === 0 && (
-          <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-8 items-center">
+          <View className="will-change-variable bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-8 items-center">
             <View className="w-16 h-16 rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated items-center justify-center mb-4">
               <Ionicons
                 name="calendar-outline"

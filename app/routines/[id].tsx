@@ -500,7 +500,7 @@ export default function RoutineEditScreen() {
                 onPress={handleAddExercise}
                 android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
                 disabled={!exerciseInputValue.trim()}
-                className="w-12 h-12 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-50"
+                className="will-change-variable w-12 h-12 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-50"
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 accessibilityRole="button"
                 accessibilityLabel="Add exercise"
