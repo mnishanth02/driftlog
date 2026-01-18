@@ -38,98 +38,141 @@ function RoutineCardComponent({
 
   return (
     <View
-      className={`bg-light-surface dark:bg-dark-surface border rounded-2xl overflow-hidden shadow-sm ${
-        isCompleted
-          ? "border-success/20 bg-light-bg-cream/50 dark:bg-dark-bg-elevated/50"
-          : "border-light-border-light dark:border-dark-border-medium"
-      }`}
+      style={ {
+        borderRadius: 12,
+        overflow: "hidden",
+        backgroundColor: isCompleted
+          ? colorScheme === "dark" ? "rgba(16, 185, 129, 0.1)" : "rgba(16, 185, 129, 0.05)"
+          : colorScheme === "dark" ? "rgba(42, 42, 42, 0.5)" : "rgba(249, 245, 241, 0.5)",
+      } }
     >
-      {/* Card Header with Completion Badge */}
-      <View className="flex-row items-start justify-between px-5 pt-5 pb-3">
+      {/* Card Header with Completion Badge */ }
+      <View style={ { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 } }>
         <Pressable
-          onPress={onPress}
-          className="flex-1 pr-3 active:opacity-70"
+          onPress={ onPress }
+          android_ripple={ { color: "rgba(244, 162, 97, 0.3)" } }
+          style={ { flex: 1, paddingRight: 12 } }
           accessibilityRole="button"
-          accessibilityLabel={`Edit routine: ${displayTitle}${isCompleted ? ", completed" : ""}`}
+          accessibilityLabel={ `Edit routine: ${displayTitle}${isCompleted ? ", completed" : ""}` }
           accessibilityHint="Opens routine editor"
         >
-          {/* Title Row with Checkmark */}
-          <View className="flex-row items-center gap-2 mb-2">
-            <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary flex-1">
-              {displayTitle}
+          {/* Title Row with Checkmark */ }
+          <View style={ { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 } }>
+            <Text
+              style={ {
+                flex: 1,
+                fontSize: 18,
+                fontWeight: "700",
+                color: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
+              } }
+            >
+              { displayTitle }
             </Text>
 
-            {/* Success Checkmark */}
-            {isCompleted && (
+            {/* Success Checkmark */ }
+            { isCompleted && (
               <View
-                className="w-6 h-6 rounded-full bg-success items-center justify-center"
+                style={ {
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: "#10b981",
+                  alignItems: "center",
+                  justifyContent: "center",
+                } }
                 accessibilityLabel="Completed"
               >
-                <Ionicons name="checkmark" size={16} color="#ffffff" />
+                <Ionicons name="checkmark" size={ 16 } color="#ffffff" accessible={ false } />
               </View>
-            )}
+            ) }
           </View>
 
-          {/* Exercise overview */}
-          {exercises.length > 0 ? (
+          {/* Exercise overview */ }
+          { exercises.length > 0 ? (
             <Text
-              numberOfLines={2}
-              className={`text-sm leading-5 ${
-                isCompleted
-                  ? "text-light-text-tertiary dark:text-dark-text-tertiary"
-                  : "text-light-text-secondary dark:text-dark-text-secondary"
-              }`}
+              numberOfLines={ 2 }
+              style={ {
+                fontSize: 14,
+                lineHeight: 20,
+                color: isCompleted
+                  ? colorScheme === "dark" ? "#8e8e8e" : "#8e8e8e"
+                  : colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b",
+              } }
             >
-              {fullExerciseText}
+              { fullExerciseText }
             </Text>
           ) : (
-            <Text className="text-sm text-light-text-tertiary dark:text-dark-text-tertiary italic">
+            <Text
+              style={ {
+                fontSize: 14,
+                color: colorScheme === "dark" ? "#8e8e8e" : "#8e8e8e",
+                fontStyle: "italic",
+              } }
+            >
               No exercises added
             </Text>
-          )}
+          ) }
         </Pressable>
 
-        {/* Delete Button */}
-        {onDelete && (
+        {/* Delete Button */ }
+        { onDelete && (
           <Pressable
-            onPress={onDelete}
-            className="min-w-9 min-h-9 w-9 h-9 items-center justify-center rounded-lg active:opacity-70 bg-light-bg-cream dark:bg-dark-bg-elevated"
+            onPress={ onDelete }
+            android_ripple={ { color: "rgba(0, 0, 0, 0.1)", radius: 20 } }
+            style={ {
+              minWidth: 36,
+              minHeight: 36,
+              width: 36,
+              height: 36,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 8,
+              backgroundColor: colorScheme === "dark" ? "#2a2a2a" : "#f9f5f1",
+            } }
             accessibilityRole="button"
             accessibilityLabel="Delete routine"
             accessibilityHint="Removes this routine from your plan"
+            hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
           >
             <Ionicons
               name="trash-outline"
-              size={18}
-              color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
+              size={ 18 }
+              color={ colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
+              accessible={ false }
             />
           </Pressable>
-        )}
+        ) }
       </View>
 
-      {/* Divider */}
-      <View className="h-px bg-light-border-light dark:bg-dark-border-light mx-5" />
+      {/* Divider */ }
+      <View
+        style={ {
+          height: 1,
+          backgroundColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
+          marginHorizontal: 16,
+        } }
+      />
 
-      {/* Footer - Action Button */}
-      <View className="p-5">
-        {isCompleted ? (
+      {/* Footer - Action Button */ }
+      <View style={ { padding: 16 } }>
+        { isCompleted ? (
           // Completed State - Ghost Button
           <Button
             title="Completed Today"
-            onPress={() => {}} // No-op, button is informational
+            onPress={ () => {} } // No-op, button is informational
             variant="ghost"
-            disabled={true}
+            disabled={ true }
             className="min-h-11 opacity-70"
           />
         ) : (
           // Original: Start Session Button
           <Button
             title="Start Session"
-            onPress={onStartRoutine}
+            onPress={ onStartRoutine }
             variant="primary"
             className="min-h-11"
           />
-        )}
+        ) }
       </View>
     </View>
   );

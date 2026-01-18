@@ -327,27 +327,40 @@ export default function ActiveSessionScreen() {
                   }}
                   placeholder="Exercise name..."
                   returnKeyType="done"
+                  selectionColor={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                  underlineColorAndroid="transparent"
                   className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-lg px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
                   placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
                 />
                 <Pressable
                   onPress={handleAddExercise}
+                  android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
                   disabled={!exerciseInputValue.trim()}
                   className="w-14 h-14 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-40"
+                  accessibilityRole="button"
+                  accessibilityLabel="Add exercise"
+                  accessibilityHint="Add the exercise to your workout"
+                  accessibilityState={{ disabled: !exerciseInputValue.trim() }}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Ionicons name="add" size={28} color="#ffffff" />
+                  <Ionicons name="add" size={28} color="#ffffff" accessible={false} />
                 </Pressable>
               </View>
             ) : (
               <Pressable
                 onPress={handleShowAddInput}
+                android_ripple={{ color: "rgba(244, 162, 97, 0.3)" }}
                 className="flex-row items-center justify-center gap-2 py-3 mb-3 rounded-xl border border-dashed border-light-border-medium dark:border-dark-border-medium active:opacity-70"
+                accessibilityRole="button"
+                accessibilityLabel="Add exercise"
+                accessibilityHint="Opens input to add a new exercise"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <Ionicons
                   name="add-circle-outline"
                   size={22}
                   color={colorScheme === "dark" ? "#8e8e8e" : "#6b6b6b"}
+                  accessible={false}
                 />
                 <Text className="text-base text-light-text-secondary dark:text-dark-text-secondary">
                   Add exercise
@@ -361,9 +374,14 @@ export default function ActiveSessionScreen() {
             // STATE 1: IDLE - Timer not started yet, show primary "Start" action
             <Pressable
               onPress={resumeTimer}
+              android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
               className="w-full bg-primary-500 dark:bg-dark-primary rounded-2xl py-5 flex-row items-center justify-center gap-2 active:opacity-80"
+              accessibilityRole="button"
+              accessibilityLabel="Start workout"
+              accessibilityHint="Begin workout timer"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons name="play" size={24} color="#ffffff" />
+              <Ionicons name="play" size={24} color="#ffffff" accessible={false} />
               <Text className="text-lg font-bold text-white dark:text-dark-bg-primary">
                 Start Workout
               </Text>
@@ -373,16 +391,26 @@ export default function ActiveSessionScreen() {
             <View className="gap-3">
               <Pressable
                 onPress={resumeTimer}
+                android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
                 className="w-full bg-primary-500 dark:bg-dark-primary rounded-2xl py-5 flex-row items-center justify-center gap-2 active:opacity-80"
+                accessibilityRole="button"
+                accessibilityLabel="Resume workout"
+                accessibilityHint="Continue workout timer"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Ionicons name="play" size={24} color="#ffffff" />
+                <Ionicons name="play" size={24} color="#ffffff" accessible={false} />
                 <Text className="text-lg font-bold text-white dark:text-dark-bg-primary">
                   Resume Workout
                 </Text>
               </Pressable>
               <Pressable
                 onPress={handleConfirmEnd}
+                android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
                 className="w-full bg-light-bg-cream dark:bg-dark-bg-elevated border border-light-border-medium dark:border-dark-border-medium rounded-xl py-4 items-center justify-center active:opacity-70"
+                accessibilityRole="button"
+                accessibilityLabel="End workout"
+                accessibilityHint="Stop and save your workout session"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary">
                   End Workout
@@ -393,12 +421,18 @@ export default function ActiveSessionScreen() {
             // STATE 2: RUNNING - Timer active, show Pause action (secondary styling - less alarming)
             <Pressable
               onPress={pauseTimer}
+              android_ripple={{ color: "rgba(244, 162, 97, 0.3)" }}
               className="w-full bg-light-bg-cream dark:bg-dark-bg-elevated border border-light-border-medium dark:border-dark-border-medium rounded-2xl py-5 flex-row items-center justify-center gap-2 active:opacity-80"
+              accessibilityRole="button"
+              accessibilityLabel="Pause workout"
+              accessibilityHint="Pause workout timer"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Ionicons
                 name="pause"
                 size={24}
                 color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                accessible={false}
               />
               <Text className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">
                 Pause Workout

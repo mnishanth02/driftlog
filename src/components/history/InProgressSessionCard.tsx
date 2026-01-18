@@ -63,12 +63,12 @@ function InProgressSessionCardComponent({
 
       {/* Routine Title (if exists) */}
       {session.planTitle ? (
-        <View className="flex-row items-center mb-2">
+        <View className="flex-row items-center mb-2 gap-1.5">
           <Ionicons
             name="barbell-outline"
             size={14}
             color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
-            style={{ marginRight: 4 }}
+            accessible={false}
           />
           <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
             {session.planTitle}
@@ -77,12 +77,12 @@ function InProgressSessionCardComponent({
       ) : null}
 
       {/* Exercise count */}
-      <View className="flex-row items-center mb-3">
+      <View className="flex-row items-center mb-3 gap-1.5">
         <Ionicons
           name="fitness-outline"
           size={14}
           color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
-          style={{ marginRight: 4 }}
+          accessible={false}
         />
         <Text className="text-sm text-light-text-tertiary dark:text-dark-text-tertiary">
           {session.exerciseCount} {session.exerciseCount === 1 ? "exercise" : "exercises"}
@@ -93,6 +93,7 @@ function InProgressSessionCardComponent({
       <View className="flex-row gap-3">
         <Pressable
           onPress={onResume}
+          android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
           accessibilityRole="button"
           accessibilityLabel="Resume workout"
           className="flex-1 bg-primary-500 dark:bg-dark-primary py-3 rounded-xl items-center active:opacity-70"
@@ -102,6 +103,7 @@ function InProgressSessionCardComponent({
 
         <Pressable
           onPress={handleDiscard}
+          android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
           accessibilityRole="button"
           accessibilityLabel="Discard workout"
           className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated border border-light-border-medium dark:border-dark-border-medium py-3 rounded-xl items-center active:opacity-70"

@@ -59,7 +59,8 @@
       "package": "com.driftlog.app",
       "versionCode": 1,
       "permissions": [],
-      "softwareKeyboardLayoutMode": "resize"
+      "softwareKeyboardLayoutMode": "resize",
+      "allowBackup": false
     },
     "updates": {
       "fallbackToCacheTimeout": 0

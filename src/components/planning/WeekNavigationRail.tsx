@@ -116,9 +116,11 @@ export function WeekNavigationRail({
                 {/* Date Circle */}
                 <Pressable
                   onPress={() => onDaySelect(date)}
+                  android_ripple={{ color: "rgba(244, 162, 97, 0.3)", radius: 24 }}
                   accessibilityRole="button"
                   accessibilityLabel={getAccessibilityLabel(date)}
                   accessibilityHint="Tap to jump to this day"
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                   <View
                     className={`relative min-w-11 min-h-11 w-12 h-12 rounded-full items-center justify-center ${
@@ -151,14 +153,12 @@ export function WeekNavigationRail({
                           height: 6,
                           borderRadius: 3,
                           backgroundColor: showSessionDot
-                            ? colorScheme === "dark"
-                              ? "#10b981"
-                              : "#10b981"
+                            ? "#10b981" // success color (session completed)
                             : isSelected
                               ? "#ffffff"
                               : colorScheme === "dark"
-                                ? "#ff9f6c"
-                                : "#f4a261",
+                                ? "#ff9f6c" // dark-primary
+                                : "#f4a261", // primary-500
                           shadowColor: showSessionDot ? "#10b981" : "#f4a261",
                           shadowOpacity: 0.4,
                           shadowRadius: 3,

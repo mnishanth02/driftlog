@@ -50,12 +50,15 @@ export function ActiveSessionBanner({ onDismiss }: ActiveSessionBannerProps) {
   };
 
   return (
-    <View className="bg-primary-500 dark:bg-dark-primary rounded-2xl p-5 mb-6 border-2 border-primary-600 dark:border-dark-primary-dark shadow-md">
+    <View
+      className="bg-primary-500 dark:bg-dark-primary rounded-2xl p-5 mb-6 border-2 border-primary-600 dark:border-dark-primary-dark shadow-md"
+      style={{ elevation: 4 }}
+    >
       {/* Header */}
       <View className="flex-row items-center justify-between mb-3">
         <View className="flex-row items-center gap-2">
           <View className="w-8 h-8 rounded-full bg-white/20 items-center justify-center">
-            <Ionicons name="fitness-outline" size={18} color="#ffffff" />
+            <Ionicons name="fitness-outline" size={18} color="#ffffff" accessible={false} />
           </View>
           <Text className="text-base font-bold text-white">Active Workout</Text>
         </View>
@@ -73,7 +76,12 @@ export function ActiveSessionBanner({ onDismiss }: ActiveSessionBannerProps) {
       <View className="flex-row gap-3">
         <Pressable
           onPress={handleResume}
+          android_ripple={{ color: "rgba(244, 162, 97, 0.3)" }}
           className="flex-1 bg-white rounded-xl py-3 px-4 active:opacity-80"
+          accessibilityRole="button"
+          accessibilityLabel="Resume workout"
+          accessibilityHint="Continue your active workout session"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Text className="text-base font-bold text-primary-500 dark:text-dark-primary text-center">
             Resume Workout
@@ -81,9 +89,14 @@ export function ActiveSessionBanner({ onDismiss }: ActiveSessionBannerProps) {
         </Pressable>
         <Pressable
           onPress={handleEndWorkout}
+          android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
           className="bg-white/20 rounded-xl py-3 px-4 active:opacity-80"
+          accessibilityRole="button"
+          accessibilityLabel="End workout"
+          accessibilityHint="Stop and save your workout session"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="close-circle-outline" size={24} color="#ffffff" />
+          <Ionicons name="close-circle-outline" size={24} color="#ffffff" accessible={false} />
         </Pressable>
       </View>
 

@@ -153,105 +153,115 @@ export default function PlanScreen() {
 
   return (
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+      <StatusBar style={ colorScheme === "dark" ? "light" : "dark" } />
 
-      {/* Header */}
-      <View className="" style={{ paddingTop: insets.top + 12 }}>
+      {/* Header */ }
+      <View className="" style={ { paddingTop: insets.top + 12 } }>
         <Text className="text-3xl px-5 pb-3 font-bold text-light-text-primary dark:text-dark-text-primary">
           Plan
         </Text>
       </View>
 
-      {/* Week Range & Navigation */}
+      {/* Week Range & Navigation */ }
       <View className="px-5 pb-4">
         <View className="flex-row items-center justify-between">
           <Pressable
-            onPress={handlePreviousWeek}
+            onPress={ handlePreviousWeek }
+            android_ripple={ { color: "rgba(244, 162, 97, 0.3)", radius: 22 } }
             className="min-w-11 min-h-11 w-11 h-11 rounded-full bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium items-center justify-center active:opacity-70"
             accessibilityRole="button"
             accessibilityLabel="Previous week"
             accessibilityHint="Navigate to the previous week"
+            hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
           >
             <Ionicons
               name="chevron-back"
-              size={20}
-              color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
+              size={ 20 }
+              color={ colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
+              accessible={ false }
             />
           </Pressable>
 
           <Text className="text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary">
-            {weekRangeText}
+            { weekRangeText }
           </Text>
 
           <Pressable
-            onPress={handleNextWeek}
+            onPress={ handleNextWeek }
+            android_ripple={ { color: "rgba(244, 162, 97, 0.3)", radius: 22 } }
             className="min-w-11 min-h-11 w-11 h-11 rounded-full bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium items-center justify-center active:opacity-70"
             accessibilityRole="button"
             accessibilityLabel="Next week"
             accessibilityHint="Navigate to the next week"
+            hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
           >
             <Ionicons
               name="chevron-forward"
-              size={20}
-              color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
+              size={ 20 }
+              color={ colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
+              accessible={ false }
             />
           </Pressable>
         </View>
       </View>
 
-      {/* Week Navigation Rail */}
+      {/* Week Navigation Rail */ }
       <View className="mb-6">
         <WeekNavigationRail
-          currentWeekDates={currentWeekDates}
-          selectedDate={selectedDate}
-          onDaySelect={handleDaySelect}
-          routinesMap={routinesMap}
-          sessionsMap={sessionsMap}
+          currentWeekDates={ currentWeekDates }
+          selectedDate={ selectedDate }
+          onDaySelect={ handleDaySelect }
+          routinesMap={ routinesMap }
+          sessionsMap={ sessionsMap }
         />
       </View>
 
-      {/* Main Content - Routines */}
+      {/* Main Content - Routines */ }
       <ScrollView
         className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
+        showsVerticalScrollIndicator={ false }
+        contentContainerStyle={ { paddingHorizontal: 20, paddingBottom: 100 } }
       >
         <View>
-          {/* Section Header */}
+          {/* Section Header */ }
           <View className="mb-6 flex-row items-center justify-between">
             <View className="flex-1 mr-4">
               <Text className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary">
-                {isToday ? "Planned for today" : formatDate(selectedDate, "EEEE, MMMM d")}
+                { isToday ? "Planned for today" : formatDate(selectedDate, "EEEE, MMMM d") }
               </Text>
               <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
-                {filteredRoutines.length === 0
+                { filteredRoutines.length === 0
                   ? "No routines planned"
                   : completedCount > 0
                     ? `${filteredRoutines.length} ${filteredRoutines.length === 1 ? "routine" : "routines"} • ${completedCount} completed`
-                    : `${filteredRoutines.length} ${filteredRoutines.length === 1 ? "routine" : "routines"}`}
+                    : `${filteredRoutines.length} ${filteredRoutines.length === 1 ? "routine" : "routines"}` }
               </Text>
             </View>
-            {filteredRoutines.length > 0 && (
+            { filteredRoutines.length > 0 && (
               <Pressable
-                onPress={() => router.push(`/routines/new?date=${selectedDate}` as never)}
+                onPress={ () => router.push(`/routines/new?date=${selectedDate}` as never) }
+                android_ripple={ { color: "rgba(255, 255, 255, 0.3)" } }
                 className="bg-primary-500 dark:bg-dark-primary rounded-xl py-2.5 px-5 active:opacity-70"
                 accessibilityRole="button"
                 accessibilityLabel="Create routine"
+                accessibilityHint={ `Create a new routine for ${formatDate(selectedDate, "EEEE, MMMM d")}` }
+                hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
               >
                 <Text className="text-sm font-semibold text-white dark:text-dark-bg-primary">
                   Create
                 </Text>
               </Pressable>
-            )}
+            ) }
           </View>
 
-          {filteredRoutines.length === 0 ? (
+          { filteredRoutines.length === 0 ? (
             <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-light rounded-2xl p-8 items-center">
               <Ionicons
                 name="calendar-outline"
-                size={48}
-                color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
-                style={{ marginBottom: 16 }}
+                size={ 48 }
+                color={ colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5" }
+                style={ { marginBottom: 16 } }
+                accessible={ false }
               />
               <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary mb-2 text-center">
                 No routine planned
@@ -260,10 +270,13 @@ export default function PlanScreen() {
                 Create a routine to plan your workout for this day.
               </Text>
               <Pressable
-                onPress={() => router.push(`/routines/new?date=${selectedDate}` as never)}
+                onPress={ () => router.push(`/routines/new?date=${selectedDate}` as never) }
+                android_ripple={ { color: "rgba(255, 255, 255, 0.3)" } }
                 className="min-h-11 bg-primary-500 dark:bg-dark-primary rounded-xl py-3 px-6 active:opacity-70"
                 accessibilityRole="button"
                 accessibilityLabel="Create routine"
+                accessibilityHint={ `Create a new routine for ${formatDate(selectedDate, "EEEE, MMMM d")}` }
+                hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
               >
                 <Text className="text-base font-semibold text-white dark:text-dark-bg-primary">
                   Create Routine
@@ -271,39 +284,64 @@ export default function PlanScreen() {
               </Pressable>
             </View>
           ) : (
-            <View className="gap-4">
-              {filteredRoutines.map((routine) => (
-                <RoutineCard
-                  key={routine.id}
-                  routine={routine}
-                  onPress={() =>
-                    router.push(`/routines/${routine.id}?date=${selectedDate}` as never)
-                  }
-                  onStartRoutine={() => {
-                    router.push(`/session/${routine.id}` as never);
-                  }}
-                  isCompleted={completedRoutineIds.has(routine.id)}
-                  completedDate={selectedDate}
-                  onDelete={() => {
-                    Alert.alert(
-                      "Delete Routine",
-                      `Are you sure you want to delete "${routine.title}"?`,
-                      [
-                        { text: "Cancel", style: "cancel" },
-                        {
-                          text: "Delete",
-                          style: "destructive",
-                          onPress: async () => {
-                            await useRoutineStore.getState().deleteRoutine(routine.id);
-                          },
-                        },
-                      ],
-                    );
-                  }}
-                />
-              ))}
+            <View
+              style={ {
+                backgroundColor: colorScheme === "dark" ? "#252525" : "#ffffff",
+                borderWidth: 1,
+                borderColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
+                borderRadius: 16,
+                padding: 16,
+                elevation: 4,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 6,
+              } }
+            >
+              <View style={ { gap: 12 } }>
+                { filteredRoutines.map((routine, index) => (
+                  <View key={ routine.id }>
+                    <RoutineCard
+                      routine={ routine }
+                      onPress={ () =>
+                        router.push(`/routines/${routine.id}?date=${selectedDate}` as never)
+                      }
+                      onStartRoutine={ () => {
+                        router.push(`/session/${routine.id}` as never);
+                      } }
+                      isCompleted={ completedRoutineIds.has(routine.id) }
+                      completedDate={ selectedDate }
+                      onDelete={ () => {
+                        Alert.alert(
+                          "Delete Routine",
+                          `Are you sure you want to delete "${routine.title}"?`,
+                          [
+                            { text: "Cancel", style: "cancel" },
+                            {
+                              text: "Delete",
+                              style: "destructive",
+                              onPress: async () => {
+                                await useRoutineStore.getState().deleteRoutine(routine.id);
+                              },
+                            },
+                          ],
+                        );
+                      } }
+                    />
+                    { index < filteredRoutines.length - 1 && (
+                      <View
+                        style={ {
+                          height: 1,
+                          backgroundColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
+                          marginTop: 12,
+                        } }
+                      />
+                    ) }
+                  </View>
+                )) }
+              </View>
             </View>
-          )}
+          ) }
         </View>
       </ScrollView>
     </View>

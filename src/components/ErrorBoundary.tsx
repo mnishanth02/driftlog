@@ -53,7 +53,7 @@ function DefaultErrorFallback({ error, resetError }: { error: Error; resetError:
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary items-center justify-center px-8">
       <View className="bg-light-surface dark:bg-dark-surface rounded-3xl p-8 items-center border border-light-border-light dark:border-dark-border-medium max-w-md">
         <View className="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900/30 items-center justify-center mb-6">
-          <Ionicons name="alert-circle" size={48} color="#dc2626" />
+          <Ionicons name="alert-circle" size={48} color="#dc2626" accessible={false} />
         </View>
 
         <Text className="text-2xl font-bold text-light-text-primary dark:text-dark-text-primary mb-3 text-center">
@@ -66,6 +66,7 @@ function DefaultErrorFallback({ error, resetError }: { error: Error; resetError:
 
         <Pressable
           onPress={resetError}
+          android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
           className="w-full bg-primary-500 dark:bg-dark-primary rounded-xl py-4 px-6 active:opacity-80"
         >
           <Text className="text-base font-bold text-white dark:text-dark-bg-primary text-center">

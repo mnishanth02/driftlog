@@ -16,6 +16,9 @@ export function TabBar({ tabs, activeTab, onTabChange, className = "" }: TabBarP
         <Pressable
           key={tab}
           onPress={() => onTabChange(tab)}
+          android_ripple={{
+            color: activeTab === tab ? "rgba(255, 255, 255, 0.3)" : "rgba(244, 162, 97, 0.3)",
+          }}
           className={`px-5 py-2 rounded-full ${
             activeTab === tab ? "bg-primary-500 dark:bg-dark-primary" : "bg-transparent"
           }`}

@@ -120,68 +120,124 @@ export default function TodayScreen() {
 
   return (
     <View className="flex-1 bg-light-bg-primary dark:bg-dark-bg-primary">
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+      <StatusBar style={ colorScheme === "dark" ? "light" : "dark" } />
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={ { paddingHorizontal: 20, paddingBottom: 100 } }
+        showsVerticalScrollIndicator={ false }
       >
-        {/* Header */}
-        <View className="pb-6" style={{ paddingTop: insets.top + 12 }}>
+        {/* Header */ }
+        <View className="pb-6" style={ { paddingTop: insets.top + 12 } }>
           <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
-            {new Date().toLocaleDateString("en-US", {
+            { new Date().toLocaleDateString("en-US", {
               weekday: "long",
               month: "long",
               day: "numeric",
-            })}
+            }) }
           </Text>
           <Text className="text-3xl font-bold text-light-text-primary dark:text-dark-text-primary mt-1">
             Today
           </Text>
         </View>
 
-        {/* Active Session Banner - Show when there's an active session */}
-        {shouldShowBanner && <ActiveSessionBanner onDismiss={dismissResumedFromKillBanner} />}
+        {/* Active Session Banner - Show when there's an active session */ }
+        { shouldShowBanner && <ActiveSessionBanner onDismiss={ dismissResumedFromKillBanner } /> }
 
-        {/* Today's Routines - Show when banner is NOT displayed */}
-        {!shouldShowBanner && todayRoutines.length > 0 && (
-          <View className="mb-6">
-            <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary mb-4">
-              Planned for Today
-            </Text>
-            <View className="gap-4">
-              {todayRoutines.map((routine) => (
-                <RoutineCard
-                  key={routine.id}
-                  routine={routine}
-                  onPress={() => Navigation.goToRoutine(routine.id)}
-                  onStartRoutine={() => handleStartRoutine(routine.id)}
-                  isCompleted={completedRoutineIds.has(routine.id)}
-                  completedDate={getTodayString()}
-                />
-              ))}
+        {/* Today's Routines - Show when banner is NOT displayed */ }
+        { !shouldShowBanner && todayRoutines.length > 0 && (
+          <View style={ { marginBottom: 24 } }>
+            <View style={ { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 } }>
+              <Ionicons
+                name="calendar"
+                size={ 20 }
+                color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
+                accessible={ false }
+              />
+              <Text
+                style={ {
+                  fontSize: 18,
+                  fontWeight: "700",
+                  color: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
+                } }
+              >
+                Planned for Today
+              </Text>
+            </View>
+            {/* Routines wrapped in a card container for visual separation */ }
+            <View
+              style={ {
+                backgroundColor: colorScheme === "dark" ? "#252525" : "#ffffff",
+                borderWidth: 1,
+                borderColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
+                borderRadius: 16,
+                padding: 16,
+                elevation: 4,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 6,
+              } }
+            >
+              <View style={ { gap: 12 } }>
+                { todayRoutines.map((routine, index) => (
+                  <View key={ routine.id }>
+                    <RoutineCard
+                      routine={ routine }
+                      onPress={ () => Navigation.goToRoutine(routine.id) }
+                      onStartRoutine={ () => handleStartRoutine(routine.id) }
+                      isCompleted={ completedRoutineIds.has(routine.id) }
+                      completedDate={ getTodayString() }
+                    />
+                    { index < todayRoutines.length - 1 && (
+                      <View
+                        style={ {
+                          height: 1,
+                          backgroundColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
+                          marginTop: 12,
+                        } }
+                      />
+                    ) }
+                  </View>
+                )) }
+              </View>
             </View>
           </View>
-        )}
+        ) }
 
-        {/* Quick Start Section - Show when banner is NOT displayed */}
-        {!shouldShowBanner && (
-          <View className="mb-6">
-            <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary mb-4">
-              {todayRoutines.length > 0 ? "Or start freestyle" : "Start a Workout"}
-            </Text>
-            <FreestyleCard onPress={handleStartFreestyle} />
+        {/* Quick Start Section - Show when banner is NOT displayed */ }
+        { !shouldShowBanner && (
+          <View style={ { marginBottom: 24 } }>
+            <View style={ { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 } }>
+              <Ionicons
+                name="flash"
+                size={ 20 }
+                color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
+                accessible={ false }
+              />
+              <Text
+                style={ {
+                  fontSize: 18,
+                  fontWeight: "700",
+                  color: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
+                } }
+              >
+                { todayRoutines.length > 0 ? "Or start freestyle" : "Start a Workout" }
+              </Text>
+            </View>
+            {/* FreestyleCard already has good card styling */ }
+            <FreestyleCard onPress={ handleStartFreestyle } />
           </View>
-        )}
+        ) }
 
-        {/* Empty State when no routines planned and banner is NOT displayed */}
-        {!shouldShowBanner && todayRoutines.length === 0 && (
+        {/* Empty State when no routines planned and banner is NOT displayed */ }
+        { !shouldShowBanner && todayRoutines.length === 0 && (
           <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-8 items-center">
             <View className="w-16 h-16 rounded-full bg-light-bg-cream dark:bg-dark-bg-elevated items-center justify-center mb-4">
               <Ionicons
                 name="calendar-outline"
-                size={32}
-                color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
+                size={ 32 }
+                color={ colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5" }
+                accessible={ false }
               />
             </View>
             <Text className="text-base font-semibold text-light-text-primary dark:text-dark-text-primary mb-2 text-center">
@@ -191,20 +247,26 @@ export default function TodayScreen() {
               Plan a routine or start a freestyle session
             </Text>
             <Pressable
-              onPress={() => Navigation.goToTab("plan")}
+              onPress={ () => Navigation.goToTab("plan") }
+              android_ripple={ { color: "rgba(244, 162, 97, 0.3)" } }
               className="flex-row items-center gap-2 py-2 px-4 active:opacity-70"
+              accessibilityRole="button"
+              accessibilityLabel="Go to Plan"
+              accessibilityHint="Opens the Plan tab to create a routine"
+              hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
             >
               <Text className="text-base font-semibold text-primary-500 dark:text-dark-primary">
                 Go to Plan
               </Text>
               <Ionicons
                 name="arrow-forward"
-                size={18}
-                color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                size={ 18 }
+                color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
+                accessible={ false }
               />
             </Pressable>
           </View>
-        )}
+        ) }
       </ScrollView>
     </View>
   );

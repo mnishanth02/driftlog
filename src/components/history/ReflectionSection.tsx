@@ -26,7 +26,11 @@ export function ReflectionSection({ feeling, notes, onEdit }: ReflectionSectionP
             Reflection
           </Text>
         </View>
-        <Pressable onPress={onEdit} className="px-2 py-1 active:opacity-70">
+        <Pressable
+          onPress={onEdit}
+          android_ripple={{ color: "rgba(244, 162, 97, 0.3)", radius: 20 }}
+          className="px-2 py-1 active:opacity-70"
+        >
           <Text className="text-xs font-semibold text-primary-500 dark:text-dark-primary">
             {hasReflection ? "Edit" : "Add"}
           </Text>

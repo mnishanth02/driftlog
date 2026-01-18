@@ -214,8 +214,11 @@ export default function RoutineEditScreen() {
             {/* Drag handle - Hamburger icon */}
             <Pressable
               onLongPress={drag}
+              android_ripple={{ color: "rgba(0, 0, 0, 0.1)", radius: 20 }}
               className="px-4 py-5 active:opacity-70"
+              accessibilityRole="button"
               accessibilityLabel="Long press to reorder"
+              accessibilityHint="Long press and drag to change exercise order"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <View className="gap-1">
@@ -232,29 +235,41 @@ export default function RoutineEditScreen() {
                   value={editingExerciseName}
                   onChangeText={setEditingExerciseName}
                   autoFocus
+                  selectionColor={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                  underlineColorAndroid="transparent"
                   className="flex-1 text-base text-light-text-primary dark:text-dark-text-primary px-2 py-1"
                   placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
                 />
                 <Pressable
                   onPress={handleSaveEdit}
+                  android_ripple={{ color: "rgba(244, 162, 97, 0.3)", radius: 20 }}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   className="p-1 active:opacity-70"
+                  accessibilityRole="button"
+                  accessibilityLabel="Save exercise name"
+                  accessibilityHint="Save changes to exercise name"
                 >
                   <Ionicons
                     name="checkmark"
                     size={22}
                     color={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                    accessible={false}
                   />
                 </Pressable>
                 <Pressable
                   onPress={handleCancelEdit}
+                  android_ripple={{ color: "rgba(0, 0, 0, 0.1)", radius: 20 }}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   className="p-1 active:opacity-70"
+                  accessibilityRole="button"
+                  accessibilityLabel="Cancel editing"
+                  accessibilityHint="Discard changes to exercise name"
                 >
                   <Ionicons
                     name="close"
                     size={22}
                     color={colorScheme === "dark" ? "#8e8e8e" : "#6b6b6b"}
+                    accessible={false}
                   />
                 </Pressable>
               </View>
@@ -265,26 +280,33 @@ export default function RoutineEditScreen() {
                 </Text>
                 <Pressable
                   onPress={() => handleStartEdit(item)}
+                  android_ripple={{ color: "rgba(0, 0, 0, 0.1)", radius: 20 }}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   className="p-1 active:opacity-70"
+                  accessibilityRole="button"
                   accessibilityLabel="Edit exercise"
+                  accessibilityHint={`Edit ${item.name}`}
                 >
                   <Ionicons
                     name="pencil"
                     size={20}
                     color={colorScheme === "dark" ? "#8e8e8e" : "#6b6b6b"}
+                    accessible={false}
                   />
                 </Pressable>
                 <Pressable
                   onPress={() => handleDelete(item.id)}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   className="p-1 active:opacity-70"
+                  accessibilityRole="button"
                   accessibilityLabel="Delete exercise"
+                  accessibilityHint={`Remove ${item.name} from routine`}
                 >
                   <Ionicons
                     name="trash-outline"
                     size={20}
                     color={colorScheme === "dark" ? "#ef4444" : "#dc2626"}
+                    accessible={false}
                   />
                 </Pressable>
               </View>
@@ -326,8 +348,11 @@ export default function RoutineEditScreen() {
               {/* Cancel Button */}
               <Pressable
                 onPress={handleCancel}
-                hitSlop={16}
+                hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
                 className="min-w-17.5 h-full justify-center items-start active:opacity-60"
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+                accessibilityHint="Discard changes and go back"
               >
                 <Text className="text-[17px] text-light-text-secondary dark:text-dark-text-secondary font-normal">
                   Cancel
@@ -347,9 +372,13 @@ export default function RoutineEditScreen() {
               {/* Save Button */}
               <Pressable
                 onPress={handleSave}
-                hitSlop={16}
+                hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
                 className="min-w-17.5 h-full justify-center items-end active:opacity-60"
                 disabled={!draftRoutine.title.trim()}
+                accessibilityRole="button"
+                accessibilityLabel="Save routine"
+                accessibilityHint="Save routine and return to previous screen"
+                accessibilityState={{ disabled: !draftRoutine.title.trim() }}
               >
                 <Text
                   className={`text-[17px] font-bold ${
@@ -371,6 +400,8 @@ export default function RoutineEditScreen() {
               value={draftRoutine.title}
               onChangeText={updateDraftTitle}
               placeholder="Routine name (e.g., Upper Body)"
+              selectionColor={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+              underlineColorAndroid="transparent"
               className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary px-4 py-4"
               placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
               autoCapitalize="words"
@@ -446,6 +477,8 @@ export default function RoutineEditScreen() {
                 onSubmitEditing={handleAddExercise}
                 placeholder="Add exercise..."
                 returnKeyType="done"
+                selectionColor={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                underlineColorAndroid="transparent"
                 className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated rounded-xl px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
                 placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
                 autoCapitalize="words"
@@ -460,8 +493,10 @@ export default function RoutineEditScreen() {
               />
               <Pressable
                 onPress={handleAddExercise}
+                android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
                 disabled={!exerciseInputValue.trim()}
                 className="w-14 h-14 bg-primary-500 dark:bg-dark-primary rounded-full items-center justify-center active:opacity-80 disabled:opacity-40 shadow-md dark:shadow-dark-md"
+                style={{ elevation: 4 }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <Ionicons name="add" size={28} color="#ffffff" />
@@ -473,6 +508,7 @@ export default function RoutineEditScreen() {
               <View className="flex px-4">
                 <Pressable
                   onPress={handleDeleteRoutine}
+                  android_ripple={{ color: "rgba(239, 68, 68, 0.3)" }}
                   className="w-full rounded-2xl py-4 mb-2 items-center justify-center active:opacity-80 border-2 border-red-300 dark:border-red-300"
                 >
                   <Text className="text-base font-bold text-red-500 dark:text-red-400">

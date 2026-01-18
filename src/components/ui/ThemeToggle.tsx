@@ -15,18 +15,35 @@ export function ThemeToggle() {
   ];
 
   return (
-    <View className="flex-row gap-2 bg-light-bg-cream dark:bg-dark-bg-secondary p-1 rounded-xl">
+    <View
+      className="flex-row gap-2 bg-light-bg-cream dark:bg-dark-bg-secondary p-1 rounded-xl"
+      accessibilityRole="radiogroup"
+      accessibilityLabel="Theme selection"
+    >
       {options.map((option) => (
         <Pressable
           key={option.value}
           onPress={() => setColorScheme(option.value)}
+          android_ripple={{
+            color:
+              selectedScheme === option.value
+                ? "rgba(255, 255, 255, 0.3)"
+                : "rgba(244, 162, 97, 0.3)",
+          }}
           className={`flex-1 flex-row items-center justify-center gap-2 px-4 py-3 rounded-lg ${
             selectedScheme === option.value
               ? "bg-primary-500 dark:bg-dark-primary"
               : "bg-transparent"
           }`}
+          accessibilityRole="radio"
+          accessibilityLabel={`${option.label} theme`}
+          accessibilityHint={`Set app theme to ${option.label.toLowerCase()} mode`}
+          accessibilityState={{ checked: selectedScheme === option.value }}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text className="text-base">{option.icon}</Text>
+          <Text className="text-base" accessible={false}>
+            {option.icon}
+          </Text>
           <Text
             className={`text-sm font-medium ${
               selectedScheme === option.value

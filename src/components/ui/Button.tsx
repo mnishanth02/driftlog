@@ -32,13 +32,22 @@ export function Button({
       : "text-primary-500 dark:text-dark-primary",
   };
 
+  const rippleColors = {
+    primary: "rgba(255, 255, 255, 0.3)",
+    secondary: "rgba(0, 0, 0, 0.1)",
+    ghost: "rgba(244, 162, 97, 0.3)",
+  };
+
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      android_ripple={{ color: rippleColors[variant] }}
       accessibilityRole="button"
       accessibilityLabel={title}
+      accessibilityState={{ disabled }}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
       <Text className={`text-base font-semibold text-center ${textClasses[variant]}`}>{title}</Text>
     </Pressable>

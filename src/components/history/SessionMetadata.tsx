@@ -40,12 +40,12 @@ export function SessionMetadata({ date, startTime, endTime, planTitle }: Session
 
       {/* Metadata Row */}
       <View className="flex-row items-center flex-wrap gap-y-1">
-        <View className="flex-row items-center mr-3">
+        <View className="flex-row items-center mr-3 gap-1">
           <Ionicons
             name="time-outline"
             size={12}
             color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
-            style={{ marginRight: 3 }}
+            accessible={false}
           />
           <Text className="text-[10px] text-light-text-secondary dark:text-dark-text-secondary">
             {formatDate(startTime, DATE_FORMATS.TIME_12H)}
@@ -53,12 +53,12 @@ export function SessionMetadata({ date, startTime, endTime, planTitle }: Session
         </View>
 
         {planTitle && (
-          <View className="flex-row items-center">
+          <View className="flex-row items-center gap-1">
             <Ionicons
               name="barbell-outline"
               size={12}
               color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
-              style={{ marginRight: 3 }}
+              accessible={false}
             />
             <Text className="text-[10px] text-light-text-secondary dark:text-dark-text-secondary">
               {planTitle}
@@ -70,7 +70,12 @@ export function SessionMetadata({ date, startTime, endTime, planTitle }: Session
       {/* Warning for estimated duration (compact) */}
       {isDurationEstimated && (
         <View className="mt-1.5 pt-1.5 border-t border-light-border-light dark:border-dark-border-medium flex-row items-center gap-1.5">
-          <Ionicons name="information-circle-outline" size={10} color="#f59e0b" />
+          <Ionicons
+            name="information-circle-outline"
+            size={10}
+            color="#f59e0b"
+            accessible={false}
+          />
           <Text className="text-[9px] text-warning flex-1 italic">
             Estimated duration (session wasn't ended)
           </Text>

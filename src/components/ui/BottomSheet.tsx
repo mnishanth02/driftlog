@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Dimensions, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -16,8 +16,6 @@ interface BottomSheetProps {
   height?: number | string;
 }
 
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-
 export function BottomSheet({
   visible,
   onClose,
@@ -25,7 +23,8 @@ export function BottomSheet({
   children,
   height = "60%",
 }: BottomSheetProps) {
-  const translateY = useSharedValue(SCREEN_HEIGHT);
+  const { height: windowHeight } = useWindowDimensions();
+  const translateY = useSharedValue(windowHeight);
   const backdropOpacity = useSharedValue(0);
   const { colorScheme } = useTheme();
 
@@ -43,10 +42,10 @@ export function BottomSheet({
       backdropOpacity.value = withTiming(1, { duration: 250 });
     } else {
       // Animate out
-      translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 });
+      translateY.value = withTiming(windowHeight, { duration: 250 });
       backdropOpacity.value = withTiming(0, { duration: 250 });
     }
-  }, [visible, backdropOpacity, translateY]);
+  }, [visible, backdropOpacity, translateY, windowHeight]);
 
   const sheetStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
@@ -61,11 +60,24 @@ export function BottomSheet({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}
+      accessibilityViewIsModal
+    >
       <View style={styles.container}>
         {/* Backdrop */}
         <Animated.View style={[styles.backdrop, backdropStyle]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={handleBackdropPress} />
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={handleBackdropPress}
+            android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
+            accessibilityRole="button"
+            accessibilityLabel="Close bottom sheet"
+            accessibilityHint="Tap to close this dialog"
+          />
         </Animated.View>
 
         {/* Bottom Sheet */}
@@ -81,10 +93,7 @@ export function BottomSheet({
         >
           {/* Handle Bar */}
           <View className="items-center py-3">
-            <View
-              className="w-12 h-1 rounded-full"
-              style={{ backgroundColor: colorScheme === "dark" ? "#3a3a3a" : "#d1cbc4" }}
-            />
+            <View className="w-12 h-1 rounded-full bg-light-border-medium dark:bg-dark-border-medium" />
           </View>
 
           {/* Title */}
@@ -121,6 +130,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
-    elevation: 8,
+    elevation: 16,
   },
 });

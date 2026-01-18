@@ -39,7 +39,7 @@ pnpm db:studio      # Open Drizzle Studio (DB browser)
 - Path aliases configured in tsconfig.json:
   ```typescript
   "@/features/*": ["src/features/*"]
-  "@/components/*": ["src/components/*"] 
+  "@/components/*": ["src/components/*"]
   "@/core/*": ["src/core/*"]
   "@/hooks/*": ["src/hooks/*"]
   "@/*": ["src/*"]
@@ -85,10 +85,10 @@ pnpm db:studio      # Open Drizzle Studio (DB browser)
     className?: string;
     onPress: () => void;
   }
-  
+
   export function Button({ children, className, onPress }: ButtonProps) {
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         className={`bg-primary-500 dark:bg-dark-primary ${className}`}
         onPress={onPress}
       >
@@ -106,10 +106,10 @@ pnpm db:studio      # Open Drizzle Studio (DB browser)
   ```tsx
   // Backgrounds
   className="bg-light-surface dark:bg-dark-surface"
-  
+
   // Text
   className="text-light-text-primary dark:text-dark-text-primary"
-  
+
   // Primary brand
   className="bg-primary-500 dark:bg-dark-primary"
   ```
@@ -127,7 +127,7 @@ pnpm db:studio      # Open Drizzle Studio (DB browser)
     // State
     isSessionActive: false,
     currentExercises: [],
-    
+
     // Actions
     startSession: async () => { /* ... */ },
     addExercise: (name: string) => { /* ... */ },
@@ -203,6 +203,7 @@ src/
 
 ## Key Constraints
 - **React Native 0.81.5**: Pinned for Expo SDK 54
+- **NativeWind 5.0.0-preview.2**: Using preview version for v5 features
 - **lightningcss@1.30.1**: Pinned for NativeWind v5 stability
 - **No web support**: iOS/Android only
 - **SQLite limits**: Local-only data, no cloud sync

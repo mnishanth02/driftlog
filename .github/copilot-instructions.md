@@ -7,7 +7,7 @@ DriftLog is an **offline-first workout logging app** for endurance athletes buil
 
 ### Core Dependencies
 - **Routing**: Expo Router v6 (file-based, tabs in `app/(tabs)/`)
-- **Styling**: NativeWind v5 (Tailwind CSS v4) with custom design tokens in `global.css`
+- **Styling**: NativeWind v5 Preview (5.0.0-preview.2) with Tailwind CSS v4 and custom design tokens in `global.css`
 - **State**: Zustand v5 stores with persist middleware (AsyncStorage)
 - **Database**: Expo SQLite + Drizzle ORM with full type safety
 - **Tooling**: Biome for linting/formatting, TypeScript with strict mode
@@ -34,7 +34,7 @@ Each feature (`src/features/`) is self-contained with `store.ts`, `types.ts`, `i
 ### Database Schema (Drizzle)
 Schema defined in [src/core/db/schema.ts](../src/core/db/schema.ts) with relations:
 - `sessions` → `exercises` (one-to-many)
-- `exercises` → `sets` (one-to-many)  
+- `exercises` → `sets` (one-to-many)
 - `sessions` → `plans` (optional link)
 - `sessions` → `reflections` (one-to-one)
 
@@ -105,7 +105,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   // State
   isSessionActive: false,
   currentExercises: [],
-  
+
   // Actions
   startSession: async () => { /* ... */ },
   addExercise: (name: string) => { /* ... */ },
@@ -166,6 +166,7 @@ Consistent styling language with web (Tailwind), built-in dark mode support, and
 ## Known Constraints
 
 - **React Native 0.81.5**: Pinned for Expo SDK 54 compatibility
+- **NativeWind 5.0.0-preview.2**: Using preview version for v5 features
 - **lightningcss@1.30.1**: Pinned in pnpm overrides for NativeWind v5 stability
 - **No Web Support**: App targets iOS/Android only (web compatibility not tested)
 - **SQLite Limits**: Local-only data, no cloud sync (by design)

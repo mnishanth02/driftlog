@@ -43,6 +43,7 @@ function ExerciseRowComponent({
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
+      android_ripple={{ color: "rgba(244, 162, 97, 0.3)" }}
       className={getContainerClasses()}
       style={
         isDragging ? { elevation: 5, shadowOpacity: 0.3, transform: [{ scale: 1.02 }] } : undefined
@@ -56,6 +57,7 @@ function ExerciseRowComponent({
         {/* Drag handle - hamburger icon on left */}
         <Pressable
           onLongPress={onLongPress}
+          android_ripple={{ color: "rgba(0, 0, 0, 0.1)", radius: 20 }}
           className="px-4 py-5 active:opacity-70"
           accessibilityLabel="Long press to reorder"
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -84,7 +86,7 @@ function ExerciseRowComponent({
         {/* Completion indicator */}
         {isCompleted ? (
           <View className="w-10 h-10 rounded-full items-center justify-center bg-success mr-4">
-            <Ionicons name="checkmark" size={22} color="#ffffff" />
+            <Ionicons name="checkmark" size={22} color="#ffffff" accessible={false} />
           </View>
         ) : (
           <View className="w-10 h-10 rounded-full items-center justify-center border-2 border-light-border-medium dark:border-dark-border-medium mr-4">

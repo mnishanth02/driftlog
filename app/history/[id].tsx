@@ -139,11 +139,15 @@ export default function SessionDetailScreen() {
                 onPress={handleBack}
                 hitSlop={16}
                 className="min-w-17.5 h-full justify-center items-start active:opacity-60"
+                accessibilityRole="button"
+                accessibilityLabel="Back"
+                accessibilityHint="Return to history list"
               >
                 <Ionicons
                   name="chevron-back"
                   size={28}
                   color={colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b"}
+                  accessible={false}
                 />
               </Pressable>
 
@@ -222,6 +226,7 @@ export default function SessionDetailScreen() {
             <View className="h-13 px-4 flex-row items-center justify-between">
               <Pressable
                 onPress={handleBack}
+                android_ripple={{ color: "rgba(0, 0, 0, 0.1)", radius: 24 }}
                 hitSlop={16}
                 className="min-w-17.5 h-full justify-center items-start active:opacity-60"
               >
@@ -321,13 +326,18 @@ export default function SessionDetailScreen() {
             {/* Back Button */}
             <Pressable
               onPress={handleBack}
-              hitSlop={16}
+              android_ripple={{ color: "rgba(0, 0, 0, 0.1)", radius: 24 }}
+              hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
               className="min-w-17.5 h-full justify-center items-start active:opacity-60"
+              accessibilityRole="button"
+              accessibilityLabel="Back"
+              accessibilityHint="Return to history list"
             >
               <Ionicons
                 name="chevron-back"
                 size={28}
                 color={colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b"}
+                accessible={false}
               />
             </Pressable>
 
@@ -339,7 +349,8 @@ export default function SessionDetailScreen() {
             {/* Assign to Date Button */}
             <Pressable
               onPress={handleAssignToDate}
-              hitSlop={16}
+              android_ripple={{ color: "rgba(244, 162, 97, 0.3)", radius: 24 }}
+              hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
               accessibilityRole="button"
               accessibilityLabel="Create routine from session"
               accessibilityHint="Opens calendar to assign this workout as a routine"
@@ -444,6 +455,8 @@ export default function SessionDetailScreen() {
                   value={reflectionFeeling}
                   onChangeText={setReflectionFeeling}
                   placeholder="Great, tough, easy, etc."
+                  selectionColor={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                  underlineColorAndroid="transparent"
                   className="bg-light-bg-cream dark:bg-dark-bg-elevated rounded-xl px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
                   placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
                   autoCapitalize="sentences"
@@ -459,6 +472,8 @@ export default function SessionDetailScreen() {
                   value={reflectionNotes}
                   onChangeText={setReflectionNotes}
                   placeholder="Any observations, adjustments, or thoughts..."
+                  selectionColor={colorScheme === "dark" ? "#ff9f6c" : "#f4a261"}
+                  underlineColorAndroid="transparent"
                   className="bg-light-bg-cream dark:bg-dark-bg-elevated rounded-xl px-4 py-4 text-base text-light-text-primary dark:text-dark-text-primary border border-light-border-light dark:border-dark-border-medium"
                   placeholderTextColor={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
                   multiline
