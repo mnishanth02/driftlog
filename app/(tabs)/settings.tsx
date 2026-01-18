@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Card } from "@/components/ui/Card";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useTheme } from "@/core/contexts/ThemeContext";
 import { useSettingsStore } from "@/features/settings";
@@ -36,68 +37,18 @@ export default function SettingsScreen() {
         </View>
 
         {/* Theme Section */ }
-        <View
-          style={ {
-            backgroundColor: colorScheme === "dark" ? "#252525" : "#ffffff",
-            borderWidth: 1,
-            borderColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
-            borderRadius: 16,
-            padding: 20,
-            marginBottom: 24,
-            elevation: 4,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 6,
-          } }
-        >
-          <Text
-            style={ {
-              fontSize: 18,
-              fontWeight: "600",
-              color: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
-              marginBottom: 12,
-            } }
-          >
-            Appearance
-          </Text>
+        <Card title="Appearance" className="mb-6">
           <ThemeToggle />
-        </View>
+        </Card>
 
         {/* Auto-End Session Section */ }
-        <View
-          style={ {
-            backgroundColor: colorScheme === "dark" ? "#252525" : "#ffffff",
-            borderWidth: 1,
-            borderColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
-            borderRadius: 16,
-            padding: 20,
-            marginBottom: 32,
-            elevation: 4,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 6,
-          } }
-        >
-          <View style={ { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 } }>
-            <View style={ { flex: 1, paddingRight: 16 } }>
-              <Text
-                style={ {
-                  fontSize: 18,
-                  fontWeight: "600",
-                  color: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
-                  marginBottom: 4,
-                } }
-              >
+        <Card className="mb-8">
+          <View className="flex-row items-center justify-between mb-4">
+            <View className="flex-1 pr-4">
+              <Text className="text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">
                 Auto-End Session
               </Text>
-              <Text
-                style={ {
-                  fontSize: 14,
-                  color: colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b",
-                } }
-              >
+              <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
                 Automatically end session after { autoEndTimeout } minutes of inactivity
               </Text>
             </View>
@@ -119,59 +70,29 @@ export default function SettingsScreen() {
 
           {/* Timeout Picker - Only visible when auto-end is enabled */ }
           { autoEndSession && (
-            <View
-              style={ {
-                paddingTop: 16,
-                borderTopWidth: 1,
-                borderTopColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
-              } }
-            >
-              <Text
-                style={ {
-                  fontSize: 14,
-                  fontWeight: "500",
-                  color: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
-                  marginBottom: 12,
-                } }
-              >
+            <View className="mt-4 pt-4 border-t border-light-border-light dark:border-dark-border-medium">
+              <Text className="text-sm font-medium text-light-text-primary dark:text-dark-text-primary mb-3">
                 Inactivity Timeout
               </Text>
-              <View style={ { flexDirection: "row", flexWrap: "wrap", gap: 8 } }>
+              <View className="flex-row flex-wrap gap-2">
                 { timeoutPresets.map((minutes) => (
                   <Pressable
                     key={ minutes }
                     onPress={ () => setAutoEndTimeout(minutes) }
-                    android_ripple={ {
-                      color:
-                        autoEndTimeout === minutes
-                          ? "rgba(255, 255, 255, 0.3)"
-                          : "rgba(244, 162, 97, 0.3)",
-                    } }
-                    style={ {
-                      paddingHorizontal: 16,
-                      paddingVertical: 10,
-                      borderRadius: 8,
-                      backgroundColor:
-                        autoEndTimeout === minutes
-                          ? colorScheme === "dark" ? "#ff9f6c" : "#f4a261"
-                          : colorScheme === "dark" ? "#2a2a2a" : "#f9f5f1",
-                      borderWidth: autoEndTimeout === minutes ? 0 : 1,
-                      borderColor: colorScheme === "dark" ? "#3a3a3a" : "#d1cbc4",
-                    } }
+                    className={ `px-4 py-2.5 rounded-lg border ${autoEndTimeout === minutes
+                        ? "bg-primary-500 border-primary-500 dark:bg-dark-primary dark:border-dark-primary"
+                        : "bg-light-bg-cream border-light-border-medium dark:bg-dark-bg-elevated dark:border-dark-border-medium"
+                      }` }
                     accessibilityRole="button"
                     accessibilityLabel={ `${minutes} minutes` }
                     accessibilityHint={ `Set timeout to ${minutes} minutes` }
                     accessibilityState={ { selected: autoEndTimeout === minutes } }
                   >
                     <Text
-                      style={ {
-                        fontSize: 14,
-                        fontWeight: "600",
-                        color:
-                          autoEndTimeout === minutes
-                            ? colorScheme === "dark" ? "#0f0f0f" : "#ffffff"
-                            : colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
-                      } }
+                      className={ `text-sm font-semibold ${autoEndTimeout === minutes
+                          ? "text-white dark:text-dark-bg-primary"
+                          : "text-light-text-primary dark:text-dark-text-primary"
+                        }` }
                     >
                       { minutes } min
                     </Text>
@@ -180,7 +101,7 @@ export default function SettingsScreen() {
               </View>
             </View>
           ) }
-        </View>
+        </Card>
 
         {/* Info Footer */ }
         <View className="items-center py-6 mt-4">

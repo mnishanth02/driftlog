@@ -38,48 +38,31 @@ function RoutineCardComponent({
 
   return (
     <View
-      style={ {
-        borderRadius: 12,
-        overflow: "hidden",
-        backgroundColor: isCompleted
-          ? colorScheme === "dark" ? "rgba(16, 185, 129, 0.1)" : "rgba(16, 185, 129, 0.05)"
-          : colorScheme === "dark" ? "rgba(42, 42, 42, 0.5)" : "rgba(249, 245, 241, 0.5)",
-      } }
+      className={ `rounded-2xl overflow-hidden border ${isCompleted
+          ? "bg-success/10 dark:bg-success/15 border-success/30"
+          : "bg-light-bg-cream/50 dark:bg-dark-bg-accent/50 border-light-border-light dark:border-dark-border-light"
+        }` }
     >
       {/* Card Header with Completion Badge */ }
-      <View style={ { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 } }>
+      <View className="flex-row items-start justify-between px-4 pt-4 pb-2">
         <Pressable
           onPress={ onPress }
           android_ripple={ { color: "rgba(244, 162, 97, 0.3)" } }
-          style={ { flex: 1, paddingRight: 12 } }
+          className="flex-1 pr-3"
           accessibilityRole="button"
           accessibilityLabel={ `Edit routine: ${displayTitle}${isCompleted ? ", completed" : ""}` }
           accessibilityHint="Opens routine editor"
         >
           {/* Title Row with Checkmark */ }
-          <View style={ { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 } }>
-            <Text
-              style={ {
-                flex: 1,
-                fontSize: 18,
-                fontWeight: "700",
-                color: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
-              } }
-            >
+          <View className="flex-row items-center gap-2 mb-2">
+            <Text className="flex-1 text-lg font-bold text-light-text-primary dark:text-dark-text-primary">
               { displayTitle }
             </Text>
 
             {/* Success Checkmark */ }
             { isCompleted && (
               <View
-                style={ {
-                  width: 24,
-                  height: 24,
-                  borderRadius: 12,
-                  backgroundColor: "#10b981",
-                  alignItems: "center",
-                  justifyContent: "center",
-                } }
+                className="w-6 h-6 rounded-full bg-success items-center justify-center shadow-sm"
                 accessibilityLabel="Completed"
               >
                 <Ionicons name="checkmark" size={ 16 } color="#ffffff" accessible={ false } />
@@ -91,24 +74,15 @@ function RoutineCardComponent({
           { exercises.length > 0 ? (
             <Text
               numberOfLines={ 2 }
-              style={ {
-                fontSize: 14,
-                lineHeight: 20,
-                color: isCompleted
-                  ? colorScheme === "dark" ? "#8e8e8e" : "#8e8e8e"
-                  : colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b",
-              } }
+              className={ `text-sm leading-5 ${isCompleted
+                  ? "text-light-text-secondary dark:text-dark-text-secondary font-medium"
+                  : "text-light-text-secondary dark:text-dark-text-secondary"
+                }` }
             >
               { fullExerciseText }
             </Text>
           ) : (
-            <Text
-              style={ {
-                fontSize: 14,
-                color: colorScheme === "dark" ? "#8e8e8e" : "#8e8e8e",
-                fontStyle: "italic",
-              } }
-            >
+            <Text className="text-sm italic text-light-text-tertiary dark:text-dark-text-tertiary">
               No exercises added
             </Text>
           ) }
@@ -119,16 +93,7 @@ function RoutineCardComponent({
           <Pressable
             onPress={ onDelete }
             android_ripple={ { color: "rgba(0, 0, 0, 0.1)", radius: 20 } }
-            style={ {
-              minWidth: 36,
-              minHeight: 36,
-              width: 36,
-              height: 36,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 8,
-              backgroundColor: colorScheme === "dark" ? "#2a2a2a" : "#f9f5f1",
-            } }
+            className="w-9 h-9 items-center justify-center rounded-lg bg-light-bg-cream dark:bg-dark-bg-accent"
             accessibilityRole="button"
             accessibilityLabel="Delete routine"
             accessibilityHint="Removes this routine from your plan"
@@ -145,25 +110,15 @@ function RoutineCardComponent({
       </View>
 
       {/* Divider */ }
-      <View
-        style={ {
-          height: 1,
-          backgroundColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
-          marginHorizontal: 16,
-        } }
-      />
+      <View className="h-[1px] bg-light-border-light dark:bg-dark-border-light mx-4" />
 
       {/* Footer - Action Button */ }
-      <View style={ { padding: 16 } }>
+      <View className="p-4">
         { isCompleted ? (
-          // Completed State - Ghost Button
-          <Button
-            title="Completed Today"
-            onPress={ () => {} } // No-op, button is informational
-            variant="ghost"
-            disabled={ true }
-            className="min-h-11 opacity-70"
-          />
+          // Completed State - Placeholder for informative badge
+          <View className="flex-row items-center justify-center min-h-11 rounded-xl bg-success/10 border border-success/20">
+            <Text className="text-success font-semibold">Completed Today</Text>
+          </View>
         ) : (
           // Original: Start Session Button
           <Button

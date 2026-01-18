@@ -13,35 +13,15 @@ export function FreestyleCard({ onPress }: FreestyleCardProps) {
     <Pressable
       onPress={ onPress }
       android_ripple={ { color: "rgba(244, 162, 97, 0.3)" } }
-      style={ {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: colorScheme === "dark" ? "#252525" : "#ffffff",
-        borderWidth: 1,
-        borderColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
-        borderRadius: 16,
-        padding: 20,
-        elevation: 4,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-      } }
+      className="flex-row items-center bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-5 shadow-sm dark:shadow-dark-sm"
       accessibilityRole="button"
       accessibilityLabel="Start freestyle session"
       accessibilityHint="Begin a workout without a planned routine"
       hitSlop={ { top: 8, bottom: 8, left: 8, right: 8 } }
     >
       <View
-        style={ {
-          width: 48,
-          height: 48,
-          borderRadius: 24,
-          backgroundColor: colorScheme === "dark" ? "rgba(255, 159, 108, 0.15)" : "rgba(244, 162, 97, 0.15)",
-          alignItems: "center",
-          justifyContent: "center",
-          marginRight: 16,
-        } }
+        className={ `w-12 h-12 rounded-full items-center justify-center mr-4 ${colorScheme === "dark" ? "bg-dark-primary/10" : "bg-primary-500/10"
+          }` }
       >
         <Ionicons
           name="flash"
@@ -50,30 +30,18 @@ export function FreestyleCard({ onPress }: FreestyleCardProps) {
           accessible={ false }
         />
       </View>
-      <View style={ { flex: 1 } }>
-        <Text
-          style={ {
-            fontSize: 16,
-            fontWeight: "600",
-            color: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
-          } }
-        >
+      <View className="flex-1">
+        <Text className="text-base font-bold text-light-text-primary dark:text-dark-text-primary">
           Freestyle Session
         </Text>
-        <Text
-          style={ {
-            fontSize: 14,
-            color: colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b",
-            marginTop: 2,
-          } }
-        >
+        <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
           Build your workout as you go
         </Text>
       </View>
       <Ionicons
         name="chevron-forward"
         size={ 22 }
-        color={ colorScheme === "dark" ? "#6b6b6b" : "#8e8e8e" }
+        color={ colorScheme === "dark" ? "#6b6b6b" : "#b5b5b5" }
         accessible={ false }
       />
     </Pressable>

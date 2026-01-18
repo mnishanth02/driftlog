@@ -2,7 +2,10 @@ import { and, asc, desc, eq, isNotNull } from "drizzle-orm";
 import { create } from "zustand";
 import { db, waitForDb } from "../../core/db";
 import { exercises, reflections, sessions, sets } from "../../core/db/schema";
+import { reflectionEncryption } from "../../core/utils/encryption";
 import { generateId, getNowString } from "../../core/utils/helpers";
+import { logger } from "../../core/utils/logger";
+import { validateNotes, validateReflectionFeeling } from "../../core/utils/validation";
 import type { HistoryStore } from "./types";
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -122,7 +125,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         };
       });
     } catch (error) {
-      console.error("Failed to load sessions:", error);
+      logger.logError(error instanceof Error ? error : new Error(String(error)), "loadSessions");
       set({ isLoading: false });
     }
   },
@@ -153,7 +156,10 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
 
       set({ inProgressSessions, isLoadingInProgress: false });
     } catch (error) {
-      console.error("Failed to load in-progress sessions:", error);
+      logger.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        "loadInProgressSessions",
+      );
       set({ isLoadingInProgress: false });
     }
   },
@@ -216,23 +222,46 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
                 order: set.order,
               })) ?? [],
           })) ?? [],
+        // Decrypt reflection data when loading
         reflection: session.reflection
-          ? {
+          ? reflectionEncryption.decryptReflection({
               feeling: session.reflection.feeling,
               notes: session.reflection.notes,
-            }
+            })
           : null,
       };
 
       set({ currentSession: sessionDetail, isLoading: false });
     } catch (error) {
-      console.error("Failed to load session detail:", error);
+      logger.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        "loadSessionDetail",
+      );
       set({ isLoading: false });
     }
   },
 
   saveReflection: async (sessionId: string, feeling: string | null, notes: string | null) => {
     const now = getNowString();
+
+    // Validate inputs
+    if (feeling) {
+      const feelingValidation = validateReflectionFeeling(feeling);
+      if (!feelingValidation.valid) {
+        throw new Error(feelingValidation.error || "Invalid feeling text");
+      }
+    }
+
+    if (notes) {
+      const notesValidation = validateNotes(notes);
+      if (!notesValidation.valid) {
+        throw new Error(notesValidation.error || "Invalid notes text");
+      }
+    }
+
+    // Encrypt sensitive reflection data before storing
+    const encryptedFeeling = reflectionEncryption.encryptFeeling(feeling);
+    const encryptedNotes = reflectionEncryption.encryptNotes(notes);
 
     try {
       // Wait for database to be initialized before querying
@@ -244,23 +273,23 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
       });
 
       if (existing) {
-        // Update existing reflection
+        // Update existing reflection with encrypted data
         await db
           .update(reflections)
           .set({
-            feeling,
-            notes,
+            feeling: encryptedFeeling,
+            notes: encryptedNotes,
             updatedAt: now,
           })
           .where(eq(reflections.id, existing.id));
       } else {
-        // Create new reflection
+        // Create new reflection with encrypted data
         const reflectionId = generateId();
         await db.insert(reflections).values({
           id: reflectionId,
           sessionId,
-          feeling,
-          notes,
+          feeling: encryptedFeeling,
+          notes: encryptedNotes,
           createdAt: now,
           updatedAt: now,
         });
@@ -271,7 +300,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         await get().loadSessionDetail(sessionId);
       }
     } catch (error) {
-      console.error("Failed to save reflection:", error);
+      logger.logError(error instanceof Error ? error : new Error(String(error)), "saveReflection");
       throw error;
     }
   },
@@ -302,7 +331,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         isDeleting: false,
       }));
     } catch (error) {
-      console.error("Failed to delete session:", error);
+      logger.logError(error instanceof Error ? error : new Error(String(error)), "deleteSession");
       set({ isDeleting: false });
       throw error;
     }
@@ -333,7 +362,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
         isDeleting: false,
       }));
     } catch (error) {
-      console.error("Failed to discard session:", error);
+      logger.logError(error instanceof Error ? error : new Error(String(error)), "discardSession");
       set({ isDeleting: false });
       throw error;
     }
@@ -386,7 +415,7 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
       set({ sessions: historySessions, isLoading: false });
       set({ hasMore: false });
     } catch (error) {
-      console.error("Failed to search sessions:", error);
+      logger.logError(error instanceof Error ? error : new Error(String(error)), "searchSessions");
       set({ isLoading: false });
     }
   },
@@ -428,7 +457,10 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
       set({ sessions: historySessions, isLoading: false });
       set({ hasMore: false });
     } catch (error) {
-      console.error("Failed to filter sessions:", error);
+      logger.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        "filterByDateRange",
+      );
       set({ isLoading: false });
     }
   },
@@ -463,7 +495,10 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
 
       return completedCount > 0;
     } catch (error) {
-      console.error("Failed to check routine completion:", error);
+      logger.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        "checkRoutineCompletedForDate",
+      );
       return false;
     }
   },
@@ -504,7 +539,10 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
 
       return completedRoutineIds;
     } catch (error) {
-      console.error("Failed to get completed routine IDs:", error);
+      logger.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        "getCompletedRoutineIdsForDate",
+      );
       return new Set();
     }
   },
@@ -543,7 +581,10 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
 
       return countMap;
     } catch (error) {
-      console.error("Failed to get sessions count by date:", error);
+      logger.logError(
+        error instanceof Error ? error : new Error(String(error)),
+        "getSessionsCountByDate",
+      );
       return new Map();
     }
   },

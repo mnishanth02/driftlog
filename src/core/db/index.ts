@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { openDatabaseSync } from "expo-sqlite";
+import { logger } from "../utils/logger";
 import * as schema from "./schema";
 
 // =============================================================================
@@ -55,13 +56,19 @@ export async function initDatabase(): Promise<boolean> {
     try {
       runMigrations();
       isDbReady = true;
-      console.log("✅ Database initialized successfully");
+      logger.info("Database initialized successfully", "database");
       return true;
     } catch (error) {
-      console.error(`Database initialization failed (attempt ${attempt}/${maxRetries}):`, error);
+      logger.error(
+        `Database initialization failed (attempt ${attempt}/${maxRetries})`,
+        "database",
+        {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      );
 
       if (attempt >= maxRetries) {
-        console.error("❌ Database initialization failed after max retries");
+        logger.error("Database initialization failed after max retries", "database");
         return false;
       }
 
@@ -121,7 +128,9 @@ function addColumnIfMissing(tableName: string, columnName: string, columnDef: st
     expoDb.execSync(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnDef};`);
     return true;
   } catch (error) {
-    console.warn(`Failed to add column ${columnName} to ${tableName}:`, error);
+    logger.warn(`Failed to add column ${columnName} to ${tableName}`, "database", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return false;
   }
 }
@@ -339,8 +348,9 @@ function ensureTable(tableName: keyof typeof TABLE_SCHEMAS): void {
 
   if (criticalMissing.length > 0) {
     // Critical columns missing - table is corrupt, recreate it
-    console.warn(
+    logger.warn(
       `Table "${tableName}" missing critical columns: ${criticalMissing.join(", ")}. Recreating...`,
+      "database",
     );
     expoDb.execSync(`DROP TABLE IF EXISTS ${tableName};`);
     expoDb.execSync(schema);
@@ -418,7 +428,9 @@ function createIndexes(): void {
       }
     } catch (error) {
       // Index creation failures are non-fatal
-      console.warn(`Failed to create index: ${error}`);
+      logger.warn(`Failed to create index`, "database", {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 }
@@ -448,7 +460,9 @@ function runMigrations(): void {
     // Create all indexes after tables are ready
     createIndexes();
   } catch (error) {
-    console.error("❌ Migration failed:", error);
+    logger.error("Migration failed", "database", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }

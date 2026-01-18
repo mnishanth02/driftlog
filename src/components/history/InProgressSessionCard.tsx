@@ -38,11 +38,11 @@ function InProgressSessionCardComponent({
 
   return (
     <View
-      className="bg-light-surface/70 dark:bg-dark-surface/70 border border-dashed border-warning dark:border-warning rounded-2xl p-4 mb-3"
+      className="bg-light-surface/70 dark:bg-dark-surface/70 border border-dashed border-warning dark:border-warning rounded-2xl p-5 mb-4"
       accessibilityRole="button"
-      accessibilityLabel={`In-progress workout from ${formatDate(session.date, "EEEE, MMMM d")}`}
+      accessibilityLabel={ `In-progress workout from ${formatDate(session.date, "EEEE, MMMM d")}` }
     >
-      {/* Header: Date & In Progress Badge */}
+      {/* Header: Date & In Progress Badge */ }
       <View className="flex-row items-center justify-between mb-2">
         <View className="flex-row items-center gap-2">
           <View className="bg-warning/20 dark:bg-warning/30 px-2 py-0.5 rounded-full">
@@ -51,49 +51,49 @@ function InProgressSessionCardComponent({
             </Text>
           </View>
           <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
-            {formatElapsedTime(elapsedSeconds)} ago
+            { formatElapsedTime(elapsedSeconds) } ago
           </Text>
         </View>
       </View>
 
-      {/* Session Info */}
+      {/* Session Info */ }
       <Text className="text-base font-medium text-light-text-primary dark:text-dark-text-primary mb-1">
-        {formatDate(session.date, "EEEE, MMMM d")}
+        { formatDate(session.date, "EEEE, MMMM d") }
       </Text>
 
-      {/* Routine Title (if exists) */}
-      {session.planTitle ? (
+      {/* Routine Title (if exists) */ }
+      { session.planTitle ? (
         <View className="flex-row items-center mb-2 gap-1.5">
           <Ionicons
             name="barbell-outline"
-            size={14}
-            color={colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b"}
-            accessible={false}
+            size={ 14 }
+            color={ colorScheme === "dark" ? "#b5b5b5" : "#6b6b6b" }
+            accessible={ false }
           />
           <Text className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
-            {session.planTitle}
+            { session.planTitle }
           </Text>
         </View>
-      ) : null}
+      ) : null }
 
-      {/* Exercise count */}
+      {/* Exercise count */ }
       <View className="flex-row items-center mb-3 gap-1.5">
         <Ionicons
           name="fitness-outline"
-          size={14}
-          color={colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5"}
-          accessible={false}
+          size={ 14 }
+          color={ colorScheme === "dark" ? "#8e8e8e" : "#b5b5b5" }
+          accessible={ false }
         />
         <Text className="text-sm text-light-text-tertiary dark:text-dark-text-tertiary">
-          {session.exerciseCount} {session.exerciseCount === 1 ? "exercise" : "exercises"}
+          { session.exerciseCount } { session.exerciseCount === 1 ? "exercise" : "exercises" }
         </Text>
       </View>
 
-      {/* Action Buttons */}
+      {/* Action Buttons */ }
       <View className="flex-row gap-3">
         <Pressable
-          onPress={onResume}
-          android_ripple={{ color: "rgba(255, 255, 255, 0.3)" }}
+          onPress={ onResume }
+          android_ripple={ { color: "rgba(255, 255, 255, 0.3)" } }
           accessibilityRole="button"
           accessibilityLabel="Resume workout"
           className="flex-1 bg-primary-500 dark:bg-dark-primary py-3 rounded-xl items-center active:opacity-70"
@@ -102,8 +102,8 @@ function InProgressSessionCardComponent({
         </Pressable>
 
         <Pressable
-          onPress={handleDiscard}
-          android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
+          onPress={ handleDiscard }
+          android_ripple={ { color: "rgba(0, 0, 0, 0.1)" } }
           accessibilityRole="button"
           accessibilityLabel="Discard workout"
           className="flex-1 bg-light-bg-cream dark:bg-dark-bg-elevated border border-light-border-medium dark:border-dark-border-medium py-3 rounded-xl items-center active:opacity-70"

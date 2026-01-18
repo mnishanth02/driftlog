@@ -140,6 +140,49 @@ export default function PlanScreen() {
 
   const isToday = selectedDate === getTodayString();
 
+  // Handler for starting a routine
+  const handleStartRoutine = useCallback(
+    async (routineId: string) => {
+      try {
+        // Navigate to session start with routine ID
+        router.push(`/session/${routineId}` as never);
+      } catch (error) {
+        Alert.alert("Error", "Failed to start routine. Please try again.");
+      }
+    },
+    [router],
+  );
+
+  // Handler for deleting a routine
+  const handleDeleteRoutine = useCallback(
+    async (routineId: string) => {
+      Alert.alert(
+        "Delete Routine",
+        "Are you sure you want to delete this routine? This action cannot be undone.",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                await useRoutineStore.getState().deleteRoutine(routineId);
+                // Reload routines to update UI
+                await loadRoutines();
+              } catch (error) {
+                Alert.alert("Error", "Failed to delete routine. Please try again.");
+              }
+            },
+          },
+        ],
+      );
+    },
+    [loadRoutines],
+  );
+
   // Show loading state while routines are being fetched
   if (isLoadingRoutines) {
     return (
@@ -255,7 +298,7 @@ export default function PlanScreen() {
           </View>
 
           { filteredRoutines.length === 0 ? (
-            <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-light rounded-2xl p-8 items-center">
+            <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-8 items-center">
               <Ionicons
                 name="calendar-outline"
                 size={ 48 }
@@ -284,58 +327,20 @@ export default function PlanScreen() {
               </Pressable>
             </View>
           ) : (
-            <View
-              style={ {
-                backgroundColor: colorScheme === "dark" ? "#252525" : "#ffffff",
-                borderWidth: 1,
-                borderColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
-                borderRadius: 16,
-                padding: 16,
-                elevation: 4,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 6,
-              } }
-            >
-              <View style={ { gap: 12 } }>
+            <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-4 shadow-sm dark:shadow-dark-sm">
+              <View className="gap-3">
                 { filteredRoutines.map((routine, index) => (
                   <View key={ routine.id }>
                     <RoutineCard
                       routine={ routine }
-                      onPress={ () =>
-                        router.push(`/routines/${routine.id}?date=${selectedDate}` as never)
-                      }
-                      onStartRoutine={ () => {
-                        router.push(`/session/${routine.id}` as never);
-                      } }
+                      onPress={ () => router.push(`/routines/${routine.id}` as never) }
+                      onStartRoutine={ () => handleStartRoutine(routine.id) }
+                      onDelete={ () => handleDeleteRoutine(routine.id) }
                       isCompleted={ completedRoutineIds.has(routine.id) }
                       completedDate={ selectedDate }
-                      onDelete={ () => {
-                        Alert.alert(
-                          "Delete Routine",
-                          `Are you sure you want to delete "${routine.title}"?`,
-                          [
-                            { text: "Cancel", style: "cancel" },
-                            {
-                              text: "Delete",
-                              style: "destructive",
-                              onPress: async () => {
-                                await useRoutineStore.getState().deleteRoutine(routine.id);
-                              },
-                            },
-                          ],
-                        );
-                      } }
                     />
                     { index < filteredRoutines.length - 1 && (
-                      <View
-                        style={ {
-                          height: 1,
-                          backgroundColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
-                          marginTop: 12,
-                        } }
-                      />
+                      <View className="h-[1px] bg-light-border-light dark:bg-dark-border-light mt-3" />
                     ) }
                   </View>
                 )) }

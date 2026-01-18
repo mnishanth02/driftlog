@@ -681,3 +681,27 @@ className="text-primary-500 dark:text-dark-primary"
 // Borders
 className="border-light-border-light dark:border-dark-border-medium"
 ```
+
+## UI Patterns & Best Practices
+
+### Status Badges
+For status indicators (e.g., "Completed", "Active"), use the following pattern for high contrast and accessibility:
+- **Container**: `bg-{color}/10` (10% opacity)
+- **Text**: `text-{color}` (solid color)
+- **Typography**: `text-xs font-bold` (minimum 12px)
+
+Example (Success Badge):
+```tsx
+<View className="bg-success/10 px-2.5 py-1 rounded-full">
+  <Text className="text-xs font-bold text-success">Completed</Text>
+</View>
+```
+
+### Spacing & Sizing
+- **Grid Compliance**: Always use the 4px grid (`1` = 4px). Avoid fractional spacing (e.g., `1.5`) unless fine-tuning alignment within an icon row or border.
+- **Minimum Tap Targets**: Interactive elements must have a hit slop or size of at least 44x44 points. Use `hitSlop` or generous padding.
+- **Typography Floor**: Avoid font sizes smaller than `text-xs` (12px) for any readable text. `text-[10px]` should only be used for very tight metadata labels or badges where space is strictly constrained.
+
+### Card Standards
+- **Standard Card**: `rounded-2xl`, `p-5`, `bg-surface`
+- **Compact Card**: `rounded-2xl`, `p-4`, `bg-surface` (Use for dense lists or metadata sections)

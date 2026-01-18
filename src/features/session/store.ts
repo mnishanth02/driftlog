@@ -5,6 +5,8 @@ import { persist } from "zustand/middleware";
 import { db, waitForDb } from "../../core/db";
 import { exercises, routineExercises, routines, sessions, sets } from "../../core/db/schema";
 import { generateId, getNowString, getTodayString } from "../../core/utils/helpers";
+import { logger } from "../../core/utils/logger";
+import { validateExerciseName } from "../../core/utils/validation";
 import { useSettingsStore } from "../settings";
 import { clearSessionStorage, sessionPersistConfig } from "./persistence";
 import type { ExerciseLog, SessionStore } from "./types";
@@ -52,7 +54,7 @@ export const useSessionStore = create<SessionStore>()(
         // Prevent concurrent sessions
         const currentState = get();
         if (currentState.isSessionActive) {
-          console.warn("Session already active, ignoring duplicate start request");
+          logger.warn("Session already active, ignoring duplicate start request", "startSession");
           // Return existing session ID instead of creating duplicate
           if (currentState.activeSessionId) {
             return currentState.activeSessionId;
@@ -106,7 +108,10 @@ export const useSessionStore = create<SessionStore>()(
           get().resetActivityTimer();
           return sessionId;
         } catch (error) {
-          console.error("Failed to start session:", error);
+          logger.logError(
+            error instanceof Error ? error : new Error(String(error)),
+            "startSession",
+          );
           throw error;
         }
       },
@@ -125,7 +130,10 @@ export const useSessionStore = create<SessionStore>()(
         // Prevent concurrent sessions
         const currentState = get();
         if (currentState.isSessionActive) {
-          console.warn("Session already active, ignoring duplicate routine start request");
+          logger.warn(
+            "Session already active, ignoring duplicate routine start request",
+            "startSessionFromRoutine",
+          );
           // Return existing session ID instead of creating duplicate
           if (currentState.activeSessionId) {
             return currentState.activeSessionId;
@@ -215,7 +223,10 @@ export const useSessionStore = create<SessionStore>()(
           get().resetActivityTimer();
           return sessionId;
         } catch (error) {
-          console.error("Failed to start session from routine:", error);
+          logger.logError(
+            error instanceof Error ? error : new Error(String(error)),
+            "startSessionFromRoutine",
+          );
           throw error;
         }
       },
@@ -286,7 +297,7 @@ export const useSessionStore = create<SessionStore>()(
           // Then clear AsyncStorage to prevent rehydration on next mount
           await clearSessionStorage();
         } catch (error) {
-          console.error("Failed to end session:", error);
+          logger.logError(error instanceof Error ? error : new Error(String(error)), "endSession");
           throw error;
         }
       },
@@ -329,27 +340,27 @@ export const useSessionStore = create<SessionStore>()(
       addExercise: (name: string) => {
         const { currentExercises, activeSessionId, isSessionActive } = get();
 
-        // Validate input with user-friendly messages
-        const trimmedName = name.trim();
-        if (!trimmedName) {
-          Alert.alert("Invalid Exercise Name", "Please enter an exercise name.");
-          throw new Error("Exercise name cannot be empty");
+        // Validate input using validation utility
+        const validation = validateExerciseName(name);
+        if (!validation.valid) {
+          Alert.alert("Invalid Exercise Name", validation.error || "Please enter a valid name.");
+          throw new Error(validation.error || "Exercise name validation failed");
         }
-        if (trimmedName.length > 100) {
-          Alert.alert("Name Too Long", "Exercise name must be less than 100 characters.");
-          throw new Error("Exercise name too long (max 100 characters)");
-        }
+
         if (!isSessionActive) {
           Alert.alert("No Active Session", "Please start a session first.");
           throw new Error("No active session");
         }
+
+        // Use sanitized name from validation
+        const sanitizedName = validation.sanitized || name.trim();
 
         const exerciseId = generateId();
         const now = getNowString();
 
         const newExercise: ExerciseLog = {
           id: exerciseId,
-          name: trimmedName,
+          name: sanitizedName,
           sets: [],
           order: currentExercises.length,
           completedAt: null,
@@ -360,13 +371,18 @@ export const useSessionStore = create<SessionStore>()(
             .values({
               id: exerciseId,
               sessionId: activeSessionId,
-              name,
+              name: sanitizedName,
               order: currentExercises.length,
               completedAt: null,
               createdAt: now,
               updatedAt: now,
             })
-            .catch((error) => console.error("Failed to save exercise:", error));
+            .catch((error) =>
+              logger.logError(
+                error instanceof Error ? error : new Error(String(error)),
+                "addExercise",
+              ),
+            );
         }
 
         set({
@@ -424,7 +440,10 @@ export const useSessionStore = create<SessionStore>()(
 
           get().resetActivityTimer();
         } catch (error) {
-          console.error("Failed to update exercise completion:", error);
+          logger.logError(
+            error instanceof Error ? error : new Error(String(error)),
+            "toggleExerciseComplete",
+          );
           Alert.alert("Error", "Failed to update exercise. Please try again.");
         }
       },
@@ -468,7 +487,10 @@ export const useSessionStore = create<SessionStore>()(
           });
           get().resetActivityTimer();
         } catch (error) {
-          console.error("Failed to update exercise order:", error);
+          logger.logError(
+            error instanceof Error ? error : new Error(String(error)),
+            "reorderExercises",
+          );
           Alert.alert("Error", "Failed to reorder exercises. Please try again.");
         }
       },
@@ -497,7 +519,12 @@ export const useSessionStore = create<SessionStore>()(
           db.update(sessions)
             .set({ targetDuration: duration, updatedAt: now })
             .where(eq(sessions.id, activeSessionId))
-            .catch((error) => console.error("Failed to update session duration:", error));
+            .catch((error) =>
+              logger.logError(
+                error instanceof Error ? error : new Error(String(error)),
+                "setTargetDuration",
+              ),
+            );
         }
       },
 
@@ -518,7 +545,12 @@ export const useSessionStore = create<SessionStore>()(
           db.update(sessions)
             .set({ targetDuration: duration, updatedAt: now })
             .where(eq(sessions.id, activeSessionId))
-            .catch((error) => console.error("Failed to update session duration:", error));
+            .catch((error) =>
+              logger.logError(
+                error instanceof Error ? error : new Error(String(error)),
+                "resetTimerWithDuration",
+              ),
+            );
         }
       },
 

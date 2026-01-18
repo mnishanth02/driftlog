@@ -1,11 +1,20 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createJSONStorage } from "zustand/middleware";
+import { logger } from "../../core/utils/logger";
+import { secureStorage } from "../../core/utils/secureStorage";
 import type { SessionStore } from "./types";
 
 /**
  * Storage key for persisted session state
+ * Note: SecureStore only allows alphanumeric, ".", "-", and "_" characters
  */
-const SESSION_STORAGE_KEY = "@driftlog_active_session";
+const SESSION_STORAGE_KEY = "driftlog_active_session";
+
+/**
+ * Flag to determine if we should use secure storage
+ * Set to true when expo-secure-store is installed and working
+ */
+const USE_SECURE_STORAGE = true;
 
 /**
  * Utility function to clear session storage
@@ -13,10 +22,16 @@ const SESSION_STORAGE_KEY = "@driftlog_active_session";
  */
 export async function clearSessionStorage(): Promise<void> {
   try {
-    const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
-    await AsyncStorage.removeItem(SESSION_STORAGE_KEY);
+    if (USE_SECURE_STORAGE) {
+      await secureStorage.removeItem(SESSION_STORAGE_KEY);
+    } else {
+      const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+      await AsyncStorage.removeItem(SESSION_STORAGE_KEY);
+    }
   } catch (error) {
-    console.error("Failed to clear session storage:", error);
+    logger.error("Failed to clear session storage", "sessionPersistence", {
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 }
 
@@ -25,10 +40,14 @@ export async function clearSessionStorage(): Promise<void> {
  *
  * Defines which state should be persisted and which should be omitted.
  * Used to restore session state after app restarts or crashes.
+ *
+ * Uses secure storage (expo-secure-store) when available to protect
+ * session data at rest. Falls back to AsyncStorage if secure storage
+ * is not available.
  */
 export const sessionPersistConfig = {
   name: SESSION_STORAGE_KEY,
-  storage: createJSONStorage(() => AsyncStorage),
+  storage: createJSONStorage(() => (USE_SECURE_STORAGE ? secureStorage : AsyncStorage)),
   /**
    * Partition state into persisted and non-persisted parts
    *

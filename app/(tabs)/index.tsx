@@ -145,40 +145,21 @@ export default function TodayScreen() {
 
         {/* Today's Routines - Show when banner is NOT displayed */ }
         { !shouldShowBanner && todayRoutines.length > 0 && (
-          <View style={ { marginBottom: 24 } }>
-            <View style={ { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 } }>
+          <View className="mb-8">
+            <View className="flex-row items-center gap-2 mb-4">
               <Ionicons
                 name="calendar"
                 size={ 20 }
                 color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
                 accessible={ false }
               />
-              <Text
-                style={ {
-                  fontSize: 18,
-                  fontWeight: "700",
-                  color: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
-                } }
-              >
+              <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary">
                 Planned for Today
               </Text>
             </View>
             {/* Routines wrapped in a card container for visual separation */ }
-            <View
-              style={ {
-                backgroundColor: colorScheme === "dark" ? "#252525" : "#ffffff",
-                borderWidth: 1,
-                borderColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
-                borderRadius: 16,
-                padding: 16,
-                elevation: 4,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 6,
-              } }
-            >
-              <View style={ { gap: 12 } }>
+            <View className="bg-light-surface dark:bg-dark-surface border border-light-border-light dark:border-dark-border-medium rounded-2xl p-4 shadow-sm dark:shadow-dark-sm">
+              <View className="gap-3">
                 { todayRoutines.map((routine, index) => (
                   <View key={ routine.id }>
                     <RoutineCard
@@ -189,13 +170,7 @@ export default function TodayScreen() {
                       completedDate={ getTodayString() }
                     />
                     { index < todayRoutines.length - 1 && (
-                      <View
-                        style={ {
-                          height: 1,
-                          backgroundColor: colorScheme === "dark" ? "#3a3a3a" : "#e8e4df",
-                          marginTop: 12,
-                        } }
-                      />
+                      <View className="h-[1px] bg-light-border-light dark:bg-dark-border-light mt-3" />
                     ) }
                   </View>
                 )) }
@@ -206,21 +181,15 @@ export default function TodayScreen() {
 
         {/* Quick Start Section - Show when banner is NOT displayed */ }
         { !shouldShowBanner && (
-          <View style={ { marginBottom: 24 } }>
-            <View style={ { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 } }>
+          <View className="mb-6">
+            <View className="flex-row items-center gap-2 mb-4">
               <Ionicons
                 name="flash"
                 size={ 20 }
                 color={ colorScheme === "dark" ? "#ff9f6c" : "#f4a261" }
                 accessible={ false }
               />
-              <Text
-                style={ {
-                  fontSize: 18,
-                  fontWeight: "700",
-                  color: colorScheme === "dark" ? "#f5f5f5" : "#2b2b2b",
-                } }
-              >
+              <Text className="text-lg font-bold text-light-text-primary dark:text-dark-text-primary">
                 { todayRoutines.length > 0 ? "Or start freestyle" : "Start a Workout" }
               </Text>
             </View>
